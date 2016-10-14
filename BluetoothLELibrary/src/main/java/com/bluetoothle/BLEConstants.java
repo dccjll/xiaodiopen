@@ -1,4 +1,4 @@
-package com.bluetoothle.core;
+package com.bluetoothle;
 
 /**
  * Created by dessmann on 16/7/26.

@@ -1,6 +1,6 @@
 package com.bluetoothle.request;
 
-import com.bluetoothle.core.BLEConstants;
+import com.bluetoothle.BLEConstants;
 import com.bluetoothle.util.BLEByteUtil;
 import com.bluetoothle.util.BLELogUtil;
 

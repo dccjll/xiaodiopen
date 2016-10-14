@@ -1,4 +1,4 @@
-package com.bluetoothle.core;
+package com.bluetoothle;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;

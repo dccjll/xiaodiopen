@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 
-import com.bluetoothle.core.BLEConstants;
+import com.bluetoothle.BLEConstants;
 import com.bluetoothle.util.BLELogUtil;
 import com.bluetoothle.util.BLEStringUtil;
 

@@ -9,8 +9,8 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 
-import com.bluetoothle.core.BLEConstants;
-import com.bluetoothle.core.BluetoothLeService;
+import com.bluetoothle.BLEConstants;
+import com.bluetoothle.BluetoothLeService;
 import com.bluetoothle.util.BLELogUtil;
 
 /**
