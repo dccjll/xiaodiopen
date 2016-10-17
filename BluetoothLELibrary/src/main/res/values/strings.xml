@@ -1,3 +1,28 @@
 <resources>
     <string name="app_name">BluetoothLELibrary</string>
+
+    <!--XIAODIBLEProtocolFactory-->
+    <string name="ble_data_type_error">bleDataType=%s</string>
+    <string name="cmd_param_error">%s,参数错误,参数对象为空</string>
+    <string name="cmd_channel_length_error">%s,参数错误,信道密码长度不正确</string>
+    <string name="cmd_new_channel_length_error">%s,参数错误,新信道密码长度不正确</string>
+    <string name="mobile_init_error">手机账号初始化失败</string>
+    <string name="param_error">%s,参数错误</string>
+    <string name="finger_id_empty">指纹ID为空</string>
+    <string name="finger_id_length">指纹ID字节长度不是%d位</string>
+    <string name="finger_id_error">指纹ID异常</string>
+    <string name="love_alarm_param_error">亲情/紧急参数不正确</string>
+    <string name="timeset_param_error">时效状态参数不正确</string>
+    <string name="timeset_rang_param_error">时效范围参数不正确</string>
+    <string name="lockname_error">锁名称参数不正确,为空或者长度超过了%d</string>
+    <string name="close_open_pwd_error">关闭开锁密码参数不正确</string>
+    <string name="open_pwd_param_error">开锁密码参数不正确</string>
+    <string name="manage_pwd_length_error">管理密码长度不正确</string>
+    <string name="alarm_pwd_length_error">报警密码长度不正确</string>
+    <string name="param_check_error">%s,参数检查失败</string>
+    <string name="data_length_check_error">数据长度验证失败</string>
+    <string name="secretkey_length_check_error">秘钥长度验证失败</string>
+    <string name="wifi_length_error">wifi %s长度不正确</string>
+    <string name="open_lock_record_data_length_error">开锁记录开关数据长度不正确</string>
+    <string name="unknown_order">,无法识别的指令</string>
 </resources>

@@ -1,6 +1,8 @@
 package com.bluetoothle.util;
 
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by dessmann on 16/7/27.
@@ -68,5 +70,64 @@ public class BLEByteUtil {
             }
         }
         return true;
+    }
+
+    /**
+     * 正则通用验证
+     * @param res   验证字符串
+     * @param regex 验证规则
+     * @return
+     */
+    public static boolean regexCheck(String res, String regex){
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(res);
+        return matcher.matches();
+    }
+
+    /**
+     * 将以空格分割的每两位相连的指定进制字(10进制或16进制)符串转换成字节数组
+     * @param src   源字符串
+     * @param radix 进制数
+     * @return
+     */
+    public static byte[] radixStringToBytes(String src, int radix){
+        if (src == null || src.length() <= 0) {
+            return null;
+        }
+        String[] srcarray;
+        try {
+            srcarray = src.split(" ");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        if(srcarray == null || srcarray.length == 0){
+            return null;
+        }
+        for(int i=0;i<srcarray.length;i++){
+            if(srcarray[i].length() > 2){
+                return null;
+            }
+            if(srcarray[i].length() == 1){
+                srcarray[i] = 0 + srcarray[i];
+            }
+            if(radix == 16 && !regexCheck(srcarray[i], "^[0-9a-fA-F]{2}$")){
+                return null;
+            }else if(radix == 10 && !regexCheck(srcarray[i], "^[0-9]{2}$")){
+                return null;
+            }
+        }
+        byte[] srcbytes = new byte[srcarray.length];
+        for(int i=0;i<srcarray.length;i++){
+            if(radix == 16){
+                srcbytes[i] = (byte) Integer.parseInt(srcarray[i], 16);
+            }else if(radix == 10){
+                srcbytes[i] = (byte) Integer.parseInt(srcarray[i]);
+            }else{
+                BLELogUtil.i("hexStringToBytes,radix error");
+                return null;
+            }
+        }
+        return srcbytes;
     }
 }
