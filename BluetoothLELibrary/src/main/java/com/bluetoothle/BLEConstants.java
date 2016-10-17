@@ -52,4 +52,16 @@ public class BLEConstants {
         public final static Integer ConnectError_ConnectFail = 0x4005;//连接失败
     }
 
+    /**
+     * 找服务异常
+     */
+    public final static class FindServiceError{
+        public final static Integer FindServiceError_BluetoothGattError = 0x5001;
+        public final static Integer FindServiceError_TargetServiceUUIDError = 0x5002;
+        public final static Integer FindServiceError_FindServiceFail = 0x5003;
+        public final static Integer FindServiceError_Disconnect = 0x5004;
+        public final static Integer FindServiceError_ReceivedExceptionStackCodeError = 0x5005;
+        public final static Integer FindServiceError_ServiceListNotCantainsTargetService = 0x5006;
+    }
+
 }

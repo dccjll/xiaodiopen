@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothProfile;
 
 import com.bluetoothle.connect.BLEConnect;
+import com.bluetoothle.findService.BLEFindService;
 import com.bluetoothle.util.BLELogUtil;
 
 import java.util.UUID;
@@ -20,6 +21,7 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
 
     private final static String TAG = BluetoothLeGattCallback.class.getSimpleName();
     private BLEConnect.OnGattConnectListener onGattConnectListener;
+    private BLEFindService.OnGattBLEFindServiceListener onGattBLEFindServiceListener;
     private UUID writeUUID;
     private UUID changeUUID;
 
@@ -29,6 +31,14 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
 
     public void unregisterOnGattConnectListener() {
         this.onGattConnectListener = null;
+    }
+
+    public void registerOnGattBLEFindServiceListener(BLEFindService.OnGattBLEFindServiceListener onGattBLEFindServiceListener) {
+        this.onGattBLEFindServiceListener = onGattBLEFindServiceListener;
+    }
+
+    public void unregisterOnGattBLEFindServiceListener() {
+        this.onGattBLEFindServiceListener = null;
     }
 
     public void setWriteUUID(UUID writeUUID) {
@@ -56,18 +66,32 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
                 if (onGattConnectListener != null) {
                     onGattConnectListener.onConnectFail(BLEConstants.ConnectError.ConnectError_BLEConextError);
                 }
+                if (onGattBLEFindServiceListener != null) {
+                    onGattBLEFindServiceListener.onFindServiceFail(BLEConstants.FindServiceError.FindServiceError_Disconnect);
+                }
             }
         }else{
             BLELogUtil.e(TAG, "收到蓝牙底层协议栈异常消息,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
             if (onGattConnectListener != null) {
                 onGattConnectListener.onConnectFail(BLEConstants.ConnectError.ConnectError_ReceivedExceptionStackCodeError);
             }
+            if (onGattBLEFindServiceListener != null) {
+                onGattBLEFindServiceListener.onFindServiceFail(BLEConstants.FindServiceError.FindServiceError_ReceivedExceptionStackCodeError);
+            }
         }
     }
 
     @Override
     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-        super.onServicesDiscovered(gatt, status);
+        if(status == BluetoothGatt.GATT_SUCCESS){
+            if(onGattBLEFindServiceListener != null){
+                onGattBLEFindServiceListener.onFindServiceSuccess(gatt.getServices());
+            }
+        }else{
+            if (onGattBLEFindServiceListener != null) {
+                onGattBLEFindServiceListener.onFindServiceFail(BLEConstants.FindServiceError.FindServiceError_FindServiceFail);
+            }
+        }
     }
 
     @Override

@@ -116,17 +116,17 @@ public class BLEConnect {
                     @Override
                     public void onConnectFail(Integer errorCode) {
                         BLELogUtil.e(TAG, "第" + currentConnectNum + "次连接失败");
-                        reconnect();
+                        reTry();
                     }
                 }
         );
-        reconnect();
+        reTry();
     }
 
     /**
-     * 连接管理
+     * 连接重试机制
      */
-    private void reconnect(){
+    private void reTry(){
         new Thread(
                 new Runnable() {
                     @Override
