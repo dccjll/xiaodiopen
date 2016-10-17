@@ -10,6 +10,7 @@ import com.bluetoothle.connect.BLEConnect;
 import com.bluetoothle.findService.BLEFindService;
 import com.bluetoothle.openNotification.BLEOpenNotification;
 import com.bluetoothle.util.BLELogUtil;
+import com.bluetoothle.writeData.BLEWriteData;
 
 import java.util.UUID;
 
@@ -24,38 +25,37 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
     private BLEConnect.OnGattConnectListener onGattConnectListener;
     private BLEFindService.OnGattBLEFindServiceListener onGattBLEFindServiceListener;
     private BLEOpenNotification.OnGattBLEOpenNotificationListener onGattBLEOpenNotificationListener;
+    private BLEWriteData.OnGattBLEWriteDataListener onGattBLEWriteDataListener;
     private UUID uuidCharacteristicWrite;
     private UUID uuidCharacteristicChange;
     private UUID uuidDescriptorWrite;
 
     public void registerOnGattConnectListener(BLEConnect.OnGattConnectListener onGattConnectListener) {
         this.onGattConnectListener = onGattConnectListener;
-        onGattBLEFindServiceListener = null;
-        onGattBLEOpenNotificationListener = null;
-    }
-
-    public void unregisterOnGattConnectListener() {
-        this.onGattConnectListener = null;
+        this.onGattBLEFindServiceListener = null;
+        this.onGattBLEOpenNotificationListener = null;
+        this.onGattBLEWriteDataListener = null;
     }
 
     public void registerOnGattBLEFindServiceListener(BLEFindService.OnGattBLEFindServiceListener onGattBLEFindServiceListener) {
-        onGattConnectListener = null;
+        this.onGattConnectListener = null;
         this.onGattBLEFindServiceListener = onGattBLEFindServiceListener;
-        onGattBLEOpenNotificationListener = null;
-    }
-
-    public void unregisterOnGattBLEFindServiceListener() {
-        this.onGattBLEFindServiceListener = null;
+        this.onGattBLEOpenNotificationListener = null;
+        this.onGattBLEWriteDataListener = null;
     }
 
     public void registerOnGattBLEOpenNotificationListener(BLEOpenNotification.OnGattBLEOpenNotificationListener onGattBLEOpenNotificationListener) {
-        onGattConnectListener = null;
-        onGattBLEFindServiceListener = null;
+        this.onGattConnectListener = null;
+        this.onGattBLEFindServiceListener = null;
         this.onGattBLEOpenNotificationListener = onGattBLEOpenNotificationListener;
+        this.onGattBLEWriteDataListener = null;
     }
 
-    public void unregisterOnGattBLEOpenNotificationListener() {
+    public void registerOnGattBLEWriteDataListener(BLEWriteData.OnGattBLEWriteDataListener onGattBLEWriteDataListener) {
+        this.onGattConnectListener = null;
+        this.onGattBLEFindServiceListener = null;
         this.onGattBLEOpenNotificationListener = null;
+        this.onGattBLEWriteDataListener = onGattBLEWriteDataListener;
     }
 
     public void setUuidCharacteristicWrite(UUID uuidCharacteristicWrite) {
@@ -134,12 +134,22 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
 
     @Override
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-        super.onCharacteristicWrite(gatt, characteristic, status);
+        if(status != BluetoothGatt.GATT_SUCCESS || !characteristic.getUuid().toString().equalsIgnoreCase(uuidCharacteristicWrite.toString())){
+            if(onGattBLEWriteDataListener != null){
+                onGattBLEWriteDataListener.onWriteDataFail(BLEConstants.WriteDataError.WriteDataError_WriteDataFail);
+            }
+            return;
+        }
+        if(onGattBLEWriteDataListener != null){
+            onGattBLEWriteDataListener.onWriteDataSuccess(gatt, characteristic, status);
+        }
     }
 
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-        super.onCharacteristicChanged(gatt, characteristic);
+        if(characteristic.getUuid().toString().equalsIgnoreCase(uuidCharacteristicChange.toString())){//接收到数据
+
+        }
     }
 
     @Override
@@ -150,7 +160,7 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
     @Override
     public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
         BLELogUtil.e(TAG, "onDescriptorWrite,gatt=" + gatt + ",descriptor=" + descriptor + ",status=" + status);
-        if(status != BluetoothGatt.GATT_SUCCESS || descriptor.getUuid().toString().equalsIgnoreCase(uuidDescriptorWrite.toString())){
+        if(status != BluetoothGatt.GATT_SUCCESS || !descriptor.getUuid().toString().equalsIgnoreCase(uuidDescriptorWrite.toString())){
             if (onGattBLEOpenNotificationListener != null) {
                 onGattBLEOpenNotificationListener.onOpenNotificationFail(BLEConstants.OpenNotificationError.OpenNotificationError_OpenFail);
             }

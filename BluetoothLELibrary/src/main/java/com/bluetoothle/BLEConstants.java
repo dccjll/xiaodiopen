@@ -74,4 +74,16 @@ public class BLEConstants {
         public final static Integer OpenNotificationError_WriteDescriptor = 0x6008;
         public final static Integer OpenNotificationError_OpenFail = 0x6009;
     }
+
+    /**
+     * 写数据异常
+     */
+    public final static class WriteDataError{
+        public final static Integer WriteDataError_BluetoothGattError = 0x7001;
+        public final static Integer WriteDataError_WriteDataFail = 0x7002;
+        public final static Integer WriteDataError_ServiceUUIDsError = 0x7003;
+        public final static Integer WriteDataError_CannotFindWriteDataServiceUUID = 0x7004;
+        public final static Integer WriteDataError_CannotFindWriteDataCharacteristicUUID = 0x7005;
+        public final static Integer WriteDataError_CheckDataError = 0x7006;
+    }
 }
