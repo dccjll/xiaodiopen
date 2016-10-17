@@ -17,8 +17,8 @@ import com.bluetoothle.util.BLELogUtil;
 public class BluetoothLeService extends Service {
 
 	private final static String TAG = BluetoothLeService.class.getSimpleName();
-
 	public final static String ACTION_BLUETOOTHLESERVICE_BOOT_COMPLETE = "com.bluetoothle.ACTION_BLUETOOTHLESERVICE_BOOT_COMPLETE";
+	public static BluetoothLeService bluetoothLeService;
 
 	/**
 	 * 活跃在服务中的广播接收器
@@ -57,6 +57,7 @@ public class BluetoothLeService extends Service {
 	public void onCreate() {
 		super.onCreate();
 
+		bluetoothLeService = this;
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
 		registerReceiver(bluetoothLeBroadcastReceiver, filter);

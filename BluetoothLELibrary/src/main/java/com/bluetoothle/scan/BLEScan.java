@@ -23,8 +23,8 @@ public class BLEScan {
     private Integer timeoutScanBLE = 5*1000;//扫描蓝牙默认超时时间
     private String targetDeviceAddress;//目前设备地址
     private List<String> targetDeviceAddressList;//目标设备地址列表
-    private UUID[] serviceUUIDs;
-    private OnBLEScanListener onBLEScanListener;
+    private UUID[] serviceUUIDs;//指定uuid搜索
+    private OnBLEScanListener onBLEScanListener;//扫描监听器
 
     private List<BluetoothDevice> foundDeviceList = new ArrayList<>();
     private Boolean isScaning = false;
