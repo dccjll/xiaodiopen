@@ -48,8 +48,6 @@ public class BLEConstants {
         public final static Integer ConnectError_ReceivedExceptionStackCodeError = 0x4001;//收到底层协议栈异常信息
         public final static Integer ConnectError_BLEConextError = 0x4002;//蓝牙连接上下文异常
         public final static Integer ConnectError_BLEDeviceOrBluetoothAdapterOrTargetMacAddressError = 0x4003;//蓝牙设备或目标设备mac地址异常
-        public final static Integer ConnectError_MaxConnectNumError = 0x4004;//最大连接重试次数异常
-        public final static Integer ConnectError_ConnectFail = 0x4005;//连接失败
     }
 
     /**
@@ -57,11 +55,23 @@ public class BLEConstants {
      */
     public final static class FindServiceError{
         public final static Integer FindServiceError_BluetoothGattError = 0x5001;
-        public final static Integer FindServiceError_TargetServiceUUIDError = 0x5002;
-        public final static Integer FindServiceError_FindServiceFail = 0x5003;
-        public final static Integer FindServiceError_Disconnect = 0x5004;
-        public final static Integer FindServiceError_ReceivedExceptionStackCodeError = 0x5005;
-        public final static Integer FindServiceError_ServiceListNotCantainsTargetService = 0x5006;
+        public final static Integer FindServiceError_FindServiceFail = 0x5002;
+        public final static Integer FindServiceError_Disconnect = 0x5003;
+        public final static Integer FindServiceError_ReceivedExceptionStackCodeError = 0x5004;
     }
 
+    /**
+     * 打开通知异常
+     */
+    public final static class OpenNotificationError{
+        public final static Integer OpenNotificationError_BluetoothGattError = 0x6001;
+        public final static Integer OpenNotificationError_GattServicesError = 0x6002;
+        public final static Integer OpenNotificationError_ServiceUUIDsError = 0x6003;
+        public final static Integer OpenNotificationError_CannotFindNotificationServiceUUID = 0x6004;
+        public final static Integer OpenNotificationError_CannotFindNotificationCharacteristicUUID = 0x6005;
+        public final static Integer OpenNotificationError_CannotFindNotificationDescriptorUUID = 0x6006;
+        public final static Integer OpenNotificationError_SetCharacteristicNotification = 0x6007;
+        public final static Integer OpenNotificationError_WriteDescriptor = 0x6008;
+        public final static Integer OpenNotificationError_OpenFail = 0x6009;
+    }
 }

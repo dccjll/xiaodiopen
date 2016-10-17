@@ -3,6 +3,7 @@ package com.bluetoothle.scan;
 import android.bluetooth.BluetoothDevice;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by dessmann on 16/10/14.
@@ -10,7 +11,7 @@ import java.util.List;
  */
 
 public interface OnBLEScanListener {
-    void foundDevice(BluetoothDevice bluetoothDevice);
-    void scanFinish(List<BluetoothDevice> bluetoothDeviceList);
+    void foundDevice(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord);
+    void scanFinish(List<Map<String, Object>> bluetoothDeviceList);
     void scanFail(Integer errorCode);
 }

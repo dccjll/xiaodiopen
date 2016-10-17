@@ -9,7 +9,9 @@ import com.bluetoothle.util.BLELogUtil;
 import com.bluetoothle.util.BLEStringUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -26,7 +28,7 @@ public class BLEScan {
     private UUID[] serviceUUIDs;//指定uuid搜索
     private OnBLEScanListener onBLEScanListener;//扫描监听器
 
-    private List<BluetoothDevice> foundDeviceList = new ArrayList<>();
+    private List<Map<String, Object>> foundDeviceList = new ArrayList<>();
     private Boolean isScaning = false;
     private Handler scanHandler;
     private Runnable scanRunnable;
@@ -54,23 +56,34 @@ public class BLEScan {
             @Override
             public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
                 synchronized (BLEScan.this) {
-                    if(!foundDeviceList.contains(device)){
-                        foundDeviceList.add(device);
+                    boolean contains = false;
+                    for(Map<String, Object> entry : foundDeviceList){
+                        if(((BluetoothDevice)entry.get("device")).getAddress().equalsIgnoreCase(device.getAddress())){
+                            contains = true;
+                            break;
+                        }
+                    }
+                    if(!contains){
+                        Map<String, Object> deviceAttrMap = new HashMap<>();
+                        deviceAttrMap.put("device", device);
+                        deviceAttrMap.put("rssi", rssi);
+                        deviceAttrMap.put("scanRecord", scanRecord);
+                        foundDeviceList.add(deviceAttrMap);
                     }
                     if(!BLEStringUtil.isEmpty(targetDeviceAddress)){
                         if(device.getAddress().equalsIgnoreCase(targetDeviceAddress)){
                             scanControl(false);
-                            onBLEScanListener.foundDevice(device);
+                            onBLEScanListener.foundDevice(device, rssi, scanRecord);
                             return;
                         }
                     }else if(targetDeviceAddressList != null && targetDeviceAddressList.size() > 0){
                         if(targetDeviceAddressList.contains(device.getAddress())){
                             scanControl(false);
-                            onBLEScanListener.foundDevice(device);
+                            onBLEScanListener.foundDevice(device, rssi, scanRecord);
                             return;
                         }
                     }else{
-                        onBLEScanListener.foundDevice(device);
+                        onBLEScanListener.foundDevice(device, rssi, scanRecord);
                         return;
                     }
                 }
