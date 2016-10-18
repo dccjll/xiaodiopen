@@ -23,7 +23,7 @@ public class BLEOpenNotification {
     private List<BluetoothGattService> bluetoothGattServices;
     private BluetoothGatt bluetoothGatt;
     private UUID[] uuids;
-    private OnBLEOpenNotification onBLEOpenNotification;
+    private OnBLEOpenNotificationListener onBLEOpenNotification;
 
     /**
      * gatt服务器打开通知监听器
@@ -40,7 +40,7 @@ public class BLEOpenNotification {
      * @param uuids 包含服务、特征与描述对象的3个UUID(按顺序 uuids[0]为服务UUID, uuids[1]为特征UUID, uuids[2]为描述UUID)
      * @param onBLEOpenNotification 打开通知监听器
      */
-    public BLEOpenNotification(List<BluetoothGattService> bluetoothGattServices, BluetoothGatt bluetoothGatt, UUID[] uuids, OnBLEOpenNotification onBLEOpenNotification) {
+    public BLEOpenNotification(List<BluetoothGattService> bluetoothGattServices, BluetoothGatt bluetoothGatt, UUID[] uuids, OnBLEOpenNotificationListener onBLEOpenNotification) {
         this.bluetoothGattServices = bluetoothGattServices;
         this.bluetoothGatt = bluetoothGatt;
         this.uuids = uuids;

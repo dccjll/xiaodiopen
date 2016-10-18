@@ -1,7 +1,10 @@
-package com.bluetoothle.factory.xiaodilock;
+package com.bluetoothle.factory.xiaodilock.util;
 
 import com.bluetoothle.util.BLEByteUtil;
 
+/**
+ * 小嘀蓝牙校验工具
+ */
 public class XIAODIBLECRCUtil {
 
     public static byte[] getCRCByteData(byte[] bt) {

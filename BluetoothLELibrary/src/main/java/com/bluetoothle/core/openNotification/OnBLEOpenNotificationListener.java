@@ -8,7 +8,7 @@ import android.bluetooth.BluetoothGattDescriptor;
  * 打开通知
  */
 
-public interface OnBLEOpenNotification {
+public interface OnBLEOpenNotificationListener {
     void onOpenNotificationSuccess(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status);
     void onOpenNotificationFail(Integer errorCode);
 }

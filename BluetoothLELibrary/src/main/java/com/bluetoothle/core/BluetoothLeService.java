@@ -71,6 +71,13 @@ public class BluetoothLeService extends Service {
 		sendBroadcast(new Intent(ACTION_BLUETOOTHLESERVICE_BOOT_COMPLETE));//发送广播,告诉上层本服务已经完全启动
 	}
 
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		bluetoothLeService = null;
+		unregisterReceiver(bluetoothLeBroadcastReceiver);
+		BLELogUtil.d(TAG, "后台蓝牙服务器已关闭,当前服务主线程为====" + Thread.currentThread());
+	}
 
 	@Override
 	public IBinder onBind(Intent intent) {

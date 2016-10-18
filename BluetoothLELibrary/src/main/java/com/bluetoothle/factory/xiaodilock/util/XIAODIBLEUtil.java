@@ -1,8 +1,7 @@
-package com.bluetoothle.factory.xiaodilock;
+package com.bluetoothle.factory.xiaodilock.util;
 
 
-import com.dsm.dsmodule.util.LogUtil;
-import com.dsm.dsmodule.util.StringUtil;
+import com.bluetoothle.util.BLEStringUtil;
 
 /**
  * 小滴管家蓝牙工具类
@@ -36,12 +35,10 @@ public class XIAODIBLEUtil {
 	 * @return
      */
 	public static boolean checkMobileAccount(String mobileaccount){
-		if(StringUtil.isEmpty(mobileaccount)){
-			LogUtil.d("手机账号为空或空字符串或null(ignorecase)");
+		if(BLEStringUtil.isEmpty(mobileaccount)){
 			return false;
 		}
 		if(mobileaccount.length() <= 0 || mobileaccount.length() > 12){
-			LogUtil.d("手机账号参数长度不符合1-11位");
 			return false;
 		}
 		return true;
@@ -57,7 +54,6 @@ public class XIAODIBLEUtil {
 			return false;
 		}
 		if(openlocktype[0] != 0x01 && openlocktype[0] != 0x02 && openlocktype[0] != 0x03 && openlocktype[0] != 0x04 && openlocktype[0] != 0x05 && openlocktype[0] != 0x06 && openlocktype[0] != 0x07){
-			LogUtil.d("开锁方式参数错误");
 			return false;
 		}
 		return true;
@@ -73,7 +69,6 @@ public class XIAODIBLEUtil {
 			return false;
 		}
 		if(lovealarmflag[0] != 0x00 && lovealarmflag[0] != (byte)0xF0 && lovealarmflag[0] != (byte)0x0F && lovealarmflag[0] != (byte)0xFF){
-			LogUtil.d("亲情/紧急标志参数错误");
 			return false;
 		}
 		return true;
@@ -89,7 +84,6 @@ public class XIAODIBLEUtil {
 			return false;
 		}
 		if(timestatus[0] != (byte)0xF0 && timestatus[0] != 0x00){
-			LogUtil.d("时效功能开关状态参数错误");
 			return false;
 		}
 		return true;

@@ -22,10 +22,10 @@ import java.util.UUID;
 public class BLEScan {
 
     private BluetoothAdapter bluetoothAdapter;//本地蓝牙适配器
-    private Integer timeoutScanBLE = 5*1000;//扫描蓝牙默认超时时间
     private String targetDeviceAddress;//目前设备地址
     private List<String> targetDeviceAddressList;//目标设备地址列表
     private UUID[] serviceUUIDs;//指定uuid搜索
+    private Integer timeoutScanBLE = 5*1000;//扫描蓝牙默认超时时间
     private OnBLEScanListener onBLEScanListener;//扫描监听器
 
     private List<Map<String, Object>> foundDeviceList = new ArrayList<>();
@@ -36,19 +36,34 @@ public class BLEScan {
     private BluetoothAdapter.LeScanCallback leScanCallback;
 
     /**
-     * 扫描周围的设备,不确定mac地址,扫描到超时为止,逐个返回
+     * 扫描周围的设备
      * @param bluetoothAdapter  蓝牙适配器
-     * @param timeoutScanBLE    扫描蓝牙默认超时时间
+     * @param targetDeviceAddress   目标设备mac地址
+     * @param targetDeviceAddressList   目标设备mac地址列表
+     * @param serviceUUIDs    指定uuid搜索
+     * @param timeoutScanBLE    扫描蓝牙超时时间
      * @param onBLEScanListener 扫描监听器
      */
-    public BLEScan(BluetoothAdapter bluetoothAdapter, Integer timeoutScanBLE, final OnBLEScanListener onBLEScanListener) {
-        if(onBLEScanListener == null){
-            BLELogUtil.e("没有设置扫描回调接口");
-            return;
-        }
+    public BLEScan(BluetoothAdapter bluetoothAdapter, final String targetDeviceAddress, final List<String> targetDeviceAddressList, final UUID[] serviceUUIDs, Integer timeoutScanBLE, final OnBLEScanListener onBLEScanListener) {
         this.bluetoothAdapter = bluetoothAdapter;
         if(timeoutScanBLE != null && timeoutScanBLE > 0){
             this.timeoutScanBLE = timeoutScanBLE;
+        }
+        if(BLEStringUtil.isNotEmpty(targetDeviceAddress) && targetDeviceAddress.split(":").length == 6){
+            this.targetDeviceAddress = targetDeviceAddress;
+        }
+        boolean targetDeviceAddressListCheck = true;
+        for(String mac : targetDeviceAddressList){
+            if(mac == null || mac.split(":").length != 6){
+                targetDeviceAddressListCheck = false;
+                break;
+            }
+        }
+        if(targetDeviceAddressListCheck){
+            this.targetDeviceAddressList = targetDeviceAddressList;
+        }
+        if(serviceUUIDs != null && serviceUUIDs.length >= 0){
+            this.serviceUUIDs = serviceUUIDs;
         }
         this.onBLEScanListener = onBLEScanListener;
 
@@ -74,17 +89,14 @@ public class BLEScan {
                         if(device.getAddress().equalsIgnoreCase(targetDeviceAddress)){
                             scanControl(false);
                             onBLEScanListener.foundDevice(device, rssi, scanRecord);
-                            return;
                         }
-                    }else if(targetDeviceAddressList != null && targetDeviceAddressList.size() > 0){
+                    }else if(targetDeviceAddressList.size() > 0){
                         if(targetDeviceAddressList.contains(device.getAddress())){
                             scanControl(false);
                             onBLEScanListener.foundDevice(device, rssi, scanRecord);
-                            return;
                         }
                     }else{
                         onBLEScanListener.foundDevice(device, rssi, scanRecord);
-                        return;
                     }
                 }
             }
@@ -95,7 +107,7 @@ public class BLEScan {
             @Override
             public void run() {
                 scanControl(false);
-                if(BLEStringUtil.isEmpty(targetDeviceAddress) && (targetDeviceAddressList == null || targetDeviceAddressList.size() == 0)){
+                if(BLEStringUtil.isNotEmpty(targetDeviceAddress) || (targetDeviceAddressList.size() > 0)){
                     onBLEScanListener.scanFail(BLEConstants.ScanError.ScanError_NotFoundDevice);
                     return;
                 }
@@ -105,113 +117,17 @@ public class BLEScan {
     }
 
     /**
-     * 扫描周围的设备,不确定mac地址,扫描到超时为止,逐个返回,指定UUID
-     * @param bluetoothAdapter  蓝牙适配器
-     * @param timeoutScanBLE    扫描蓝牙默认超时时间
-     * @param serviceUUIDs      指定uuid搜索
-     * @param onBLEScanListener 扫描监听器
-     */
-    public BLEScan(BluetoothAdapter bluetoothAdapter, Integer timeoutScanBLE, UUID[] serviceUUIDs, OnBLEScanListener onBLEScanListener) {
-        this(bluetoothAdapter, timeoutScanBLE, onBLEScanListener);
-        if(serviceUUIDs == null || serviceUUIDs.length == 0){
-            onBLEScanListener.scanFail(BLEConstants.ScanError.ScanError_errorServiceUUIDs);
-            return;
-        }
-        this.serviceUUIDs = serviceUUIDs;
-    }
-
-    /**
-     * 扫描周围的设备,确定mac地址,扫描到即停止扫描,立即返回
-     * @param bluetoothAdapter  蓝牙适配器
-     * @param timeoutScanBLE    扫描蓝牙默认超时时间
-     * @param targetDeviceAddress   mac地址
-     * @param onBLEScanListener  扫描监听器
-     */
-    public BLEScan(BluetoothAdapter bluetoothAdapter, Integer timeoutScanBLE, String targetDeviceAddress, OnBLEScanListener onBLEScanListener){
-        this(bluetoothAdapter, timeoutScanBLE, onBLEScanListener);
-        if(targetDeviceAddress == null || targetDeviceAddress.split(":").length != 6){
-            onBLEScanListener.scanFail(BLEConstants.ScanError.ScanError_errorMacAddress);
-            return;
-        }
-        this.targetDeviceAddress = targetDeviceAddress;
-    }
-
-    /**
-     * 扫描周围的设备,确定mac地址,扫描到即停止扫描,立即返回,指定UUID
-     * @param bluetoothAdapter  蓝牙适配器
-     * @param timeoutScanBLE    扫描蓝牙默认超时时间
-     * @param targetDeviceAddress   mac地址
-     * @param serviceUUIDs  指定uuid搜索
-     * @param onBLEScanListener  扫描监听器
-     */
-    public BLEScan(BluetoothAdapter bluetoothAdapter, Integer timeoutScanBLE, String targetDeviceAddress, UUID[] serviceUUIDs, OnBLEScanListener onBLEScanListener){
-        this(bluetoothAdapter, timeoutScanBLE, onBLEScanListener);
-        if(targetDeviceAddress == null || targetDeviceAddress.split(":").length != 6){
-            onBLEScanListener.scanFail(BLEConstants.ScanError.ScanError_errorMacAddress);
-            return;
-        }
-        if(serviceUUIDs == null || serviceUUIDs.length == 0){
-            onBLEScanListener.scanFail(BLEConstants.ScanError.ScanError_errorServiceUUIDs);
-            return;
-        }
-        this.targetDeviceAddress = targetDeviceAddress;
-        this.serviceUUIDs = serviceUUIDs;
-    }
-
-    /**
-     * 扫描周围的设备,确定mac地址列表,扫描到即停止扫描,立即返回
-     * @param bluetoothAdapter  蓝牙适配器
-     * @param timeoutScanBLE    扫描蓝牙默认超时时间
-     * @param targetDeviceAddressList mac地址列表
-     * @param onBLEScanListener 扫描监听器
-     */
-    public BLEScan(BluetoothAdapter bluetoothAdapter, Integer timeoutScanBLE, List<String> targetDeviceAddressList, OnBLEScanListener onBLEScanListener){
-        this(bluetoothAdapter, timeoutScanBLE, onBLEScanListener);
-        if(targetDeviceAddressList == null || targetDeviceAddressList.size() == 0){
-            onBLEScanListener.scanFail(BLEConstants.ScanError.ScanError_errorMacAddressList);
-            return;
-        }
-        for(String mac : targetDeviceAddressList){
-            if(mac == null || mac.split(":").length != 6){
-                onBLEScanListener.scanFail(BLEConstants.ScanError.ScanError_errorMacAddressList);
-                return;
-            }
-        }
-        this.targetDeviceAddressList = targetDeviceAddressList;
-    }
-
-    /**
-     * 扫描周围的设备,确定mac地址列表,扫描到即停止扫描,立即返回
-     * @param bluetoothAdapter  蓝牙适配器
-     * @param timeoutScanBLE    扫描蓝牙默认超时时间
-     * @param targetDeviceAddressList mac地址列表
-     * @param serviceUUIDs  指定uuid搜索
-     * @param onBLEScanListener 扫描监听器
-     */
-    public BLEScan(BluetoothAdapter bluetoothAdapter, Integer timeoutScanBLE, List<String> targetDeviceAddressList, UUID[] serviceUUIDs, OnBLEScanListener onBLEScanListener){
-        this(bluetoothAdapter, timeoutScanBLE, onBLEScanListener);
-        if(targetDeviceAddressList == null || targetDeviceAddressList.size() == 0){
-            onBLEScanListener.scanFail(BLEConstants.ScanError.ScanError_errorMacAddressList);
-            return;
-        }
-        for(String mac : targetDeviceAddressList){
-            if(mac == null || mac.split(":").length != 6){
-                onBLEScanListener.scanFail(BLEConstants.ScanError.ScanError_errorMacAddressList);
-                return;
-            }
-        }
-        if(serviceUUIDs == null || serviceUUIDs.length == 0){
-            onBLEScanListener.scanFail(BLEConstants.ScanError.ScanError_errorServiceUUIDs);
-            return;
-        }
-        this.targetDeviceAddressList = targetDeviceAddressList;
-        this.serviceUUIDs = serviceUUIDs;
-    }
-
-    /**
      * 扫描设备
      */
     public void scan(){
+        if(onBLEScanListener == null){
+            BLELogUtil.e("没有设置扫描回调接口");
+            return;
+        }
+        if(bluetoothAdapter == null){
+            onBLEScanListener.scanFail(BLEConstants.ScanError.ScanError_errorBluetoothAdapter);
+            return;
+        }
         scanHandler.postDelayed(scanRunnable, timeoutScanBLE);
         foundDeviceList.clear();
         scanControl(true);

@@ -1,23 +1,20 @@
-package com.bluetoothle.factory.xiaodilock;
-
+package com.bluetoothle.factory.xiaodilock.send;
 
 /**
  * 数据中心集合
- * @author dessmann
- *
  */
-public class XIAODIDataSendCenter {
+public class XIAODIData {
 	private byte[] channelpwd;		//信道密码
 	private byte[] newchannelpwd;	//新信道密码
 	private byte[] mobileaccount;	//手机账号
 	private byte[] openlocktype;	//开锁方式
 	private byte[] time;			//时间
-	private String fingerpageid;	//指纹ID
+	private byte[] fingerpageid;	//指纹ID
 	private byte[] smartkeyid;		//智能钥匙ID
-	private String lockname;		//锁名称
-	private String openlockpwd;		//开锁密码
+	private byte[] lockname;		//锁名称
+	private byte[] openlockpwd;		//开锁密码
 	private byte[] closelockpwd;	//关闭开锁密码
-	private String managepwd;		//管理密码
+	private byte[] managepwd;		//管理密码
 	private byte[] lovealarmflag;	//亲情报警标志
 	private byte[] timestatus;		//时效状态
 	private byte[] timerange;		//时效范围
@@ -32,147 +29,147 @@ public class XIAODIDataSendCenter {
 	public byte[] getChannelpwd() {
 		return channelpwd;
 	}
-	public XIAODIDataSendCenter setChannelpwd(byte[] channelpwd) {
+	public XIAODIData setChannelpwd(byte[] channelpwd) {
 		this.channelpwd = channelpwd;
 		return this;
 	}
 	public byte[] getNewchannelpwd() {
 		return newchannelpwd;
 	}
-	public XIAODIDataSendCenter setNewchannelpwd(byte[] newchannelpwd) {
+	public XIAODIData setNewchannelpwd(byte[] newchannelpwd) {
 		this.newchannelpwd = newchannelpwd;
 		return this;
 	}
 	public byte[] getMobileaccount() {
 		return mobileaccount;
 	}
-	public XIAODIDataSendCenter setMobileaccount(byte[] mobileaccount) {
+	public XIAODIData setMobileaccount(byte[] mobileaccount) {
 		this.mobileaccount = mobileaccount;
 		return this;
 	}
 	public byte[] getOpenlocktype() {
 		return openlocktype;
 	}
-	public XIAODIDataSendCenter setOpenlocktype(byte[] openlocktype) {
+	public XIAODIData setOpenlocktype(byte[] openlocktype) {
 		this.openlocktype = openlocktype;
 		return this;
 	}
 	public byte[] getTime() {
 		return time;
 	}
-	public XIAODIDataSendCenter setTime(byte[] time) {
+	public XIAODIData setTime(byte[] time) {
 		this.time = time;
 		return this;
 	}
-	public String getFingerpageid() {
+	public byte[] getFingerpageid() {
 		return fingerpageid;
 	}
-	public XIAODIDataSendCenter setFingerpageid(String fingerpageid) {
+	public XIAODIData setFingerpageid(byte[] fingerpageid) {
 		this.fingerpageid = fingerpageid;
 		return this;
 	}
 	public byte[] getSmartkeyid() {
 		return smartkeyid;
 	}
-	public XIAODIDataSendCenter setSmartkeyid(byte[] smartkeyid) {
+	public XIAODIData setSmartkeyid(byte[] smartkeyid) {
 		this.smartkeyid = smartkeyid;
 		return this;
 	}
-	public String getLockname() {
+	public byte[] getLockname() {
 		return lockname;
 	}
-	public XIAODIDataSendCenter setLockname(String lockname) {
+	public XIAODIData setLockname(byte[] lockname) {
 		this.lockname = lockname;
 		return this;
 	}
-	public String getOpenlockpwd() {
+	public byte[] getOpenlockpwd() {
 		return openlockpwd;
 	}
-	public XIAODIDataSendCenter setOpenlockpwd(String openlockpwd) {
+	public XIAODIData setOpenlockpwd(byte[] openlockpwd) {
 		this.openlockpwd = openlockpwd;
 		return this;
 	}
-	public String getManagepwd() {
+	public byte[] getManagepwd() {
 		return managepwd;
 	}
-	public XIAODIDataSendCenter setManagepwd(String managepwd) {
+	public XIAODIData setManagepwd(byte[] managepwd) {
 		this.managepwd = managepwd;
 		return this;
 	}
 	public byte[] getLovealarmflag() {
 		return lovealarmflag;
 	}
-	public XIAODIDataSendCenter setLovealarmflag(byte[] lovealarmflag) {
+	public XIAODIData setLovealarmflag(byte[] lovealarmflag) {
 		this.lovealarmflag = lovealarmflag;
 		return this;
 	}
 	public byte[] getTimestatus() {
 		return timestatus;
 	}
-	public XIAODIDataSendCenter setTimestatus(byte[] timestatus) {
+	public XIAODIData setTimestatus(byte[] timestatus) {
 		this.timestatus = timestatus;
 		return this;
 	}
 	public byte[] getTimerange() {
 		return timerange;
 	}
-	public XIAODIDataSendCenter setTimerange(byte[] timerange) {
+	public XIAODIData setTimerange(byte[] timerange) {
 		this.timerange = timerange;
 		return this;
 	}
 	public byte[] getWifissid() {
 		return wifissid;
 	}
-	public XIAODIDataSendCenter setWifissid(byte[] wifissid) {
+	public XIAODIData setWifissid(byte[] wifissid) {
 		this.wifissid = wifissid;
 		return this;
 	}
 	public byte[] getWifipassword() {
 		return wifipassword;
 	}
-	public XIAODIDataSendCenter setWifipassword(byte[] wifipassword) {
+	public XIAODIData setWifipassword(byte[] wifipassword) {
 		this.wifipassword = wifipassword;
 		return this;
 	}
 	public byte[] getAlarmpwd() {
 		return alarmpwd;
 	}
-	public XIAODIDataSendCenter setAlarmpwd(byte[] alarmpwd) {
+	public XIAODIData setAlarmpwd(byte[] alarmpwd) {
 		this.alarmpwd = alarmpwd;
 		return this;
 	}
 	public byte[] getSecretkey() {
 		return secretkey;
 	}
-	public XIAODIDataSendCenter setSecretkey(byte[] secretkey) {
+	public XIAODIData setSecretkey(byte[] secretkey) {
 		this.secretkey = secretkey;
 		return this;
 	}
 	public byte[] getOpenlogtoggle() {
 		return openlogtoggle;
 	}
-	public XIAODIDataSendCenter setOpenlogtoggle(byte[] openlogtoggle) {
+	public XIAODIData setOpenlogtoggle(byte[] openlogtoggle) {
 		this.openlogtoggle = openlogtoggle;
 		return this;
 	}
 	public byte[] getCloselockpwd() {
 		return closelockpwd;
 	}
-	public XIAODIDataSendCenter setCloselockpwd(byte[] closelockpwd) {
+	public XIAODIData setCloselockpwd(byte[] closelockpwd) {
 		this.closelockpwd = closelockpwd;
 		return this;
 	}
 	public byte[] getSecretkey13() {
 		return secretkey13;
 	}
-	public XIAODIDataSendCenter setSecretkey13(byte[] secretkey13) {
+	public XIAODIData setSecretkey13(byte[] secretkey13) {
 		this.secretkey13 = secretkey13;
 		return this;
 	}
 	public byte[] getLockmac() {
 		return lockmac;
 	}
-	public XIAODIDataSendCenter setLockmac(byte[] lockmac) {
+	public XIAODIData setLockmac(byte[] lockmac) {
 		this.lockmac = lockmac;
 		return this;
 	}
@@ -181,7 +178,7 @@ public class XIAODIDataSendCenter {
 		return enbleWifi;
 	}
 
-	public XIAODIDataSendCenter setEnbleWifi(boolean enbleWifi) {
+	public XIAODIData setEnbleWifi(boolean enbleWifi) {
 		this.enbleWifi = enbleWifi;
 		return this;
 	}

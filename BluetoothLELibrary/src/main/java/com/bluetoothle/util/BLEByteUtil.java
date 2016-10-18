@@ -130,4 +130,53 @@ public class BLEByteUtil {
         }
         return srcbytes;
     }
+
+    /**
+     * 将一个小于8个字节的字节数组转换成长整形
+     * @param src   源字节数组
+     * @return
+     */
+    public static Long lessThan8bytesToLongInt(byte[] src){
+        Long target = 0L;
+        if(src == null || src.length <= 0 || src.length > 8){
+            return null;
+        }
+        for(int i=0; i < src.length; i++){
+            target += (src[i] << (src.length - i - 1) * 8);
+        }
+        return target;
+    }
+
+    /**
+     * 将一个小于4个字节的字节数组转换成整形
+     * @param src   源字节数组
+     * @return
+     */
+    public static int lessThan4bytesInt(byte[] src){
+        int target = 0;
+        if(src == null || src.length <= 0 || src.length > 4){
+            return -1;
+        }
+        for(int i=0; i < src.length; i++){
+            if(src[i] < 0){
+                int temp = Integer.parseInt(bytesToHexString(new byte[]{src[i]}).trim(), 16);
+                target += (temp << (src.length - i - 1) * 8);
+                continue;
+            }
+            target += (src[i] << (src.length - i - 1) * 8);
+        }
+        return target;
+    }
+
+    /**
+     * 将一个两位的十进制字面量数据转换成对应字面量的字节显示，即十进制的16转换为0x16
+     * @param tendesc   源数据
+     * @return
+     */
+    public static Byte parseTenDescToDescByte(String tendesc){
+        if(tendesc == null || tendesc.length() != 2){
+            return null;
+        }
+        return (byte) ((byte) ((Byte.parseByte(tendesc.substring(0, 1))) << 4) | (Byte.parseByte(tendesc.substring(1, 2))));
+    }
 }

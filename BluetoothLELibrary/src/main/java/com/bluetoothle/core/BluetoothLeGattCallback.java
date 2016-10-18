@@ -9,6 +9,8 @@ import android.bluetooth.BluetoothProfile;
 import com.bluetoothle.core.connect.BLEConnect;
 import com.bluetoothle.core.findService.BLEFindService;
 import com.bluetoothle.core.openNotification.BLEOpenNotification;
+import com.bluetoothle.core.response.OnBLEResponseListener;
+import com.bluetoothle.util.BLEByteUtil;
 import com.bluetoothle.util.BLELogUtil;
 import com.bluetoothle.core.writeData.BLEWriteData;
 
@@ -26,6 +28,7 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
     private BLEFindService.OnGattBLEFindServiceListener onGattBLEFindServiceListener;
     private BLEOpenNotification.OnGattBLEOpenNotificationListener onGattBLEOpenNotificationListener;
     private BLEWriteData.OnGattBLEWriteDataListener onGattBLEWriteDataListener;
+    private OnBLEResponseListener onBLEResponseListener;
     private UUID uuidCharacteristicWrite;
     private UUID uuidCharacteristicChange;
     private UUID uuidDescriptorWrite;
@@ -147,8 +150,11 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
 
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+        BLELogUtil.e(TAG, "onCharacteristicChanged,gatt=" + gatt + ",characteristic=" + characteristic + ",receivedData=" + BLEByteUtil.bytesToHexString(characteristic.getValue()));
         if(characteristic.getUuid().toString().equalsIgnoreCase(uuidCharacteristicChange.toString())){//接收到数据
-
+            if(onBLEResponseListener != null){
+                onBLEResponseListener.receiveData(gatt, characteristic);
+            }
         }
     }
 

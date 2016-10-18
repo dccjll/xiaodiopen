@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">BluetoothLELibrary</string>
 
-    <!--XIAODIBLEProtocolFactory-->
+    <!--XIAODIBLEProtocol-->
     <string name="ble_data_type_error">bleDataType=%s</string>
     <string name="cmd_param_error">%s,参数错误,参数对象为空</string>
     <string name="cmd_channel_length_error">%s,参数错误,信道密码长度不正确</string>
@@ -25,4 +25,5 @@
     <string name="wifi_length_error">wifi %s长度不正确</string>
     <string name="open_lock_record_data_length_error">开锁记录开关数据长度不正确</string>
     <string name="unknown_order">,无法识别的指令</string>
+
 </resources>

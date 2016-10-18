@@ -43,7 +43,7 @@ public class BLEInit {
     };
 
     /**
-     * 启动后台蓝牙服务
+     * 启动后台蓝牙服务,启动成功后手动调用initBLE,适用app启动时调用
      */
     public void startBLEService(){
         context.registerReceiver(initBLEBroadcastReceiver, new IntentFilter(BluetoothLeService.ACTION_BLUETOOTHLESERVICE_BOOT_COMPLETE));
@@ -51,9 +51,9 @@ public class BLEInit {
     }
 
     /**
-     * 蓝牙环境检测、初始化
+     * 蓝牙环境检测、初始化,扫描之间手动调用,传入之前启动的服务的上下文
      */
-    private void initBLE(){
+    public void initBLE(){
         if(onInitListener == null){
             BLELogUtil.e(TAG, "初始化监听器不能为空");
             return;

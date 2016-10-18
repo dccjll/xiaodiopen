@@ -39,6 +39,7 @@ public class BLEConstants {
         public final static Integer ScanError_errorMacAddress = 0x3003;//mac地址不正确
         public final static Integer ScanError_errorMacAddressList = 0x3004;//mac地址列表不正确
         public final static Integer ScanError_errorServiceUUIDs = 0x3005;//uuid数组不正确
+        public final static Integer ScanError_errorBluetoothAdapter = 0x3006;//uuid数组不正确
     }
 
     /**
@@ -48,6 +49,7 @@ public class BLEConstants {
         public final static Integer ConnectError_ReceivedExceptionStackCodeError = 0x4001;//收到底层协议栈异常信息
         public final static Integer ConnectError_BLEConextError = 0x4002;//蓝牙连接上下文异常
         public final static Integer ConnectError_BLEDeviceOrBluetoothAdapterOrTargetMacAddressError = 0x4003;//蓝牙设备或目标设备mac地址异常
+        public final static Integer ConnectError_Disconnect = 0x4004;
     }
 
     /**
@@ -73,6 +75,7 @@ public class BLEConstants {
         public final static Integer OpenNotificationError_SetCharacteristicNotification = 0x6007;
         public final static Integer OpenNotificationError_WriteDescriptor = 0x6008;
         public final static Integer OpenNotificationError_OpenFail = 0x6009;
+        public final static Integer OpenNotificationError_Disconnect = 0x6010;
     }
 
     /**
@@ -85,5 +88,6 @@ public class BLEConstants {
         public final static Integer WriteDataError_CannotFindWriteDataServiceUUID = 0x7004;
         public final static Integer WriteDataError_CannotFindWriteDataCharacteristicUUID = 0x7005;
         public final static Integer WriteDataError_CheckDataError = 0x7006;
+        public final static Integer WriteDataError_Disconnect = 0x7007;
     }
 }
