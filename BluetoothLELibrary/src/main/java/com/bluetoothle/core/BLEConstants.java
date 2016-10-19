@@ -7,87 +7,40 @@ package com.bluetoothle.core;
 public class BLEConstants {
 
     /**
-     * 蓝牙初始化异常
+     * 蓝牙操作异常类,编号从0x1001开始
      */
-    public final static class InitError {
-        public final static Integer InitError_NotSupportBLE = 0x2001;//当前系统版本不支持蓝牙BLE
-        public final static Integer InitError_GetBluetoothManager = 0x2002;//获取蓝牙管理服务异常
-        public final static Integer InitError_GetBluetoothAdapter = 0x2003;//获取蓝牙适配器异常
-        public final static Integer InitError_TimeoutOpenBLE = 0x2004;//打开BLE超时
-        public final static Integer InitError_OpenBLESleep = 0x2005;//打开BLE过程中线程休眠异常
-    }
-
-    /**
-     * 构建请求数据校验异常
-     */
-    public final static class RequestError {
-        public final static Integer RequestCode_InvalidTargetDeviceMacAddress = 0x1001;//mac地址不正确
-        public final static Integer RequestCode_InvalidService_uuid_write = 0x1002;//写数据服务uuid异常
-        public final static Integer RequestCode_InvalidCharacteristics_uuid_write = 0x1003;//写数据特征uuid异常
-        public final static Integer RequestCode_InvalidService_uuid_notification = 0x1004;//通知服务uuid异常
-        public final static Integer RequestCode_InvalidCharacteristics_uuid_notification = 0x1005;//通知特征uuid异常
-        public final static Integer RequestCode_InvalidCharacteristics_descriptor_uuid_notification = 0x1006;//通知的特征描述uuid异常
-        public final static Integer RequestCode_InvalidData = 0x1007;
-    }
-
-    /**
-     * 扫描设备异常
-     */
-    public final static class ScanError{
-        public final static Integer ScanError_isScaning = 0x3001;//正在扫描
-        public final static Integer ScanError_NotFoundDevice = 0x3002;//没有发现目标设备
-        public final static Integer ScanError_errorMacAddress = 0x3003;//mac地址不正确
-        public final static Integer ScanError_errorMacAddressList = 0x3004;//mac地址列表不正确
-        public final static Integer ScanError_errorServiceUUIDs = 0x3005;//uuid数组不正确
-        public final static Integer ScanError_errorBluetoothAdapter = 0x3006;//uuid数组不正确
-    }
-
-    /**
-     * 连接设备异常
-     */
-    public final static class ConnectError{
-        public final static Integer ConnectError_ReceivedExceptionStackCodeError = 0x4001;//收到底层协议栈异常信息
-        public final static Integer ConnectError_BLEConextError = 0x4002;//蓝牙连接上下文异常
-        public final static Integer ConnectError_BLEDeviceOrBluetoothAdapterOrTargetMacAddressError = 0x4003;//蓝牙设备或目标设备mac地址异常
-        public final static Integer ConnectError_Disconnect = 0x4004;
-    }
-
-    /**
-     * 找服务异常
-     */
-    public final static class FindServiceError{
-        public final static Integer FindServiceError_BluetoothGattError = 0x5001;
-        public final static Integer FindServiceError_FindServiceFail = 0x5002;
-        public final static Integer FindServiceError_Disconnect = 0x5003;
-        public final static Integer FindServiceError_ReceivedExceptionStackCodeError = 0x5004;
-    }
-
-    /**
-     * 打开通知异常
-     */
-    public final static class OpenNotificationError{
-        public final static Integer OpenNotificationError_BluetoothGattError = 0x6001;
-        public final static Integer OpenNotificationError_GattServicesError = 0x6002;
-        public final static Integer OpenNotificationError_ServiceUUIDsError = 0x6003;
-        public final static Integer OpenNotificationError_CannotFindNotificationServiceUUID = 0x6004;
-        public final static Integer OpenNotificationError_CannotFindNotificationCharacteristicUUID = 0x6005;
-        public final static Integer OpenNotificationError_CannotFindNotificationDescriptorUUID = 0x6006;
-        public final static Integer OpenNotificationError_SetCharacteristicNotification = 0x6007;
-        public final static Integer OpenNotificationError_WriteDescriptor = 0x6008;
-        public final static Integer OpenNotificationError_OpenFail = 0x6009;
-        public final static Integer OpenNotificationError_Disconnect = 0x6010;
-    }
-
-    /**
-     * 写数据异常
-     */
-    public final static class WriteDataError{
-        public final static Integer WriteDataError_BluetoothGattError = 0x7001;
-        public final static Integer WriteDataError_WriteDataFail = 0x7002;
-        public final static Integer WriteDataError_ServiceUUIDsError = 0x7003;
-        public final static Integer WriteDataError_CannotFindWriteDataServiceUUID = 0x7004;
-        public final static Integer WriteDataError_CannotFindWriteDataCharacteristicUUID = 0x7005;
-        public final static Integer WriteDataError_CheckDataError = 0x7006;
-        public final static Integer WriteDataError_Disconnect = 0x7007;
+    public final static class Error {
+        public final static Integer NotSupportBLEError = 0x1001;                            //当前系统版本不支持蓝牙BLE
+        public final static Integer CheckBluetoothManagerError = 0x1002;                    //蓝牙管理服务异常
+        public final static Integer CheckBluetoothAdapterError = 0x1003;                    //蓝牙适配器异常
+        public final static Integer OpenBluetoothTimeoutError = 0x1004;                     //打开蓝牙超时
+        public final static Integer OpenBluetoothSleepError = 0x1005;                       //打开BLE过程中线程休眠异常
+        public final static Integer CheckMacAddressError = 0x1006;                          //mac地址不正确
+        public final static Integer CheckMacAddressListError = 0x1007;                      //mac地址列表不正确
+        public final static Integer CheckService_UUID_WriteError = 0x1008;                  //写数据服务uuid异常
+        public final static Integer CheckCharacteristics_UUID_WriteError = 0x1009;          //写数据特征uuid异常
+        public final static Integer CheckService_UUID_NotificationError = 0x100A;           //通知服务uuid异常
+        public final static Integer CheckCharacteristics_UUID_NotificationError = 0x100B;   //通知特征uuid异常
+        public final static Integer CheckCharacteristics_UUID_Descriptor = 0x100C;          //通知的特征描述uuid异常
+        public final static Integer BLEScanningError = 0x100D;                              //正在扫描
+        public final static Integer NotFoundDeviceError = 0x100E;                           //没有发现目标设备
+        public final static Integer CheckUUIDArraysError = 0x100F;                          //uuid数组不正确
+        public final static Integer ReceivedBLEStackCodeError = 0x1010;                     //收到底层协议栈异常信息
+        public final static Integer CheckBLEConextError = 0x1011;                           //蓝牙连接上下文异常
+        public final static Integer CheckConnectDeviceError = 0x1012;                       //验证连接设备地址或蓝牙对象异常
+        public final static Integer DisconnectError = 0x1013;                               //正常断开的异常消息
+        public final static Integer ConnectError = 0x1014;                                  //连接异常
+        public final static Integer CheckBluetoothGattError = 0x1015;                       //蓝牙连接服务器异常
+        public final static Integer CheckBluetoothGattServiceError = 0x1016;                //服务异常
+        public final static Integer CheckBluetoothGattCharacteristicError = 0x1017;         //特征异常
+        public final static Integer CheckBluetoothGattDescriptorError = 0x1018;             //特征描述异常
+        public final static Integer FindServiceError = 0x1019;                              //找服务异常
+        public final static Integer GattServicesError = 0x101A;                             //获取服务异常
+        public final static Integer SetCharacteristicNotificationError = 0x101B;            //设置特征通知异常
+        public final static Integer WriteDescriptorError = 0x101C;                          //写特征描述异常
+        public final static Integer OpenNotificationError = 0x101D;                         //打开通知异常
+        public final static Integer CheckBLEDataError = 0x101E;                             //验证发送数据异常
+        public final static Integer WriteDataError = 0x101F;                                //写数据异常
+        public final static Integer CheckOnBLEResponseListenerError = 0x1020;               //验证接收数据监听器异常
     }
 }

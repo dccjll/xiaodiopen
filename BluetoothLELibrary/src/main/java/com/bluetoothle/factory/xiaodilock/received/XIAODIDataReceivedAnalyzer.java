@@ -100,7 +100,7 @@ public class XIAODIDataReceivedAnalyzer {
      */
     public Integer analysisBLEReturnData() {
         if (bleDataReceived.length < BLELOCKDEVICERETURNDATAMINLENGTH) {
-            return XIAODIConstants.ReceivedDataAnalysis.DataMinLengthError;
+            return XIAODIConstants.Error.CheckWholeDataLengthError;
         }
         try {
             packageHead = BLEByteUtil.getSubbytes(bleDataReceived, 0, 1);
@@ -119,8 +119,8 @@ public class XIAODIDataReceivedAnalyzer {
             BLELogUtil.d(TAG, "crc=" + BLEByteUtil.bytesToHexString(crc));
         } catch (Exception e) {
             e.printStackTrace();
-            return XIAODIConstants.ReceivedDataAnalysis.SubBytesError;
+            return XIAODIConstants.Error.CheckSubBytesError;
         }
-        return XIAODIConstants.ReceivedDataAnalysis.CorretCode;
+        return XIAODIConstants.Error.CorretCode;
     }
 }

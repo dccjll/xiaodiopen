@@ -13,9 +13,9 @@ import com.bluetoothle.util.BLELogUtil;
 /**
  * 小嘀数据接收器
  */
-public class XIAODIDATAReceived implements OnBLEResponseListener {
+public class XIAODIDataReceived implements OnBLEResponseListener {
 
-	private final static String TAG = XIAODIDATAReceived.class.getSimpleName();
+	private final static String TAG = XIAODIDataReceived.class.getSimpleName();
 	private boolean dataReceiveFinished = false;//对一个完整包来说,数据是否接收完成
 	private int dataReceivedCount = 0;//对一个完整包来说,接收了多少次数据
 	private int dataReceivedTotalLength = 0;//对一个完整包来说,该包总共有多少字节的数据
@@ -26,17 +26,17 @@ public class XIAODIDATAReceived implements OnBLEResponseListener {
 	private OnXIAODIBLEListener.OnCheckManagePwdListener onCheckManagePwdListener;//小嘀验证管理密码接收数据监听器
 	private OnXIAODIBLEListener.OnAddFingerListener onAddFingerListener;//小嘀添加指纹接收数据监听器
 
-	public XIAODIDATAReceived(byte[] sendCMD, OnXIAODIBLEListener.OnCommonListener onCommonListener) {
+	public XIAODIDataReceived(byte[] sendCMD, OnXIAODIBLEListener.OnCommonListener onCommonListener) {
 		this.sendCMD = sendCMD;
 		this.onCommonListener = onCommonListener;
 	}
 
-	public XIAODIDATAReceived(byte[] sendCMD, OnXIAODIBLEListener.OnCheckManagePwdListener onCheckManagePwdListener) {
+	public XIAODIDataReceived(byte[] sendCMD, OnXIAODIBLEListener.OnCheckManagePwdListener onCheckManagePwdListener) {
 		this.sendCMD = sendCMD;
 		this.onCheckManagePwdListener = onCheckManagePwdListener;
 	}
 
-	public XIAODIDATAReceived(byte[] sendCMD, OnXIAODIBLEListener.OnAddFingerListener onAddFingerListener) {
+	public XIAODIDataReceived(byte[] sendCMD, OnXIAODIBLEListener.OnAddFingerListener onAddFingerListener) {
 		this.sendCMD = sendCMD;
 		this.onAddFingerListener = onAddFingerListener;
 	}
@@ -53,7 +53,7 @@ public class XIAODIDATAReceived implements OnBLEResponseListener {
 		if(!dataReceiveFinished){
 			if(dataReceivedCount == 0){
 				if(receivedData == null || receivedData.length < 5){
-					handleError(XIAODIConstants.ReceivedDataAnalysis.DataLengthError, null);
+					handleError(XIAODIConstants.Error.CheckSingleDataLengthError, null);
 					return;
 				}
 				byte[] receivedDataLength = BLEByteUtil.getSubbytes(receivedData, 3, 2);
@@ -93,7 +93,7 @@ public class XIAODIDATAReceived implements OnBLEResponseListener {
 		BLELogUtil.d(TAG, "接收到的总数据:" + BLEByteUtil.bytesToHexString(receivedALLBLEData));
 		XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer = new XIAODIDataReceivedAnalyzer(receivedALLBLEData);
 		Integer alalysisCode = xiaodiDataReceivedAnalyzer.analysisBLEReturnData();
-		if(alalysisCode != XIAODIConstants.ReceivedDataAnalysis.CorretCode){
+		if(alalysisCode != XIAODIConstants.Error.CorretCode){
 			handleError(alalysisCode, null);
 			return;
 		}
@@ -109,30 +109,30 @@ public class XIAODIDATAReceived implements OnBLEResponseListener {
 		byte[] cmd = xiaodiDataReceivedAnalyzer.getCmd();
 		BLELogUtil.d(TAG, "接收数据的命令号=" + BLEByteUtil.bytesToHexString(cmd) + ",发送数据的命令号=" + BLEByteUtil.bytesToHexString(sendCMD));
 		if(cmd == null || cmd.length != 1 || cmd[0] != sendCMD[0]){
-			handleError(XIAODIConstants.ReceivedDataDispatcher.DataCmdNotEquals, xiaodiDataReceivedAnalyzer);
+			handleError(XIAODIConstants.Error.CheckDataCmdNotEquals, xiaodiDataReceivedAnalyzer);
 			return;
 		}
 		if(cmd[0] == 0x24){
 			if(!checkAddFingerData(xiaodiDataReceivedAnalyzer)){
 				BLELogUtil.d(TAG, "添加指纹返回数据格式不正确");
-				onAddFingerListener.fingerTemplateCollectionFailure(XIAODIConstants.ReceivedDataDispatcher.DataCheckError, xiaodiDataReceivedAnalyzer);
+				onAddFingerListener.fingerTemplateCollectionFailure(XIAODIConstants.Error.CheckDataCheckError, xiaodiDataReceivedAnalyzer);
 				return;
 			}
 			byte[] ack = xiaodiDataReceivedAnalyzer.getAck();
 			byte[] dataArea = xiaodiDataReceivedAnalyzer.getDataArea();
 			if(ack == null || ack.length !=1 || (ack[0] != 0x00 && ack[0] != 0x01 && ack[0] != 0x02)){
 				BLELogUtil.d(TAG, "添加指纹返回数据应答参数不正确");
-				onAddFingerListener.fingerTemplateCollectionFailure(XIAODIConstants.ReceivedDataDispatcher.CmdParamError, xiaodiDataReceivedAnalyzer);
+				onAddFingerListener.fingerTemplateCollectionFailure(XIAODIConstants.Error.CheckCmdParamError, xiaodiDataReceivedAnalyzer);
 				return;
 			}else if(ack[0] == 0x01){
 				BLELogUtil.d(TAG, "添加指纹返回了失败的应答状态");
-				onAddFingerListener.fingerTemplateCollectionFailure(XIAODIConstants.ReceivedDataDispatcher.CmdError, xiaodiDataReceivedAnalyzer);
+				onAddFingerListener.fingerTemplateCollectionFailure(XIAODIConstants.Error.CheckCmdError, xiaodiDataReceivedAnalyzer);
 				return;
 			}else if(ack[0] == 0x02){
 				Long fingerCollectionCount = BLEByteUtil.lessThan8bytesToLongInt(dataArea);
 				if( fingerCollectionCount == null || fingerCollectionCount < 0 || fingerCollectionCount > 6){
 					BLELogUtil.d(TAG, "添加指纹返回的已采集的指纹次数不在0到6之间（cmd=0x24, ack=0x02）");
-					onAddFingerListener.fingerTemplateCollectionFailure(XIAODIConstants.ReceivedDataDispatcher.AddFingerCollNumCheckError, xiaodiDataReceivedAnalyzer);
+					onAddFingerListener.fingerTemplateCollectionFailure(XIAODIConstants.Error.CheckAddFingerCollNumError, xiaodiDataReceivedAnalyzer);
 					return;
 				}
 				onAddFingerListener.fingerTemplateCollectionSuccess(fingerCollectionCount, xiaodiDataReceivedAnalyzer);
@@ -142,7 +142,7 @@ public class XIAODIDATAReceived implements OnBLEResponseListener {
 			Long fingerCollectionCount = BLEByteUtil.lessThan8bytesToLongInt(BLEByteUtil.getSubbytes(dataArea, 4, 1));
 			if(fingerCollectionCount == null || fingerCollectionCount < 0 || fingerCollectionCount > 6){
 				BLELogUtil.d(TAG, "添加指纹返回的已采集的指纹次数不在0到6之间（cmd=0x24, ack=0x00）");
-				onAddFingerListener.fingerTemplateCollectionFailure(XIAODIConstants.ReceivedDataDispatcher.AddFingerCollNumCheckError, xiaodiDataReceivedAnalyzer);
+				onAddFingerListener.fingerTemplateCollectionFailure(XIAODIConstants.Error.CheckAddFingerCollNumError, xiaodiDataReceivedAnalyzer);
 				return;
 			}
 			onAddFingerListener.fingerCollectionSuccess(generatedFingerID, fingerCollectionCount, xiaodiDataReceivedAnalyzer);
@@ -150,17 +150,17 @@ public class XIAODIDATAReceived implements OnBLEResponseListener {
 		}else if(cmd[0] == 0x36){
 			if(!checkCheckManagePwdData(xiaodiDataReceivedAnalyzer)){
 				BLELogUtil.d(TAG, "验证锁上管理密码返回数据格式不正确");
-				onCheckManagePwdListener.onCheckFailure(XIAODIConstants.ReceivedDataDispatcher.DataCheckError, xiaodiDataReceivedAnalyzer);
+				onCheckManagePwdListener.onCheckFailure(XIAODIConstants.Error.CheckDataCheckError, xiaodiDataReceivedAnalyzer);
 				return;
 			}
 			byte[] ack = xiaodiDataReceivedAnalyzer.getAck();
 			if(ack == null || ack.length !=1 || (ack[0] != 0x00 && ack[0] != 0x01 && ack[0] != 0x02)){
 				BLELogUtil.d(TAG, "验证锁上管理密码返回数据应答参数不正确");
-				onCheckManagePwdListener.onCheckFailure(XIAODIConstants.ReceivedDataDispatcher.CmdParamError, xiaodiDataReceivedAnalyzer);
+				onCheckManagePwdListener.onCheckFailure(XIAODIConstants.Error.CheckCmdParamError, xiaodiDataReceivedAnalyzer);
 				return;
 			}else if(ack[0] == 0x01){
 				BLELogUtil.d(TAG, "验证锁上管理密码返回了失败的应答状态");
-				onCheckManagePwdListener.onCheckFailure(XIAODIConstants.ReceivedDataDispatcher.CmdError, xiaodiDataReceivedAnalyzer);
+				onCheckManagePwdListener.onCheckFailure(XIAODIConstants.Error.CheckCmdError, xiaodiDataReceivedAnalyzer);
 				return;
 			}else if(ack[0] == 0x02){
 				BLELogUtil.d(TAG, "验证锁上管理密码,锁已被硬清空");
@@ -171,18 +171,18 @@ public class XIAODIDATAReceived implements OnBLEResponseListener {
 		}else{
 			if(!checkXIAODICommonData(xiaodiDataReceivedAnalyzer)){
 				BLELogUtil.d(TAG, "0x" + BLEByteUtil.bytesToHexString(cmd) + "返回的数据校验失败");
-				onCommonListener.failure(XIAODIConstants.ReceivedDataDispatcher.DataCheckError, xiaodiDataReceivedAnalyzer);
+				onCommonListener.failure(XIAODIConstants.Error.CheckDataCheckError, xiaodiDataReceivedAnalyzer);
 				return;
 			}
 			byte[] ack = xiaodiDataReceivedAnalyzer.getAck();
 			BLELogUtil.i("ack=" + BLEByteUtil.bytesToHexString(ack));
 			if(ack == null || ack.length !=1 || (ack[0] != 0x00 && ack[0] != 0x01)){
 				BLELogUtil.d(TAG, "0x" + BLEByteUtil.bytesToHexString(cmd) + "返回的数据应答参数不正确");
-				onCommonListener.failure(XIAODIConstants.ReceivedDataDispatcher.CmdParamError, xiaodiDataReceivedAnalyzer);
+				onCommonListener.failure(XIAODIConstants.Error.CheckCmdParamError, xiaodiDataReceivedAnalyzer);
 				return;
 			}else if(ack[0] == 0x01){
 				BLELogUtil.d(TAG, "0x" + BLEByteUtil.bytesToHexString(cmd) + "返回了失败的应答状态");
-				onCommonListener.failure(XIAODIConstants.ReceivedDataDispatcher.CmdError, xiaodiDataReceivedAnalyzer);
+				onCommonListener.failure(XIAODIConstants.Error.CheckCmdError, xiaodiDataReceivedAnalyzer);
 				return;
 			}else {
 				onCommonListener.success(xiaodiDataReceivedAnalyzer);

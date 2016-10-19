@@ -108,7 +108,7 @@ public class BLEScan {
             public void run() {
                 scanControl(false);
                 if(BLEStringUtil.isNotEmpty(targetDeviceAddress) || (targetDeviceAddressList.size() > 0)){
-                    onBLEScanListener.scanFail(BLEConstants.ScanError.ScanError_NotFoundDevice);
+                    onBLEScanListener.scanFail(BLEConstants.Error.NotFoundDeviceError);
                     return;
                 }
                 onBLEScanListener.scanFinish(foundDeviceList);
@@ -125,7 +125,7 @@ public class BLEScan {
             return;
         }
         if(bluetoothAdapter == null){
-            onBLEScanListener.scanFail(BLEConstants.ScanError.ScanError_errorBluetoothAdapter);
+            onBLEScanListener.scanFail(BLEConstants.Error.CheckBluetoothAdapterError);
             return;
         }
         scanHandler.postDelayed(scanRunnable, timeoutScanBLE);
@@ -140,7 +140,7 @@ public class BLEScan {
     private void scanControl(Boolean scanFlag){
         if(scanFlag){
             if(isScaning){
-                onBLEScanListener.scanFail(BLEConstants.ScanError.ScanError_isScaning);
+                onBLEScanListener.scanFail(BLEConstants.Error.BLEScanningError);
                 return;
             }
             isScaning = true;

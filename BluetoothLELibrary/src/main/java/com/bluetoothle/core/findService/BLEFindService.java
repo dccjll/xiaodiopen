@@ -47,7 +47,7 @@ public class BLEFindService {
             return;
         }
         if(bluetoothGatt == null){
-            onBLEFindServiceListener.onFindServiceFail(BLEConstants.FindServiceError.FindServiceError_BluetoothGattError);
+            onBLEFindServiceListener.onFindServiceFail(BLEConstants.Error.CheckBluetoothGattError);
             return;
         }
         BLEConnect.bluetoothLeGattCallback.registerOnGattBLEFindServiceListener(
@@ -59,7 +59,7 @@ public class BLEFindService {
 
                     @Override
                     public void onFindServiceFail(Integer errorCode) {
-                        onBLEFindServiceListener.onFindServiceFail(BLEConstants.FindServiceError.FindServiceError_FindServiceFail);
+                        onBLEFindServiceListener.onFindServiceFail(BLEConstants.Error.FindServiceError);
                     }
                 }
         );

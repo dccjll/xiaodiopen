@@ -23,6 +23,7 @@ public class BLEInit {
     private final static String TAG = BLEInit.class.getSimpleName();
     public static Boolean BLUETOOTH_IS_OPEN = false;//当前设备蓝牙开关默认设置为关闭状态
     public static Integer timeoutOpenBluetooth = 10*1000;//打开蓝牙超时时间
+    public static BluetoothAdapter bluetoothAdapter;
 
     private Context context;
     private OnInitListener onInitListener;
@@ -61,19 +62,19 @@ public class BLEInit {
         //判断当前设备是否支持蓝牙ble功能
         boolean hasBLEFeature = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
         if(!hasBLEFeature){
-            onInitListener.onInitFail(BLEConstants.InitError.InitError_NotSupportBLE);
+            onInitListener.onInitFail(BLEConstants.Error.NotSupportBLEError);
             return;
         }
         //获得蓝牙管理服务
         BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         if(bluetoothManager == null){
-            onInitListener.onInitFail(BLEConstants.InitError.InitError_GetBluetoothManager);
+            onInitListener.onInitFail(BLEConstants.Error.CheckBluetoothManagerError);
             return;
         }
         //获得蓝牙适配器
-        final BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
+        bluetoothAdapter = bluetoothManager.getAdapter();
         if(bluetoothAdapter == null){
-            onInitListener.onInitFail(BLEConstants.InitError.InitError_GetBluetoothAdapter);
+            onInitListener.onInitFail(BLEConstants.Error.CheckBluetoothAdapterError);
             return;
         }
         //如果蓝牙是关闭的,则请求打开蓝牙
@@ -84,7 +85,7 @@ public class BLEInit {
                 @Override
                 public void run() {
                     bluetoothAdapter.disable();
-                    onInitListener.onInitFail(BLEConstants.InitError.InitError_TimeoutOpenBLE);
+                    onInitListener.onInitFail(BLEConstants.Error.OpenBluetoothTimeoutError);
                 }
             };
             openBluetoothHandler.postDelayed(openBluetoothRunnable, timeoutOpenBluetooth);
@@ -96,7 +97,7 @@ public class BLEInit {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     openBluetoothHandler.removeCallbacks(openBluetoothRunnable);
-                    onInitListener.onInitFail(BLEConstants.InitError.InitError_OpenBLESleep);
+                    onInitListener.onInitFail(BLEConstants.Error.OpenBluetoothSleepError);
                     break;
                 }
             }

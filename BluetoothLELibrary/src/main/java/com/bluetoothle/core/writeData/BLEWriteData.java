@@ -54,15 +54,15 @@ public class BLEWriteData {
             return;
         }
         if(bluetoothGatt == null){
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.WriteDataError.WriteDataError_BluetoothGattError);
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothGattError);
             return;
         }
         if(uuids == null || uuids.length != 2){
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.WriteDataError.WriteDataError_ServiceUUIDsError);
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckUUIDArraysError);
             return;
         }
         if(data == null || data.length == 0){
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.WriteDataError.WriteDataError_CheckDataError);
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBLEDataError);
             return;
         }
         writtenDataLength = 0;
@@ -90,19 +90,19 @@ public class BLEWriteData {
         );
         BluetoothGattService bluetoothGattService = bluetoothGatt.getService(uuids[0]);
         if(bluetoothGattService == null){
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.WriteDataError.WriteDataError_CannotFindWriteDataServiceUUID);
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothGattError);
             return;
         }
         BluetoothGattCharacteristic bluetoothGattCharacteristic = bluetoothGattService.getCharacteristic(uuids[1]);
         if(bluetoothGattCharacteristic == null){
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.WriteDataError.WriteDataError_CannotFindWriteDataCharacteristicUUID);
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothGattCharacteristicError);
             return;
         }
         try {
             divideSendBLEData(bluetoothGattCharacteristic, data);
         } catch (InterruptedException e) {
             e.printStackTrace();
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.WriteDataError.WriteDataError_WriteDataFail);
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
             return;
         }
     }
@@ -133,17 +133,17 @@ public class BLEWriteData {
                     Thread.sleep(INTERVAL_SEND_NEXT_PACKAGE);
                 }
             } else{
-                onBLEWriteDataListener.onWriteDataFail(BLEConstants.WriteDataError.WriteDataError_WriteDataFail);
+                onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
                 return;
             }
             // 发送数据
             byte[] sendValue = BLEByteUtil.getSubbytes(value, position, sendLength);
             if (sendValue == null) {
-                onBLEWriteDataListener.onWriteDataFail(BLEConstants.WriteDataError.WriteDataError_WriteDataFail);
+                onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
                 return;
             }
             if (!bluetoothGattCharacteristic.setValue(sendValue)) {
-                onBLEWriteDataListener.onWriteDataFail(BLEConstants.WriteDataError.WriteDataError_WriteDataFail);
+                onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
                 return;
             }
             BLELogUtil.d(TAG, "position=" + position + ",sendValue=" + BLEByteUtil.bytesToHexString(sendValue));

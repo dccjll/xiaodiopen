@@ -117,15 +117,15 @@ public class Request implements Serializable {
 					@Override
 					public void onRequestSuccss(Request request) {
 						if(service_uuid_notification == null){
-							onRequestListener.onRequestFail(BLEConstants.RequestError.RequestCode_InvalidService_uuid_notification);
+							onRequestListener.onRequestFail(BLEConstants.Error.CheckService_UUID_NotificationError);
 							return;
 						}
 						if(characteristics_uuid_notification == null){
-							onRequestListener.onRequestFail(BLEConstants.RequestError.RequestCode_InvalidCharacteristics_uuid_notification);
+							onRequestListener.onRequestFail(BLEConstants.Error.CheckCharacteristics_UUID_NotificationError);
 							return;
 						}
 						if(characteristics_descriptor_uuid_notification == null){
-							onRequestListener.onRequestFail(BLEConstants.RequestError.RequestCode_InvalidCharacteristics_descriptor_uuid_notification);
+							onRequestListener.onRequestFail(BLEConstants.Error.CheckCharacteristics_UUID_Descriptor);
 							return;
 						}
 						request.setService_uuid_notification(service_uuid_notification);
@@ -154,19 +154,19 @@ public class Request implements Serializable {
 			return;
 		}
 		if(targetDeviceMacAddress == null || targetDeviceMacAddress.split(":").length != 6){
-			onRequestListener.onRequestFail(BLEConstants.RequestError.RequestCode_InvalidTargetDeviceMacAddress);
+			onRequestListener.onRequestFail(BLEConstants.Error.CheckMacAddressError);
 			return;
 		}
 		if(service_uuid_write == null){
-			onRequestListener.onRequestFail(BLEConstants.RequestError.RequestCode_InvalidService_uuid_write);
+			onRequestListener.onRequestFail(BLEConstants.Error.CheckService_UUID_WriteError);
 			return;
 		}
 		if(characteristics_uuid_write == null){
-			onRequestListener.onRequestFail(BLEConstants.RequestError.RequestCode_InvalidCharacteristics_uuid_write);
+			onRequestListener.onRequestFail(BLEConstants.Error.CheckCharacteristics_UUID_WriteError);
 			return;
 		}
 		if(data == null){
-			onRequestListener.onRequestFail(BLEConstants.RequestError.RequestCode_InvalidData);
+			onRequestListener.onRequestFail(BLEConstants.Error.CheckBLEDataError);
 			return;
 		}
 		Request request = new Request();

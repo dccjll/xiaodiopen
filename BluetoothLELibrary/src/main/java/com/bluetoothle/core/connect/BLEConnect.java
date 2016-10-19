@@ -28,7 +28,7 @@ public class BLEConnect {
     /**
      * 连接蓝牙服务器回调接口
      */
-    public interface OnGattConnectListener{
+    public interface OnGattBLEConnectListener {
         void onConnectSuccss(BluetoothGatt bluetoothGatt, int status, int newState);
         void onConnectFail(Integer errorCode);
     }
@@ -68,15 +68,15 @@ public class BLEConnect {
             return;
         }
         if(context == null){
-            onBLEConnectListener.onConnectFail(BLEConstants.ConnectError.ConnectError_BLEConextError);
+            onBLEConnectListener.onConnectFail(BLEConstants.Error.CheckBLEConextError);
             return;
         }
         if(bluetoothDevice == null && (bluetoothAdapter == null || targetMacAddress == null || targetMacAddress.split(":").length != 6)){
-            onBLEConnectListener.onConnectFail(BLEConstants.ConnectError.ConnectError_BLEDeviceOrBluetoothAdapterOrTargetMacAddressError);
+            onBLEConnectListener.onConnectFail(BLEConstants.Error.CheckConnectDeviceError);
             return;
         }
         bluetoothLeGattCallback.registerOnGattConnectListener(
-                new OnGattConnectListener() {
+                new OnGattBLEConnectListener() {
                     @Override
                     public void onConnectSuccss(BluetoothGatt bluetoothGatt, int status, int newState) {
                         onBLEConnectListener.onConnectSuccess(bluetoothGatt, status, newState);
@@ -108,7 +108,7 @@ public class BLEConnect {
      */
     private void connectDevice(BluetoothDevice bluetoothDevice){
         if(bluetoothDevice == null){
-            onBLEConnectListener.onConnectFail(BLEConstants.ConnectError.ConnectError_BLEDeviceOrBluetoothAdapterOrTargetMacAddressError);
+            onBLEConnectListener.onConnectFail(BLEConstants.Error.CheckConnectDeviceError);
             return;
         }
         bluetoothDevice.connectGatt(context, false, bluetoothLeGattCallback);

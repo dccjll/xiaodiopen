@@ -5,7 +5,7 @@ package com.bluetoothle.factory.xiaodilock.protocol;
  * 长度校验
  */
 
-public class LengthCheck {
+public class XIAODIBLELengthCheck {
     //锁信道密码长度
     public static int BLELOCKCHANNELPASSWORDLENGTH = 4;
     //手机账号长度

@@ -1,44 +1,54 @@
 package com.bluetoothle.factory.doorguard.hainan;
 
 import com.bluetoothle.factory.doorguard.DoorGuardCrcUtil;
-import com.bluetoothle.util.BLEByteUtil;
-import com.bluetoothle.util.BLELogUtil;
 
 import java.io.ByteArrayOutputStream;
 
+/**
+ * 海南门禁设备通讯协议
+ */
 public class HaiNanDoorGuardProtocol {
-	private final static String TAG = HaiNanDoorGuardProtocol.class.getSimpleName();
-	public final static String SERVICE_UUID = "0000fff5-0000-1000-8000-00805f9b34fb";
-	public final static String CHARACTERISTIC_UUID = "0000fff9-0000-1000-8000-00805f9b34fb";
-	
-	public interface HAINANBleDataWritten{
-		void writeSuccess();
-		void writeFailure(String error);
-    }
-	
-	public static byte[] buildBleData(byte cmd, byte[] mobile) {
+
+	/**
+	 * 发送数据开门命令
+	 * @param cmd   命令字节号
+	 * @param mobile    手机号码字节数组
+     * @return
+     */
+	public static byte[] buildOpenBLEData(byte cmd, byte[] mobile) {
 		byte[] data = new byte[15];
-		
-		//包头
-		data[0] = (byte) 0xFF;
-	    
-	    //指令
-		data[1] = cmd;
-	    
-	    //数据区长度
-		int dataLength = mobile.length;
-	    data[2] = (byte) dataLength;
-	    
-	    //数据
-	    System.arraycopy(mobile, 0, data, 3, mobile.length);
-	    
-	    //CRC校验
-	    data[14] = DoorGuardCrcUtil.getCRCByteValue(data)[1];
-	    BLELogUtil.d(TAG, "data=" + BLEByteUtil.bytesToHexString(data));
-	    
+
+		try {
+			//包头
+			data[0] = (byte) 0xFF;
+
+			//指令
+			data[1] = cmd;
+
+			//数据区长度
+			int dataLength = mobile.length;
+			data[2] = (byte) dataLength;
+
+			//数据
+			System.arraycopy(mobile, 0, data, 3, mobile.length);
+
+			//CRC校验
+			data[14] = DoorGuardCrcUtil.getCRCByteValue(data)[1];
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+
 		return data;
 	}
-	public static byte[] buildSettingBleData(byte cmd, byte[] data) {
+
+	/**
+	 * 发送配置命令,不监听接收数据
+	 * @param cmd   命令字节号
+	 * @param data    需要配置的数据字节数组
+     * @return
+     */
+	public static byte[] buildSettingBLEData(byte cmd, byte[] data) {
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
 		try{
 			buf.write(0xFF);//包头
@@ -49,7 +59,7 @@ public class HaiNanDoorGuardProtocol {
 			}
 			buf.write(0);
 		}catch(Exception e){
-			BLELogUtil.i(TAG, e.getMessage());
+			e.printStackTrace();
 			return null;
 		}
 		

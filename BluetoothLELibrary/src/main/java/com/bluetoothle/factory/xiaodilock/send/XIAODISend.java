@@ -1,8 +1,12 @@
 package com.bluetoothle.factory.xiaodilock.send;
 
+import com.bluetoothle.core.BLEConstants;
+import com.bluetoothle.core.BluetoothLeManage;
+import com.bluetoothle.core.init.BLEInit;
 import com.bluetoothle.core.writeData.OnBLEWriteDataListener;
 import com.bluetoothle.factory.xiaodilock.protocol.XIAODIBLEProtocol;
-import com.bluetoothle.factory.xiaodilock.received.XIAODIDATAReceived;
+import com.bluetoothle.factory.xiaodilock.protocol.XIAODIBLEUUID;
+import com.bluetoothle.factory.xiaodilock.received.XIAODIDataReceived;
 import com.bluetoothle.factory.xiaodilock.util.XIAODIConstants;
 import com.bluetoothle.util.BLEByteUtil;
 import com.bluetoothle.util.BLELogUtil;
@@ -24,13 +28,24 @@ public class XIAODISend {
      * @param onBLEWriteDataListener    数据发送监听器
      */
     public static void send(String mac, String cmdType, XIAODIData xiaodiData, final OnBLEWriteDataListener onBLEWriteDataListener){
+        if(onBLEWriteDataListener == null){
+            BLELogUtil.e(TAG, "没有配置回调接口");
+            return;
+        }
         XIAODIBLEProtocol xiaodibleProtocol = new XIAODIBLEProtocol(cmdType, xiaodiData);
         if(!xiaodibleProtocol.buildData()){
-            onBLEWriteDataListener.onWriteDataFail(XIAODIConstants.SendDataStatics.BuildDataCheckError);
+            onBLEWriteDataListener.onWriteDataFail(XIAODIConstants.Error.CheckBuildDataError);
             return;
         }
         byte[] data = xiaodibleProtocol.getBleDataSend();
         BLELogUtil.e(TAG, "准备发送数据,mac=" + mac + ",data=" + BLEByteUtil.bytesToHexString(data));
+        if(BLEInit.bluetoothAdapter == null){
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothAdapterError);
+            return;
+        }
+        BluetoothLeManage bluetoothLeManage = new BluetoothLeManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildTwoUUIDs(), null);
+        bluetoothLeManage.setData(data);
+        bluetoothLeManage.write();
     }
 
     /**
@@ -39,15 +54,31 @@ public class XIAODISend {
      * @param cmdType   命令字类型
      * @param xiaodiData    要发送的数据集合
      * @param onBLEWriteDataListener    数据发送监听器
-     * @param xiaodidataReceived    数据接收监听器
+     * @param XIAODIDataReceived    数据接收监听器
      */
-    public static void send(String mac, String cmdType, XIAODIData xiaodiData, final OnBLEWriteDataListener onBLEWriteDataListener, final XIAODIDATAReceived xiaodidataReceived){
+    public static void send(String mac, String cmdType, XIAODIData xiaodiData, final OnBLEWriteDataListener onBLEWriteDataListener, final XIAODIDataReceived XIAODIDataReceived){
+        if(onBLEWriteDataListener == null){
+            BLELogUtil.e(TAG, "没有配置发送数据回调接口");
+            return;
+        }
+        if(XIAODIDataReceived == null){
+            BLELogUtil.e(TAG, "没有配置接收数据回调接口");
+            return;
+        }
         XIAODIBLEProtocol xiaodibleProtocol = new XIAODIBLEProtocol(cmdType, xiaodiData);
         if(!xiaodibleProtocol.buildData()){
-            xiaodidataReceived.handleError(XIAODIConstants.SendDataStatics.BuildDataCheckError, null);
+            onBLEWriteDataListener.onWriteDataFail(XIAODIConstants.Error.CheckBuildDataError);
             return;
         }
         byte[] data = xiaodibleProtocol.getBleDataSend();
         BLELogUtil.e(TAG, "准备发送数据,mac=" + mac + ",data=" + BLEByteUtil.bytesToHexString(data));
+        if(BLEInit.bluetoothAdapter == null){
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothAdapterError);
+            return;
+        }
+        BluetoothLeManage bluetoothLeManage = new BluetoothLeManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildTwoUUIDs(), null);
+        bluetoothLeManage.setData(data);
+        bluetoothLeManage.setOnBLEResponseListener(XIAODIDataReceived);
+        bluetoothLeManage.write();
     }
 }

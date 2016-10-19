@@ -72,11 +72,11 @@ public class XIAODIBLEProtocol {
                 return false;
             }
             byte[] channelpwd = xiaodiData.getChannelpwd();
-            if (channelpwd == null || channelpwd.length != LengthCheck.BLELOCKCHANNELPASSWORDLENGTH) {
+            if (channelpwd == null || channelpwd.length != XIAODIBLELengthCheck.BLELOCKCHANNELPASSWORDLENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_channel_length_error,"0x01"));
                 return false;
             }
-            dataArea = new byte[LengthCheck.BLELOCKCHANNELPASSWORDLENGTH];
+            dataArea = new byte[XIAODIBLELengthCheck.BLELOCKCHANNELPASSWORDLENGTH];
             System.arraycopy(channelpwd, 0, dataArea, 0, channelpwd.length);
         } else if (XIAODIBLECMDType.BLE_CMDTYPE_UPDATECHANNALPASSWORD.equals(bleCmdType)) {
             cmd[0] = (byte) 0x02;
@@ -87,15 +87,15 @@ public class XIAODIBLEProtocol {
             }
             byte[] channelpwd = xiaodiData.getChannelpwd();
             byte[] newchannelpwd = xiaodiData.getNewchannelpwd();
-            if (channelpwd == null || channelpwd.length != LengthCheck.BLELOCKCHANNELPASSWORDLENGTH) {
+            if (channelpwd == null || channelpwd.length != XIAODIBLELengthCheck.BLELOCKCHANNELPASSWORDLENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_channel_length_error,"0x02"));
                 return false;
             }
-            if (newchannelpwd == null || newchannelpwd.length != LengthCheck.BLELOCKCHANNELPASSWORDLENGTH) {
+            if (newchannelpwd == null || newchannelpwd.length != XIAODIBLELengthCheck.BLELOCKCHANNELPASSWORDLENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_channel_length_error,"0x02"));
                 return false;
             }
-            dataArea = new byte[LengthCheck.BLELOCKCHANNELPASSWORDLENGTH * 2];
+            dataArea = new byte[XIAODIBLELengthCheck.BLELOCKCHANNELPASSWORDLENGTH * 2];
             System.arraycopy(channelpwd, 0, dataArea, 0, channelpwd.length);
             System.arraycopy(newchannelpwd, 0, dataArea, channelpwd.length, newchannelpwd.length);
         } else if (XIAODIBLECMDType.BLE_CMDTYPE_OPENBLELOCK.equals(bleCmdType)) {
@@ -107,7 +107,7 @@ public class XIAODIBLEProtocol {
             }
             byte[] channelpwd = xiaodiData.getChannelpwd();
             byte[] mobileaccount = xiaodiData.getMobileaccount();
-            if (channelpwd.length != LengthCheck.BLELOCKCHANNELPASSWORDLENGTH) {
+            if (channelpwd.length != XIAODIBLELengthCheck.BLELOCKCHANNELPASSWORDLENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_channel_length_error,"0x03"));
                 return false;
             }
@@ -116,7 +116,7 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.mobile_init_error));
                 return false;
             }
-            dataArea = new byte[LengthCheck.BLELOCKCHANNELPASSWORDLENGTH + LengthCheck.BLELOCKMOBILEACCOUNTLENGTH];
+            dataArea = new byte[XIAODIBLELengthCheck.BLELOCKCHANNELPASSWORDLENGTH + XIAODIBLELengthCheck.BLELOCKMOBILEACCOUNTLENGTH];
             System.arraycopy(channelpwd, 0, dataArea, 0, channelpwd.length);
             System.arraycopy(usermobileaccountbytes, 0, dataArea, channelpwd.length, usermobileaccountbytes.length);
         } else if (XIAODIBLECMDType.BLE_CMDTYPE_GETBLELOCKINFO.equals(bleCmdType)) {
@@ -145,7 +145,7 @@ public class XIAODIBLEProtocol {
                 return false;
             }
             byte[] time = xiaodiData.getTime();
-            if (time == null || time.length != LengthCheck.BLELOCKTIMELENGTH) {
+            if (time == null || time.length != XIAODIBLELengthCheck.BLELOCKTIMELENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.param_error,"0x22,时间"));
                 return false;
 
@@ -169,7 +169,7 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.mobile_init_error));
                 return false;
             }
-            dataArea = new byte[LengthCheck.BLELOCKMOBILEACCOUNTLENGTH];
+            dataArea = new byte[XIAODIBLELengthCheck.BLELOCKMOBILEACCOUNTLENGTH];
             System.arraycopy(usermobileaccountbytes, 0, dataArea, 0, usermobileaccountbytes.length);
         } else if (XIAODIBLECMDType.BLE_CMDTYPE_ADDSMARTKEYAUTH.equals(bleCmdType)) {
             cmd[0] = (byte) 0x26;
@@ -267,11 +267,11 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.finger_id_empty));
                 return false;
             }
-            if (fingerpageidbytes.length != LengthCheck.BLELOCKFINGERIDLENGTH * 3) {
-                BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.finger_id_length,LengthCheck.BLELOCKFINGERIDLENGTH * 3));
+            if (fingerpageidbytes.length != XIAODIBLELengthCheck.BLELOCKFINGERIDLENGTH * 3) {
+                BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.finger_id_length, XIAODIBLELengthCheck.BLELOCKFINGERIDLENGTH * 3));
                 return false;
             }
-            dataArea = new byte[LengthCheck.BLELOCKFINGERIDLENGTH * 3];
+            dataArea = new byte[XIAODIBLELengthCheck.BLELOCKFINGERIDLENGTH * 3];
             System.arraycopy(fingerpageidbytes, 0, dataArea, 0, fingerpageidbytes.length);
         } else if (XIAODIBLECMDType.BLE_CMDTYPE_DELETEBLELOCKMOBILEACCOUNT.equals(bleCmdType)) {
             cmd[0] = (byte) 0x29;
@@ -286,7 +286,7 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.mobile_init_error));
                 return false;
             }
-            dataArea = new byte[LengthCheck.BLELOCKMOBILEACCOUNTLENGTH];
+            dataArea = new byte[XIAODIBLELengthCheck.BLELOCKMOBILEACCOUNTLENGTH];
             System.arraycopy(usermobileaccountbytes, 0, dataArea, 0, usermobileaccountbytes.length);
         } else if (XIAODIBLECMDType.BLE_CMDTYPE_DELETESMARTKEY.equals(bleCmdType)) {
             cmd[0] = (byte) 0x2A;
@@ -332,8 +332,8 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.finger_id_empty));
                 return false;
             }
-            if (fingerpageidbytes.length != LengthCheck.BLELOCKFINGERIDLENGTH * 3) {
-                BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.finger_id_length,LengthCheck.BLELOCKFINGERIDLENGTH * 3));
+            if (fingerpageidbytes.length != XIAODIBLELengthCheck.BLELOCKFINGERIDLENGTH * 3) {
+                BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.finger_id_length, XIAODIBLELengthCheck.BLELOCKFINGERIDLENGTH * 3));
                 return false;
             }
             if (!XIAODIBLEUtil.checkLoveAlarmFlag(lovealarmflag)) {
@@ -344,7 +344,7 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.timeset_param_error));
                 return false;
             }
-            if (timerange == null || timerange.length != LengthCheck.BLELOCKTIMERANGELENGTH) {
+            if (timerange == null || timerange.length != XIAODIBLELengthCheck.BLELOCKTIMERANGELENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.timeset_rang_param_error));
                 return false;
             }
@@ -383,7 +383,7 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.timeset_param_error));
                 return false;
             }
-            if (timerange == null || timerange.length != LengthCheck.BLELOCKTIMERANGELENGTH) {
+            if (timerange == null || timerange.length != XIAODIBLELengthCheck.BLELOCKTIMERANGELENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.timeset_rang_param_error));
                 return false;
             }
@@ -443,11 +443,11 @@ public class XIAODIBLEProtocol {
 //                return false;
 //            }
             byte[] locknamebytes = xiaodiData.getLockname();
-            if (locknamebytes == null || locknamebytes.length > LengthCheck.BLELOCKNAMELENGTH) {
-                BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.lockname_error,LengthCheck.BLELOCKNAMELENGTH));
+            if (locknamebytes == null || locknamebytes.length > XIAODIBLELengthCheck.BLELOCKNAMELENGTH) {
+                BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.lockname_error, XIAODIBLELengthCheck.BLELOCKNAMELENGTH));
                 return false;
             }
-            dataArea = new byte[LengthCheck.BLELOCKNAMELENGTH];
+            dataArea = new byte[XIAODIBLELengthCheck.BLELOCKNAMELENGTH];
             System.arraycopy(locknamebytes, 0, dataArea, 0, locknamebytes.length);
         } else if (XIAODIBLECMDType.BLE_CMDTYPE_CLOSELOCKOPENPASSWORD.equals(bleCmdType)) {
             cmd[0] = (byte) 0x30;
@@ -457,11 +457,11 @@ public class XIAODIBLEProtocol {
                 return false;
             }
             byte[] closelockpwd = xiaodiData.getCloselockpwd();
-            if (closelockpwd == null || closelockpwd.length != LengthCheck.BLECLOSELOCKOPENLOCKPASSWORDLENGTH) {
+            if (closelockpwd == null || closelockpwd.length != XIAODIBLELengthCheck.BLECLOSELOCKOPENLOCKPASSWORDLENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.close_open_pwd_error));
                 return false;
             }
-            dataArea = new byte[LengthCheck.BLECLOSELOCKOPENLOCKPASSWORDLENGTH];
+            dataArea = new byte[XIAODIBLELengthCheck.BLECLOSELOCKOPENLOCKPASSWORDLENGTH];
             System.arraycopy(closelockpwd, 0, dataArea, 0, closelockpwd.length);
         } else if (XIAODIBLECMDType.BLE_CMDTYPE_UPDATEBLELOCKOPENLOCKPASSWORD.equals(bleCmdType)) {
             cmd[0] = (byte) 0x30;
@@ -476,11 +476,11 @@ public class XIAODIBLEProtocol {
 //                return false;
 //            }
             byte[] openlockpwdbytes = xiaodiData.getOpenlockpwd();
-            if (openlockpwdbytes == null || openlockpwdbytes.length != LengthCheck.BLELOCKOPENLOCKPASSWORDLENGTH) {
+            if (openlockpwdbytes == null || openlockpwdbytes.length != XIAODIBLELengthCheck.BLELOCKOPENLOCKPASSWORDLENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.open_pwd_param_error));
                 return false;
             }
-            dataArea = new byte[LengthCheck.BLELOCKOPENLOCKPASSWORDLENGTH];
+            dataArea = new byte[XIAODIBLELengthCheck.BLELOCKOPENLOCKPASSWORDLENGTH];
             System.arraycopy(openlockpwdbytes, 0, dataArea, 0, openlockpwdbytes.length);
         } else if (XIAODIBLECMDType.BLE_CMDTYPE_UPDATEBLELOCKMANAGEPASSWORD.equals(bleCmdType)) {
             cmd[0] = (byte) 0x31;
@@ -495,11 +495,11 @@ public class XIAODIBLEProtocol {
 //                return false;
 //            }
             byte[] managepwdbytes = xiaodiData.getManagepwd();
-            if (managepwdbytes == null || managepwdbytes.length != LengthCheck.BLELOCKMANAGEPASSWORDLENGTH) {
+            if (managepwdbytes == null || managepwdbytes.length != XIAODIBLELengthCheck.BLELOCKMANAGEPASSWORDLENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.manage_pwd_length_error));
                 return false;
             }
-            dataArea = new byte[LengthCheck.BLELOCKMANAGEPASSWORDLENGTH];
+            dataArea = new byte[XIAODIBLELengthCheck.BLELOCKMANAGEPASSWORDLENGTH];
             System.arraycopy(managepwdbytes, 0, dataArea, 0, managepwdbytes.length);
         } else if (XIAODIBLECMDType.BLE_CMDTYPE_REGISTERBLELOCKDEVICE.equals(bleCmdType)) {
             cmd[0] = (byte) 0x34;
@@ -533,11 +533,11 @@ public class XIAODIBLEProtocol {
 //                return false;
 //            }
             byte[] managepwdbytes = xiaodiData.getManagepwd();
-            if (managepwdbytes == null || managepwdbytes.length != LengthCheck.BLELOCKMANAGEPASSWORDLENGTH) {
+            if (managepwdbytes == null || managepwdbytes.length != XIAODIBLELengthCheck.BLELOCKMANAGEPASSWORDLENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.manage_pwd_length_error));
                 return false;
             }
-            dataArea = new byte[LengthCheck.BLELOCKMANAGEPASSWORDLENGTH];
+            dataArea = new byte[XIAODIBLELengthCheck.BLELOCKMANAGEPASSWORDLENGTH];
             System.arraycopy(managepwdbytes, 0, dataArea, 0, managepwdbytes.length);
         } else if (XIAODIBLECMDType.BLE_CMDTYPE_GETBLELOCKSOFTWAREVERSION.equals(bleCmdType)) {
             cmd[0] = 0x37;
@@ -548,11 +548,11 @@ public class XIAODIBLEProtocol {
                 return false;
             }
             byte[] alarmpwdbytes = xiaodiData.getAlarmpwd();
-            if (alarmpwdbytes.length != LengthCheck.BLELOCKALARMPASSWORDLENGTH) {
+            if (alarmpwdbytes.length != XIAODIBLELengthCheck.BLELOCKALARMPASSWORDLENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.alarm_pwd_length_error));
                 return false;
             }
-            dataArea = new byte[LengthCheck.BLELOCKALARMPASSWORDLENGTH];
+            dataArea = new byte[XIAODIBLELengthCheck.BLELOCKALARMPASSWORDLENGTH];
             System.arraycopy(alarmpwdbytes, 0, dataArea, 0, alarmpwdbytes.length);
         } else if (XIAODIBLECMDType.BLE_CMDTYPE_OPENBLELOCKENHANCE.equals(bleCmdType)) {
             cmd[0] = 0x39;
@@ -574,15 +574,15 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.mobile_init_error));
                 return false;
             }
-            if (LengthCheck.OPENBLELOCKENHANCEDATAAREALENGTH != channelpwdbytes.length + usermobileaccountbytes.length + timebytes.length) {
+            if (XIAODIBLELengthCheck.OPENBLELOCKENHANCEDATAAREALENGTH != channelpwdbytes.length + usermobileaccountbytes.length + timebytes.length) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.data_length_check_error));
                 return false;
             }
-            if (LengthCheck.OPENBLELOCKENHANCESECRETKEYLENGTH != secretkeybytes.length) {
+            if (XIAODIBLELengthCheck.OPENBLELOCKENHANCESECRETKEYLENGTH != secretkeybytes.length) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.secretkey_length_check_error));
                 return false;
             }
-            byte[] tempData = new byte[LengthCheck.OPENBLELOCKENHANCEDATAAREALENGTH];
+            byte[] tempData = new byte[XIAODIBLELengthCheck.OPENBLELOCKENHANCEDATAAREALENGTH];
             System.arraycopy(channelpwdbytes, 0, tempData, 0, channelpwdbytes.length);
             System.arraycopy(usermobileaccountbytes, 0, tempData, channelpwdbytes.length, usermobileaccountbytes.length);
             System.arraycopy(timebytes, 0, tempData, channelpwdbytes.length + usermobileaccountbytes.length, timebytes.length);
@@ -599,7 +599,7 @@ public class XIAODIBLEProtocol {
             BLELogUtil.d(TAG, "加密后，tempDataArray[0]=" + BLEByteUtil.bytesToHexString(tempDataArray[0]));
             BLELogUtil.d(TAG, "加密后，tempDataArray[1]=" + BLEByteUtil.bytesToHexString(tempDataArray[1]));
             BLELogUtil.d(TAG, "加密后，tempDataArray[2]=" + BLEByteUtil.bytesToHexString(tempDataArray[2]));
-            dataArea = new byte[LengthCheck.OPENBLELOCKENHANCEDATAAREALENGTH];
+            dataArea = new byte[XIAODIBLELengthCheck.OPENBLELOCKENHANCEDATAAREALENGTH];
             System.arraycopy(tempDataArray[0], 0, dataArea, 0, tempDataArray[0].length);
             System.arraycopy(tempDataArray[1], 0, dataArea, tempDataArray[0].length, tempDataArray[1].length);
             System.arraycopy(tempDataArray[2], 0, dataArea, tempDataArray[0].length + tempDataArray[1].length, tempDataArray[2].length);
@@ -641,15 +641,15 @@ public class XIAODIBLEProtocol {
             }
             byte[] wifissidbytes = xiaodiData.getWifissid();
             byte[] wifipasswordbytes = xiaodiData.getWifipassword();
-            if (wifissidbytes.length != LengthCheck.BLELOCKWIFISSIDLENGTH) {
+            if (wifissidbytes.length != XIAODIBLELengthCheck.BLELOCKWIFISSIDLENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.wifi_length_error,"ssid"));
                 return false;
             }
-            if (wifipasswordbytes.length != LengthCheck.BLELOCKWIFIPASSWORDLENTH) {
+            if (wifipasswordbytes.length != XIAODIBLELengthCheck.BLELOCKWIFIPASSWORDLENTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.wifi_length_error,"password"));
                 return false;
             }
-            dataArea = new byte[LengthCheck.BLELOCKWIFISSIDLENGTH + LengthCheck.BLELOCKWIFIPASSWORDLENTH];
+            dataArea = new byte[XIAODIBLELengthCheck.BLELOCKWIFISSIDLENGTH + XIAODIBLELengthCheck.BLELOCKWIFIPASSWORDLENTH];
             System.arraycopy(wifissidbytes, 0, dataArea, 0, wifissidbytes.length);
             System.arraycopy(wifipasswordbytes, 0, dataArea, wifissidbytes.length, wifipasswordbytes.length);
         } else if (XIAODIBLECMDType.BLE_CMDTYPE_OPENLOGUPLOADTOGGLE.equals(bleCmdType)) {
@@ -659,11 +659,11 @@ public class XIAODIBLEProtocol {
                 return false;
             }
             byte[] openloguploadtogglebytes = xiaodiData.getOpenlogtoggle();
-            if (openloguploadtogglebytes.length != LengthCheck.OPENLOCKLOGUPLOADTOGGLELENGTH) {
+            if (openloguploadtogglebytes.length != XIAODIBLELengthCheck.OPENLOCKLOGUPLOADTOGGLELENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.open_lock_record_data_length_error));
                 return false;
             }
-            dataArea = new byte[LengthCheck.OPENLOCKLOGUPLOADTOGGLELENGTH];
+            dataArea = new byte[XIAODIBLELengthCheck.OPENLOCKLOGUPLOADTOGGLELENGTH];
             System.arraycopy(openloguploadtogglebytes, 0, dataArea, 0, openloguploadtogglebytes.length);
         } else {
             BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.ble_data_type_error,bleCmdType + BLEApp.bleApp.getString(R.string.unknown_order)));
@@ -710,6 +710,6 @@ public class XIAODIBLEProtocol {
         if (!XIAODIBLEUtil.checkMobileAccount(usermobileaccount)) {
             return null;
         }
-        return XIAODIBLEUtil.convertStringToBytesWithLength(new String(usermobileaccount.getBytes()), (byte) LengthCheck.BLELOCKMOBILEACCOUNTLENGTH);
+        return XIAODIBLEUtil.convertStringToBytesWithLength(new String(usermobileaccount.getBytes()), (byte) XIAODIBLELengthCheck.BLELOCKMOBILEACCOUNTLENGTH);
     }
 }

@@ -56,15 +56,15 @@ public class BLEOpenNotification {
             return;
         }
         if(bluetoothGatt == null){
-            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.OpenNotificationError.OpenNotificationError_BluetoothGattError);
+            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.CheckBluetoothGattError);
             return;
         }
         if(bluetoothGattServices == null || bluetoothGattServices.size() == 0){
-            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.OpenNotificationError.OpenNotificationError_GattServicesError);
+            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.GattServicesError);
             return;
         }
         if(uuids == null || uuids.length != 3){
-            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.OpenNotificationError.OpenNotificationError_ServiceUUIDsError);
+            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.CheckUUIDArraysError);
             return;
         }
         BLEConnect.bluetoothLeGattCallback.setUuidCharacteristicChange(uuids[1]);
@@ -90,26 +90,26 @@ public class BLEOpenNotification {
             }
         }
         if(bluetoothGattService == null){
-            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.OpenNotificationError.OpenNotificationError_CannotFindNotificationServiceUUID);
+            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.CheckBluetoothGattServiceError);
             return;
         }
         BluetoothGattCharacteristic bluetoothGattCharacteristic = bluetoothGattService.getCharacteristic(uuids[1]);
         if(bluetoothGattCharacteristic == null){
-            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.OpenNotificationError.OpenNotificationError_CannotFindNotificationCharacteristicUUID);
+            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.CheckBluetoothGattCharacteristicError);
             return;
         }
         BluetoothGattDescriptor bluetoothGattDescriptor = bluetoothGattCharacteristic.getDescriptor(uuids[2]);
         if(bluetoothGattDescriptor == null){
-            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.OpenNotificationError.OpenNotificationError_CannotFindNotificationDescriptorUUID);
+            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.CheckBluetoothGattDescriptorError);
             return;
         }
         bluetoothGattDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         if(!bluetoothGatt.setCharacteristicNotification(bluetoothGattCharacteristic, true)){
-            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.OpenNotificationError.OpenNotificationError_SetCharacteristicNotification);
+            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.SetCharacteristicNotificationError);
             return;
         }
         if(!bluetoothGatt.writeDescriptor(bluetoothGattDescriptor)){
-            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.OpenNotificationError.OpenNotificationError_WriteDescriptor);
+            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.WriteDescriptorError);
             return;
         }
     }

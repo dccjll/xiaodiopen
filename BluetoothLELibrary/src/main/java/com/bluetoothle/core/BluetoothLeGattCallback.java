@@ -24,7 +24,7 @@ import java.util.UUID;
 public class BluetoothLeGattCallback extends BluetoothGattCallback {
 
     private final static String TAG = BluetoothLeGattCallback.class.getSimpleName();
-    private BLEConnect.OnGattConnectListener onGattConnectListener;
+    private BLEConnect.OnGattBLEConnectListener onGattBLEConnectListener;
     private BLEFindService.OnGattBLEFindServiceListener onGattBLEFindServiceListener;
     private BLEOpenNotification.OnGattBLEOpenNotificationListener onGattBLEOpenNotificationListener;
     private BLEWriteData.OnGattBLEWriteDataListener onGattBLEWriteDataListener;
@@ -33,32 +33,36 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
     private UUID uuidCharacteristicChange;
     private UUID uuidDescriptorWrite;
 
-    public void registerOnGattConnectListener(BLEConnect.OnGattConnectListener onGattConnectListener) {
-        this.onGattConnectListener = onGattConnectListener;
+    public void registerOnGattConnectListener(BLEConnect.OnGattBLEConnectListener onGattBLEConnectListener) {
+        this.onGattBLEConnectListener = onGattBLEConnectListener;
         this.onGattBLEFindServiceListener = null;
         this.onGattBLEOpenNotificationListener = null;
         this.onGattBLEWriteDataListener = null;
     }
 
     public void registerOnGattBLEFindServiceListener(BLEFindService.OnGattBLEFindServiceListener onGattBLEFindServiceListener) {
-        this.onGattConnectListener = null;
+        this.onGattBLEConnectListener = null;
         this.onGattBLEFindServiceListener = onGattBLEFindServiceListener;
         this.onGattBLEOpenNotificationListener = null;
         this.onGattBLEWriteDataListener = null;
     }
 
     public void registerOnGattBLEOpenNotificationListener(BLEOpenNotification.OnGattBLEOpenNotificationListener onGattBLEOpenNotificationListener) {
-        this.onGattConnectListener = null;
+        this.onGattBLEConnectListener = null;
         this.onGattBLEFindServiceListener = null;
         this.onGattBLEOpenNotificationListener = onGattBLEOpenNotificationListener;
         this.onGattBLEWriteDataListener = null;
     }
 
     public void registerOnGattBLEWriteDataListener(BLEWriteData.OnGattBLEWriteDataListener onGattBLEWriteDataListener) {
-        this.onGattConnectListener = null;
+        this.onGattBLEConnectListener = null;
         this.onGattBLEFindServiceListener = null;
         this.onGattBLEOpenNotificationListener = null;
         this.onGattBLEWriteDataListener = onGattBLEWriteDataListener;
+    }
+
+    public void registerOnBLEResponseListener(OnBLEResponseListener onBLEResponseListener) {
+        this.onBLEResponseListener = onBLEResponseListener;
     }
 
     public void setUuidCharacteristicWrite(UUID uuidCharacteristicWrite) {
@@ -81,37 +85,28 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
                 BLELogUtil.e(TAG, "正在连接,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
             }else if(newState == BluetoothProfile.STATE_CONNECTED){
                 BLELogUtil.e(TAG, "已连接,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
-                if(onGattConnectListener != null){
-                    onGattConnectListener.onConnectSuccss(gatt, status, newState);
+                if(onGattBLEConnectListener != null){
+                    onGattBLEConnectListener.onConnectSuccss(gatt, status, newState);
                 }
             }else if(newState == BluetoothProfile.STATE_DISCONNECTING){
                 BLELogUtil.e(TAG, "正在断开,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
             }else if(newState == BluetoothProfile.STATE_DISCONNECTED){
                 BLELogUtil.e(TAG, "已断开,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
-                if (onGattConnectListener != null) {
-                    onGattConnectListener.onConnectFail(BLEConstants.ConnectError.ConnectError_BLEConextError);
-                    return;
-                }
-                if (onGattBLEFindServiceListener != null) {
-                    onGattBLEFindServiceListener.onFindServiceFail(BLEConstants.FindServiceError.FindServiceError_Disconnect);
-                    return;
-                }
-                if (onGattBLEOpenNotificationListener != null) {
-                    onGattBLEOpenNotificationListener.onOpenNotificationFail(BLEConstants.OpenNotificationError.OpenNotificationError_OpenFail);
-                }
+                BLEUtil.removeConnect(gatt.getDevice().getAddress(), BluetoothLeManage.connectedBluetoothGattList);
+                onResponseError(BLEConstants.Error.DisconnectError);
             }
         }else{
             BLELogUtil.e(TAG, "收到蓝牙底层协议栈异常消息,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
-            if (onGattConnectListener != null) {
-                onGattConnectListener.onConnectFail(BLEConstants.ConnectError.ConnectError_ReceivedExceptionStackCodeError);
+            if (onGattBLEConnectListener != null) {
+                onGattBLEConnectListener.onConnectFail(BLEConstants.Error.ReceivedBLEStackCodeError);
                 return;
             }
             if (onGattBLEFindServiceListener != null) {
-                onGattBLEFindServiceListener.onFindServiceFail(BLEConstants.FindServiceError.FindServiceError_ReceivedExceptionStackCodeError);
+                onGattBLEFindServiceListener.onFindServiceFail(BLEConstants.Error.ReceivedBLEStackCodeError);
                 return;
             }
             if (onGattBLEOpenNotificationListener != null) {
-                onGattBLEOpenNotificationListener.onOpenNotificationFail(BLEConstants.OpenNotificationError.OpenNotificationError_OpenFail);
+                onGattBLEOpenNotificationListener.onOpenNotificationFail(BLEConstants.Error.ReceivedBLEStackCodeError);
             }
         }
     }
@@ -125,7 +120,7 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
             }
         }else{
             if (onGattBLEFindServiceListener != null) {
-                onGattBLEFindServiceListener.onFindServiceFail(BLEConstants.FindServiceError.FindServiceError_FindServiceFail);
+                onGattBLEFindServiceListener.onFindServiceFail(BLEConstants.Error.FindServiceError);
             }
         }
     }
@@ -139,7 +134,7 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         if(status != BluetoothGatt.GATT_SUCCESS || !characteristic.getUuid().toString().equalsIgnoreCase(uuidCharacteristicWrite.toString())){
             if(onGattBLEWriteDataListener != null){
-                onGattBLEWriteDataListener.onWriteDataFail(BLEConstants.WriteDataError.WriteDataError_WriteDataFail);
+                onGattBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
             }
             return;
         }
@@ -168,7 +163,7 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
         BLELogUtil.e(TAG, "onDescriptorWrite,gatt=" + gatt + ",descriptor=" + descriptor + ",status=" + status);
         if(status != BluetoothGatt.GATT_SUCCESS || !descriptor.getUuid().toString().equalsIgnoreCase(uuidDescriptorWrite.toString())){
             if (onGattBLEOpenNotificationListener != null) {
-                onGattBLEOpenNotificationListener.onOpenNotificationFail(BLEConstants.OpenNotificationError.OpenNotificationError_OpenFail);
+                onGattBLEOpenNotificationListener.onOpenNotificationFail(BLEConstants.Error.OpenNotificationError);
             }
             return;
         }
@@ -190,5 +185,28 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
     @Override
     public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
         super.onMtuChanged(gatt, mtu, status);
+    }
+
+    /**
+     * 响应失败回复
+     * @param errorCode     错误码
+     */
+    private void onResponseError(Integer errorCode){
+        if(onGattBLEWriteDataListener != null){
+            onGattBLEWriteDataListener.onWriteDataFail(errorCode);
+            return;
+        }
+        if(onGattBLEOpenNotificationListener != null){
+            onGattBLEOpenNotificationListener.onOpenNotificationFail(errorCode);
+            return;
+        }
+        if(onGattBLEFindServiceListener != null){
+            onGattBLEFindServiceListener.onFindServiceFail(errorCode);
+            return;
+        }
+        if(onGattBLEConnectListener != null){
+            onGattBLEConnectListener.onConnectFail(errorCode);
+            return;
+        }
     }
 }
