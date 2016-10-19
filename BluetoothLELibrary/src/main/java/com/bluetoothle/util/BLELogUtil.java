@@ -18,7 +18,7 @@ import java.util.List;
 public class BLELogUtil {
     private static String tag = "BLELogUtil";
     public static Boolean LOG_SWITCH = true; // 日志文件总开关
-    public static Boolean LOG_WRITE_TO_FILE = true;// 日志写入文件开关
+    public static Boolean LOG_WRITE_TO_FILE = false;// 日志写入文件开关
     private static char LOG_TYPE = 'v';// 输入日志类型，w代表只输出告警信息等，v代表输出所有信息
     private static String LOG_FILEPATH = Environment.getExternalStorageDirectory() + "/secondlock/BLELogUtil/";// 本类输出的日志文件名称
     private static String LOG_FILENAME = "log.txt";// 本类输出的日志文件名称

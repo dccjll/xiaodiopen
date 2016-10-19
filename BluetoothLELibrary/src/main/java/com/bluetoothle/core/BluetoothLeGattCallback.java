@@ -92,7 +92,7 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
                 BLELogUtil.e(TAG, "正在断开,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
             }else if(newState == BluetoothProfile.STATE_DISCONNECTED){
                 BLELogUtil.e(TAG, "已断开,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
-                BLEUtil.removeConnect(gatt.getDevice().getAddress(), BluetoothLeManage.connectedBluetoothGattList);
+                BLEUtil.removeConnect(gatt.getDevice().getAddress());
                 onResponseError(BLEConstants.Error.DisconnectError);
             }
         }else{

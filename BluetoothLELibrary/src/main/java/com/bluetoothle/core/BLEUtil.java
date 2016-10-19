@@ -17,11 +17,10 @@ public class BLEUtil {
     /**
      * 验证当前mac地址的设备是否已连接
      * @param targetMac   目标设备mac地址
-     * @param connectedBluetoothGattList    连接缓冲列表
      * @return  true 连接存在 false 连接不存在
      */
-    public static Boolean checkConnectStatus(String targetMac, List<BluetoothGatt> connectedBluetoothGattList){
-        for(BluetoothGatt gatt : connectedBluetoothGattList){
+    public static Boolean checkConnectStatus(String targetMac){
+        for(BluetoothGatt gatt : BluetoothLeManage.connectedBluetoothGattList){
             if(gatt.getDevice().getAddress().equalsIgnoreCase(targetMac)){
                 return true;
             }
@@ -32,11 +31,10 @@ public class BLEUtil {
     /**
      * 获取一个连接
      * @param targetMac 目标设备mac地址
-     * @param connectedBluetoothGattList    连接缓冲列表
      * @return  一个连接
      */
-    public static BluetoothGatt getBluetoothGatt(String targetMac, List<BluetoothGatt> connectedBluetoothGattList){
-        for(BluetoothGatt gatt : connectedBluetoothGattList){
+    public static BluetoothGatt getBluetoothGatt(String targetMac){
+        for(BluetoothGatt gatt : BluetoothLeManage.connectedBluetoothGattList){
             if(gatt.getDevice().getAddress().equalsIgnoreCase(targetMac)){
                 return gatt;
             }
@@ -47,10 +45,9 @@ public class BLEUtil {
     /**
      * 删除一个断开的连接
      * @param targetMac 目标设备mac地址
-     * @param connectedBluetoothGattList    连接缓冲列表
      */
-    public static void removeConnect(String targetMac, List<BluetoothGatt> connectedBluetoothGattList){
-        Iterator<BluetoothGatt> gattIterator = connectedBluetoothGattList.iterator();
+    public static void removeConnect(String targetMac){
+        Iterator<BluetoothGatt> gattIterator = BluetoothLeManage.connectedBluetoothGattList.iterator();
         while(gattIterator.hasNext()){
             if(gattIterator.next().getDevice().getAddress().equalsIgnoreCase(targetMac)){
                 gattIterator.remove();
@@ -62,11 +59,11 @@ public class BLEUtil {
     /**
      * 断开一个蓝牙连接
      * @param targetMac 目标设备mac地址
-     * @param connectedBluetoothGattList    连接缓冲列表
      */
-    public static void closeBluetoothGatt(String targetMac, List<BluetoothGatt> connectedBluetoothGattList){
-        for(BluetoothGatt gatt : connectedBluetoothGattList){
+    public static void closeBluetoothGatt(String targetMac){
+        for(BluetoothGatt gatt : BluetoothLeManage.connectedBluetoothGattList){
             if(gatt.getDevice().getAddress().equalsIgnoreCase(targetMac)){
+                removeConnect(targetMac);
                 gatt.disconnect();
                 gatt.close();
                 break;

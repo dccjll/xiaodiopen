@@ -1,11 +1,25 @@
 package com.dsm.xiaodiopen;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
+
+import com.bluetoothle.core.BLEUtil;
+import com.bluetoothle.core.init.BLEInit;
+import com.bluetoothle.core.init.OnInitListener;
+import com.bluetoothle.core.writeData.OnBLEWriteDataListener;
+import com.bluetoothle.factory.doorguard.DoorGuardSend;
+import com.bluetoothle.util.BLEByteUtil;
+import com.bluetoothle.util.BLELogUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,10 +32,13 @@ import java.util.Map;
  */
 
 public class MainActivity extends Activity {
+
+    private Dialog dialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        setContentView(R.layout.activity_main);
         ListView mainListView = (ListView) findViewById(R.id.mainListView);
         final List<Map<String, String>> mainList = new ArrayList<>();
 
@@ -61,9 +78,71 @@ public class MainActivity extends Activity {
                 new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        dialog = buildProgressDialog(MainActivity.this, "正在开门", false);
+                        dialog.show();
+                        Map<String, String> item = mainList.get(position);
+                        String deviceType = item.get("deviceType");
+                        final String deviceMac = item.get("deviceMac");
+                        if("11".equalsIgnoreCase(deviceType)){
+                            Toast.makeText(MainActivity.this, "暂不支持锁设备开门", Toast.LENGTH_LONG).show();
+                            dismissDialog(dialog);
+                        }else if("13".equalsIgnoreCase(deviceType)){
+                            DoorGuardSend.send(
+                                    deviceMac,
+                                    new OnBLEWriteDataListener() {
+                                        @Override
+                                        public void onWriteDataFinish() {
+                                            BLELogUtil.d("所有数据发送成功");
+                                            dismissDialog(dialog);
+                                            BLEUtil.closeBluetoothGatt(deviceMac);
+                                        }
 
+                                        @Override
+                                        public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                                            BLELogUtil.d("单次数据发送成功,gatt=" + gatt + ",data=" + BLEByteUtil.bytesToHexString(characteristic.getValue()) + ",status=" + status);
+                                        }
+
+                                        @Override
+                                        public void onWriteDataFail(Integer errorCode) {
+                                            BLELogUtil.e("开门失败,errorCode=" + errorCode);
+                                            Toast.makeText(MainActivity.this, "开门失败", Toast.LENGTH_LONG).show();
+                                            dismissDialog(dialog);
+                                            BLEUtil.closeBluetoothGatt(deviceMac);
+                                        }
+                                    }
+                            );
+                        }else{
+                            Toast.makeText(MainActivity.this, "设备类型错误", Toast.LENGTH_LONG).show();
+                        }
                     }
                 }
         );
+        BLEInit bleInit = new BLEInit(
+                MainActivity.this,
+                new OnInitListener() {
+                    @Override
+                    public void onInitSuccess(BluetoothAdapter bluetoothAdapter) {
+                        BLELogUtil.e("蓝牙初始化成功,bluetoothAdapter=" + bluetoothAdapter);
+                    }
+
+                    @Override
+                    public void onInitFail(Integer errorCode) {
+                        BLELogUtil.e("蓝牙初始化失败,errorCode=" + errorCode);
+                    }
+                });
+        bleInit.initBLE();
+    }
+
+    private Dialog buildProgressDialog(Activity context, String title, boolean cancelable){
+        dialog = new ProgressDialog(context);
+        dialog.setTitle(title);
+        dialog.setCancelable(cancelable);
+        return dialog;
+    }
+
+    private void dismissDialog(Dialog dialog){
+        if(dialog != null && dialog.isShowing()){
+            dialog.dismiss();
+        }
     }
 }

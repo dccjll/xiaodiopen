@@ -138,7 +138,7 @@ public class BluetoothLeManage {
     private OnBLEConnectListener onBLEConnectListener_ = new OnBLEConnectListener() {//临时的蓝牙连接监听器
         @Override
         public void onConnectSuccess(BluetoothGatt bluetoothGatt, int status, int newState) {
-            if (BLEUtil.getBluetoothGatt(bluetoothGatt.getDevice().getAddress(), connectedBluetoothGattList) == null) {
+            if (BLEUtil.getBluetoothGatt(bluetoothGatt.getDevice().getAddress()) == null) {
                 connectedBluetoothGattList.add(bluetoothGatt);
             }
             if(onBLEFindServiceListener != null || onBLEOpenNotificationListener != null || onBLEWriteDataListener != null){
@@ -167,7 +167,7 @@ public class BluetoothLeManage {
             BLELogUtil.e(TAG, "没有配置回调接口");
             return;
         }
-        BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(targetDeviceAddress, connectedBluetoothGattList);
+        BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(targetDeviceAddress);
         if(bluetoothGatt != null){
             onBLEConnectListener.onConnectSuccess(bluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_CONNECTED);
             return;
@@ -224,7 +224,7 @@ public class BluetoothLeManage {
             notificationuuids[2] = serviceUUIDs[4];
             receiveBLEData = true;
         }
-        BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(targetDeviceAddress, connectedBluetoothGattList);
+        BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(targetDeviceAddress);
         if(bluetoothGatt != null){
             if(bluetoothGatt.getServices() == null || bluetoothGatt.getServices().size() == 0){
                 bleFindService = new BLEFindService(bluetoothGatt, onBLEFindServiceListener_);
@@ -286,7 +286,7 @@ public class BluetoothLeManage {
             notificationuuids[2] = serviceUUIDs[4];
             receiveBLEData = true;
         }
-        BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(targetDeviceAddress, connectedBluetoothGattList);
+        BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(targetDeviceAddress);
         if(bluetoothGatt != null){
             if(bluetoothGatt.getServices() == null || bluetoothGatt.getServices().size() == 0){
                 bleFindService = new BLEFindService(bluetoothGatt, onBLEFindServiceListener_);
@@ -364,7 +364,7 @@ public class BluetoothLeManage {
             return;
         }
         BLEConnect.bluetoothLeGattCallback.registerOnBLEResponseListener(onBLEResponseListener);
-        BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(targetDeviceAddress, connectedBluetoothGattList);
+        BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(targetDeviceAddress);
         if(bluetoothGatt != null){
             if(bluetoothGatt.getServices() == null || bluetoothGatt.getServices().size() == 0){
                 bleFindService = new BLEFindService(bluetoothGatt, onBLEFindServiceListener_);
