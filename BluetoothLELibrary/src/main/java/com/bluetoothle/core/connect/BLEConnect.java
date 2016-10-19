@@ -42,7 +42,9 @@ public class BLEConnect {
         this.bluetoothDevice = bluetoothDevice;
         this.onBLEConnectListener = onBLEConnectListener;
         context = BluetoothLeService.bluetoothLeService;
-        bluetoothLeGattCallback = new BluetoothLeGattCallback();
+        if (bluetoothLeGattCallback == null) {
+            bluetoothLeGattCallback = new BluetoothLeGattCallback();
+        }
     }
 
     /**
@@ -56,7 +58,9 @@ public class BLEConnect {
         this.targetMacAddress = targetMacAddress;
         this.onBLEConnectListener = onBLEConnectListener;
         context = BluetoothLeService.bluetoothLeService;
-        bluetoothLeGattCallback = new BluetoothLeGattCallback();
+        if (bluetoothLeGattCallback == null) {
+            bluetoothLeGattCallback = new BluetoothLeGattCallback();
+        }
     }
 
     /**

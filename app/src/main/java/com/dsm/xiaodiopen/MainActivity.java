@@ -34,6 +34,7 @@ import java.util.Map;
 public class MainActivity extends Activity {
 
     private Dialog dialog;
+    private BLEInit bleInit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,9 +71,9 @@ public class MainActivity extends Activity {
         mainData5.put("deviceName", "T700_978E");
         mainData5.put("deviceMac", "FE:0A:A3:D2:97:8E");
         mainData5.put("deviceType", "11");
-        mainList.add(mainData4);
+        mainList.add(mainData5);
 
-        mainListView.setAdapter(new SimpleAdapter(this, mainList, android.R.layout.simple_list_item_2, new String[]{"deviceName", "deviceType"}, new int[]{android.R.id.text1, android.R.id.text2}));
+        mainListView.setAdapter(new SimpleAdapter(this, mainList, android.R.layout.simple_list_item_2, new String[]{"deviceName", "deviceMac"}, new int[]{android.R.id.text1, android.R.id.text2}));
 
         mainListView.setOnItemClickListener(
                 new AdapterView.OnItemClickListener() {
@@ -117,7 +118,7 @@ public class MainActivity extends Activity {
                     }
                 }
         );
-        BLEInit bleInit = new BLEInit(
+        bleInit = new BLEInit(
                 MainActivity.this,
                 new OnInitListener() {
                     @Override
@@ -130,7 +131,8 @@ public class MainActivity extends Activity {
                         BLELogUtil.e("蓝牙初始化失败,errorCode=" + errorCode);
                     }
                 });
-        bleInit.initBLE();
+        bleInit.registerReceiver();
+        bleInit.startBLEService();
     }
 
     private Dialog buildProgressDialog(Activity context, String title, boolean cancelable){
@@ -144,5 +146,12 @@ public class MainActivity extends Activity {
         if(dialog != null && dialog.isShowing()){
             dialog.dismiss();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        bleInit.unregisterReceiver();
+        dismissDialog(dialog);
     }
 }

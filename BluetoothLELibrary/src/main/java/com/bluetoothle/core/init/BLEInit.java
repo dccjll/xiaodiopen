@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Handler;
+import android.os.Looper;
 
 import com.bluetoothle.core.BLEConstants;
 import com.bluetoothle.core.BluetoothLeService;
@@ -37,24 +38,45 @@ public class BLEInit {
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equalsIgnoreCase(BluetoothLeService.ACTION_BLUETOOTHLESERVICE_BOOT_COMPLETE)){
-                BLEInit.this.context.unregisterReceiver(this);
-                initBLE();
+                new Thread(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                Looper.prepare();
+                                initBLE();
+                                Looper.loop();
+                            }
+                        }
+                ).start();
             }
         }
     };
 
     /**
+     * 注册蓝牙状态广播监听器
+     */
+    public void registerReceiver(){
+        context.registerReceiver(initBLEBroadcastReceiver, new IntentFilter(BluetoothLeService.ACTION_BLUETOOTHLESERVICE_BOOT_COMPLETE));
+    }
+
+    /**
+     * 注销蓝牙状态广播监听器
+     */
+    public void unregisterReceiver(){
+        context.unregisterReceiver(initBLEBroadcastReceiver);
+    }
+
+    /**
      * 启动后台蓝牙服务,启动成功后手动调用initBLE,适用app启动时调用
      */
     public void startBLEService(){
-        context.registerReceiver(initBLEBroadcastReceiver, new IntentFilter(BluetoothLeService.ACTION_BLUETOOTHLESERVICE_BOOT_COMPLETE));
         context.startService(new Intent(context, BluetoothLeService.class));
     }
 
     /**
      * 蓝牙环境检测、初始化,扫描之间手动调用,传入之前启动的服务的上下文
      */
-    public void initBLE(){
+    private void initBLE(){
         if(onInitListener == null){
             BLELogUtil.e(TAG, "初始化监听器不能为空");
             return;

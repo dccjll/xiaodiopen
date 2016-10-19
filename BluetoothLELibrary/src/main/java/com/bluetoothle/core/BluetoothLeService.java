@@ -41,10 +41,10 @@ public class BluetoothLeService extends Service {
 					BLELogUtil.e("打开蓝牙耗费时间:" + (endOpen - startOpen)/1000 + "s");
 					BLEInit.BLUETOOTH_IS_OPEN = true;
 				}else if(blueState == BluetoothAdapter.STATE_TURNING_OFF){
-					BLELogUtil.e("onReceive---------STATE_ON");
+					BLELogUtil.e("onReceive---------STATE_TURNING_OFF");
 					startClose = System.currentTimeMillis();
 				}else if(blueState == BluetoothAdapter.STATE_OFF){
-					BLELogUtil.e("onReceive---------STATE_ON");
+					BLELogUtil.e("onReceive---------STATE_OFF");
 					Long endClose = System.currentTimeMillis();
 					BLELogUtil.e("关闭蓝牙耗费时间:" + (endClose - startClose)/1000 + "s");
 					BLEInit.BLUETOOTH_IS_OPEN = false;

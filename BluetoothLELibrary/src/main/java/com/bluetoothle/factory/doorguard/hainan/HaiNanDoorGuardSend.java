@@ -75,6 +75,7 @@ public class HaiNanDoorGuardSend {
         }
         BluetoothLeManage bluetoothLeManage = new BluetoothLeManage(BLEInit.bluetoothAdapter, mac, null, DoorGuardProtocol.buildTwoUUIDs(), null);
         bluetoothLeManage.setData(data);
+        bluetoothLeManage.setOnBLEWriteDataListener(onBLEWriteDataListener);
         bluetoothLeManage.write();
     }
 }

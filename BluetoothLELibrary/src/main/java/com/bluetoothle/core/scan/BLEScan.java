@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 
 import com.bluetoothle.core.BLEConstants;
+import com.bluetoothle.core.BLEUtil;
 import com.bluetoothle.util.BLELogUtil;
 import com.bluetoothle.util.BLEStringUtil;
 
@@ -52,14 +53,17 @@ public class BLEScan {
         if(BLEStringUtil.isNotEmpty(targetDeviceAddress) && targetDeviceAddress.split(":").length == 6){
             this.targetDeviceAddress = targetDeviceAddress;
         }
-        boolean targetDeviceAddressListCheck = true;
-        for(String mac : targetDeviceAddressList){
-            if(mac == null || mac.split(":").length != 6){
-                targetDeviceAddressListCheck = false;
-                break;
-            }
-        }
-        if(targetDeviceAddressListCheck){
+//        boolean targetDeviceAddressListCheck = true;
+//        for(String mac : targetDeviceAddressList){
+//            if(mac == null || mac.split(":").length != 6){
+//                targetDeviceAddressListCheck = false;
+//                break;
+//            }
+//        }
+//        if(targetDeviceAddressListCheck){
+//            this.targetDeviceAddressList = targetDeviceAddressList;
+//        }
+        if(BLEUtil.checkTargetAddressList(targetDeviceAddressList)){
             this.targetDeviceAddressList = targetDeviceAddressList;
         }
         if(serviceUUIDs != null && serviceUUIDs.length >= 0){
@@ -130,7 +134,12 @@ public class BLEScan {
         }
         scanHandler.postDelayed(scanRunnable, timeoutScanBLE);
         foundDeviceList.clear();
-        scanControl(true);
+        try {
+            scanControl(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            onBLEScanListener.scanFail(BLEConstants.Error.OccurScanningError);
+        }
     }
 
     /**

@@ -62,7 +62,7 @@ public class BluetoothLeManage {
     private UUID[] serviceUUIDs;//设备的UUID,uuids=2 则不接受设备返回的数据, uuids=5 则接收设备返回的数据
     private UUID[] notificationuuids;//从serviceUUIDs分离出来的通知UUID,取serviceUUIDs的2,3,4个UUID
     private Integer timeoutScanBLE;//扫描蓝牙超时时间
-    private Integer currentScanCount;//当前扫描次数
+    private Integer currentScanCount = 0;//当前扫描次数
     private BLEScan bleScan;//蓝牙扫描管理器
     private OnBLEScanListener onBLEScanListener;//蓝牙扫描监听器
     public void setOnBLEScanListener(OnBLEScanListener onBLEScanListener) {
@@ -94,7 +94,7 @@ public class BluetoothLeManage {
 
         @Override
         public void scanFail(Integer errorCode) {
-            BLELogUtil.e(TAG, "第" + ++currentScanCount + "次扫描失败,errorCode=" + errorCode);
+            BLELogUtil.e(TAG, "第" + currentScanCount + "次扫描失败,errorCode=" + errorCode);
             scan();
         }
     };
@@ -129,7 +129,7 @@ public class BluetoothLeManage {
     /**
      * 连接蓝牙设备
      */
-    private Integer currentConnectCount;//当前连接次数
+    private Integer currentConnectCount = 0;//当前连接次数
     private BLEConnect bleConnect;//蓝牙连接管理器
     private OnBLEConnectListener onBLEConnectListener;//蓝牙连接监听器
     public void setOnBLEConnectListener(OnBLEConnectListener onBLEConnectListener) {
@@ -155,6 +155,7 @@ public class BluetoothLeManage {
 
         @Override
         public void onConnectFail(Integer errorCode) {
+            BLELogUtil.e(TAG, "第" + currentConnectCount + "次连接失败,errorCode=" + errorCode);
             if(currentConnectCount ++ == BluetoothLeConfig.maxConnectCount){
                 onResponseError(BLEConstants.Error.ConnectError);
                 return;
@@ -178,7 +179,7 @@ public class BluetoothLeManage {
     /**
      * 寻找服务
      */
-    private Integer currentFindServiceCount;//当前找服务次数
+    private Integer currentFindServiceCount = 0;//当前找服务次数
     private BLEFindService bleFindService;//蓝牙找服务管理器
     private OnBLEFindServiceListener onBLEFindServiceListener;//找服务监听器
     public void setOnBLEFindServiceListener(OnBLEFindServiceListener onBLEFindServiceListener) {
@@ -201,6 +202,7 @@ public class BluetoothLeManage {
 
         @Override
         public void onFindServiceFail(Integer errorCode) {
+            BLELogUtil.e(TAG, "第" + currentFindServiceCount + "次找服务失败,errorCode=" + errorCode);
             if(currentFindServiceCount ++ == BluetoothLeConfig.maxFindServiceCount){
                 onResponseError(BLEConstants.Error.FindServiceError);
                 return;
@@ -240,7 +242,7 @@ public class BluetoothLeManage {
     /**
      * 打开通知
      */
-    private Integer currentOpenNotificationCount;//当前打开通知次数
+    private Integer currentOpenNotificationCount = 0;//当前打开通知次数
     private BLEOpenNotification bleOpenNotification;//蓝牙打开通知管理器
     private OnBLEOpenNotificationListener onBLEOpenNotificationListener;//打开通知监听器
     public void setOnBLEOpenNotificationListener(OnBLEOpenNotificationListener onBLEOpenNotificationListener) {
@@ -263,6 +265,7 @@ public class BluetoothLeManage {
 
         @Override
         public void onOpenNotificationFail(Integer errorCode) {
+            BLELogUtil.e(TAG, "第" + (currentOpenNotificationCount + 1) + "次打开通知失败,errorCode=" + errorCode);
             if(currentOpenNotificationCount ++ == BluetoothLeConfig.maxOpenNotificationCount){
                 onResponseError(BLEConstants.Error.OpenNotificationError);
                 return;
@@ -303,7 +306,7 @@ public class BluetoothLeManage {
     /**
      * 写数据
      */
-    private Boolean receiveBLEData = true;//是否接收设备返回的数据
+    private Boolean receiveBLEData = false;//是否接收设备返回的数据
     private OnBLEResponseListener onBLEResponseListener;//接收数据监听器
     public void setOnBLEResponseListener(OnBLEResponseListener onBLEResponseListener) {
         this.onBLEResponseListener = onBLEResponseListener;
@@ -362,6 +365,9 @@ public class BluetoothLeManage {
         if(receiveBLEData && onBLEResponseListener == null){
             onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckOnBLEResponseListenerError);
             return;
+        }
+        if(BLEConnect.bluetoothLeGattCallback == null){
+            BLEConnect.bluetoothLeGattCallback = new BluetoothLeGattCallback();
         }
         BLEConnect.bluetoothLeGattCallback.registerOnBLEResponseListener(onBLEResponseListener);
         BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(targetDeviceAddress);

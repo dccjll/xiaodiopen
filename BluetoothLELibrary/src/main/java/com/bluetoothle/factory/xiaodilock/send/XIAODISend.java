@@ -45,6 +45,7 @@ public class XIAODISend {
         }
         BluetoothLeManage bluetoothLeManage = new BluetoothLeManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildTwoUUIDs(), null);
         bluetoothLeManage.setData(data);
+        bluetoothLeManage.setOnBLEWriteDataListener(onBLEWriteDataListener);
         bluetoothLeManage.write();
     }
 
@@ -78,6 +79,7 @@ public class XIAODISend {
         }
         BluetoothLeManage bluetoothLeManage = new BluetoothLeManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildTwoUUIDs(), null);
         bluetoothLeManage.setData(data);
+        bluetoothLeManage.setOnBLEWriteDataListener(onBLEWriteDataListener);
         bluetoothLeManage.setOnBLEResponseListener(XIAODIDataReceived);
         bluetoothLeManage.write();
     }

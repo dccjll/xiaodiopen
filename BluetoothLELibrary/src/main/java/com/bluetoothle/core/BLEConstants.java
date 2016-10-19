@@ -42,5 +42,6 @@ public class BLEConstants {
         public final static Integer CheckBLEDataError = 0x101E;                             //验证发送数据异常
         public final static Integer WriteDataError = 0x101F;                                //写数据异常
         public final static Integer CheckOnBLEResponseListenerError = 0x1020;               //验证接收数据监听器异常
+        public final static Integer OccurScanningError = 0x1021;                            //发生扫描异常
     }
 }
