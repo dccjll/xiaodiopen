@@ -66,8 +66,8 @@ public class BLEWriteData {
             return;
         }
         writtenDataLength = 0;
-        BLEConnect.bluetoothLeGattCallback.setUuidCharacteristicWrite(uuids[1]);
-        BLEConnect.bluetoothLeGattCallback.registerOnGattBLEWriteDataListener(
+        BLEConnect.bleGattCallback.setUuidCharacteristicWrite(uuids[1]);
+        BLEConnect.bleGattCallback.registerOnGattBLEWriteDataListener(
                 new OnGattBLEWriteDataListener() {
                     @Override
                     public void onWriteDataFinish() {

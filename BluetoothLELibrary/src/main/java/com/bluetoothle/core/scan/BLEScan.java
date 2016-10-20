@@ -6,6 +6,7 @@ import android.os.Handler;
 
 import com.bluetoothle.core.BLEConstants;
 import com.bluetoothle.core.BLEUtil;
+import com.bluetoothle.util.BLEByteUtil;
 import com.bluetoothle.util.BLELogUtil;
 import com.bluetoothle.util.BLEStringUtil;
 
@@ -29,6 +30,7 @@ public class BLEScan {
     private Integer timeoutScanBLE = 5*1000;//扫描蓝牙默认超时时间
     private OnBLEScanListener onBLEScanListener;//扫描监听器
 
+    private final static String TAG = BLEScan.class.getSimpleName();
     private List<Map<String, Object>> foundDeviceList = new ArrayList<>();
     private Boolean isScaning = false;
     private Handler scanHandler;
@@ -74,6 +76,7 @@ public class BLEScan {
         leScanCallback = new BluetoothAdapter.LeScanCallback() {
             @Override
             public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+                BLELogUtil.d(TAG, "发现周围的蓝牙设备,device=" + device.getAddress() + ",rssi=" + rssi + ",scanRecord=" + BLEByteUtil.bytesToHexString(scanRecord));
                 synchronized (BLEScan.this) {
                     boolean contains = false;
                     for(Map<String, Object> entry : foundDeviceList){
@@ -92,15 +95,15 @@ public class BLEScan {
                     if(!BLEStringUtil.isEmpty(targetDeviceAddress)){
                         if(device.getAddress().equalsIgnoreCase(targetDeviceAddress)){
                             scanControl(false);
-                            onBLEScanListener.foundDevice(device, rssi, scanRecord);
+                            onBLEScanListener.onFoundDevice(device, rssi, scanRecord);
                         }
                     }else if(targetDeviceAddressList.size() > 0){
                         if(targetDeviceAddressList.contains(device.getAddress())){
                             scanControl(false);
-                            onBLEScanListener.foundDevice(device, rssi, scanRecord);
+                            onBLEScanListener.onFoundDevice(device, rssi, scanRecord);
                         }
                     }else{
-                        onBLEScanListener.foundDevice(device, rssi, scanRecord);
+                        onBLEScanListener.onFoundDevice(device, rssi, scanRecord);
                     }
                 }
             }
@@ -112,10 +115,10 @@ public class BLEScan {
             public void run() {
                 scanControl(false);
                 if(BLEStringUtil.isNotEmpty(targetDeviceAddress) || (targetDeviceAddressList.size() > 0)){
-                    onBLEScanListener.scanFail(BLEConstants.Error.NotFoundDeviceError);
+                    onBLEScanListener.onScanFail(BLEConstants.Error.NotFoundDeviceError);
                     return;
                 }
-                onBLEScanListener.scanFinish(foundDeviceList);
+                onBLEScanListener.onScanFinish(foundDeviceList);
             }
         };
     }
@@ -129,7 +132,7 @@ public class BLEScan {
             return;
         }
         if(bluetoothAdapter == null){
-            onBLEScanListener.scanFail(BLEConstants.Error.CheckBluetoothAdapterError);
+            onBLEScanListener.onScanFail(BLEConstants.Error.CheckBluetoothAdapterError);
             return;
         }
         scanHandler.postDelayed(scanRunnable, timeoutScanBLE);
@@ -138,7 +141,7 @@ public class BLEScan {
             scanControl(true);
         } catch (Exception e) {
             e.printStackTrace();
-            onBLEScanListener.scanFail(BLEConstants.Error.OccurScanningError);
+            onBLEScanListener.onScanFail(BLEConstants.Error.OccurScanningError);
         }
     }
 
@@ -149,7 +152,7 @@ public class BLEScan {
     private void scanControl(Boolean scanFlag){
         if(scanFlag){
             if(isScaning){
-                onBLEScanListener.scanFail(BLEConstants.Error.BLEScanningError);
+                onBLEScanListener.onScanFail(BLEConstants.Error.BLEScanningError);
                 return;
             }
             isScaning = true;

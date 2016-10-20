@@ -21,9 +21,9 @@ import java.util.UUID;
  * 底层蓝牙回调状态管理器
  */
 
-public class BluetoothLeGattCallback extends BluetoothGattCallback {
+public class BLEGattCallback extends BluetoothGattCallback {
 
-    private final static String TAG = BluetoothLeGattCallback.class.getSimpleName();
+    private final static String TAG = BLEGattCallback.class.getSimpleName();
     private BLEConnect.OnGattBLEConnectListener onGattBLEConnectListener;
     private BLEFindService.OnGattBLEFindServiceListener onGattBLEFindServiceListener;
     private BLEOpenNotification.OnGattBLEOpenNotificationListener onGattBLEOpenNotificationListener;
@@ -97,17 +97,7 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
             }
         }else{
             BLELogUtil.e(TAG, "收到蓝牙底层协议栈异常消息,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
-            if (onGattBLEConnectListener != null) {
-                onGattBLEConnectListener.onConnectFail(BLEConstants.Error.ReceivedBLEStackCodeError);
-                return;
-            }
-            if (onGattBLEFindServiceListener != null) {
-                onGattBLEFindServiceListener.onFindServiceFail(BLEConstants.Error.ReceivedBLEStackCodeError);
-                return;
-            }
-            if (onGattBLEOpenNotificationListener != null) {
-                onGattBLEOpenNotificationListener.onOpenNotificationFail(BLEConstants.Error.ReceivedBLEStackCodeError);
-            }
+            onResponseError(BLEConstants.Error.ReceivedBLEStackCodeError);
         }
     }
 
@@ -132,6 +122,7 @@ public class BluetoothLeGattCallback extends BluetoothGattCallback {
 
     @Override
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+        BLELogUtil.e(TAG, "onCharacteristicWrite,gatt=" + gatt + ",characteristic=" + characteristic + ",status=" + status + ",writedData=" + BLEByteUtil.bytesToHexString(characteristic.getValue()));
         if(status != BluetoothGatt.GATT_SUCCESS || !characteristic.getUuid().toString().equalsIgnoreCase(uuidCharacteristicWrite.toString())){
             if(onGattBLEWriteDataListener != null){
                 onGattBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);

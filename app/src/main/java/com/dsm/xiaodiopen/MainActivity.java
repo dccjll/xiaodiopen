@@ -7,19 +7,21 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
-import com.bluetoothle.core.BLEUtil;
 import com.bluetoothle.core.init.BLEInit;
 import com.bluetoothle.core.init.OnInitListener;
 import com.bluetoothle.core.writeData.OnBLEWriteDataListener;
 import com.bluetoothle.factory.doorguard.DoorGuardSend;
 import com.bluetoothle.util.BLEByteUtil;
 import com.bluetoothle.util.BLELogUtil;
+import com.dsm.xiaodiopen.util.PermisstionsUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,8 +35,27 @@ import java.util.Map;
 
 public class MainActivity extends Activity {
 
+    private final static String TAG = MainActivity.class.getSimpleName();
+
     private Dialog dialog;
     private BLEInit bleInit;
+    private String mac;//设备mac地址
+    private String mobile;//注册到锁上的用户手机号码
+    private String channelpwd;//锁的信道密码
+
+    private MainHandler mainHandler = new MainHandler();
+    private class MainHandler extends Handler{
+        @Override
+        public void handleMessage(Message msg) {
+            dismissDialog(dialog);
+            Boolean flag = (Boolean) msg.obj;
+            if(flag){
+                Toast.makeText(MainActivity.this, "开门成功", Toast.LENGTH_LONG).show();
+            }else{
+                Toast.makeText(MainActivity.this, "开门失败", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,13 +86,23 @@ public class MainActivity extends Activity {
         mainData4.put("deviceName", "T700_A6EB");
         mainData4.put("deviceMac", "ED:83:5C:50:A6:EB");
         mainData4.put("deviceType", "11");
+        mainData4.put("mobile", "18668165280");
+        mainData4.put("channelpwd", "1459AFA3");
         mainList.add(mainData4);
 
         Map<String, String> mainData5 = new HashMap<>();
         mainData5.put("deviceName", "T700_978E");
         mainData5.put("deviceMac", "FE:0A:A3:D2:97:8E");
         mainData5.put("deviceType", "11");
+        mainData5.put("mobile", "18668165280");
+        mainData5.put("channelpwd", "71682D5C");
         mainList.add(mainData5);
+
+        Map<String, String> mainData6 = new HashMap<>();
+        mainData6.put("deviceName", "桌面门禁");
+        mainData6.put("deviceMac", "E6:3F:5E:AC:16:D3");
+        mainData6.put("deviceType", "13");
+        mainList.add(mainData6);
 
         mainListView.setAdapter(new SimpleAdapter(this, mainList, android.R.layout.simple_list_item_2, new String[]{"deviceName", "deviceMac"}, new int[]{android.R.id.text1, android.R.id.text2}));
 
@@ -83,56 +114,93 @@ public class MainActivity extends Activity {
                         dialog.show();
                         Map<String, String> item = mainList.get(position);
                         String deviceType = item.get("deviceType");
-                        final String deviceMac = item.get("deviceMac");
+                        mac = item.get("deviceMac");
                         if("11".equalsIgnoreCase(deviceType)){
-                            Toast.makeText(MainActivity.this, "暂不支持锁设备开门", Toast.LENGTH_LONG).show();
-                            dismissDialog(dialog);
+                            mobile = item.get("mobile");
+                            channelpwd = item.get("channelpwd");
+                            getSecretkey();
                         }else if("13".equalsIgnoreCase(deviceType)){
-                            DoorGuardSend.send(
-                                    deviceMac,
-                                    new OnBLEWriteDataListener() {
-                                        @Override
-                                        public void onWriteDataFinish() {
-                                            BLELogUtil.d("所有数据发送成功");
-                                            dismissDialog(dialog);
-                                            BLEUtil.closeBluetoothGatt(deviceMac);
-                                        }
-
-                                        @Override
-                                        public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                                            BLELogUtil.d("单次数据发送成功,gatt=" + gatt + ",data=" + BLEByteUtil.bytesToHexString(characteristic.getValue()) + ",status=" + status);
-                                        }
-
-                                        @Override
-                                        public void onWriteDataFail(Integer errorCode) {
-                                            BLELogUtil.e("开门失败,errorCode=" + errorCode);
-                                            Toast.makeText(MainActivity.this, "开门失败", Toast.LENGTH_LONG).show();
-                                            dismissDialog(dialog);
-                                            BLEUtil.closeBluetoothGatt(deviceMac);
-                                        }
-                                    }
-                            );
+                            guardOpen();
                         }else{
                             Toast.makeText(MainActivity.this, "设备类型错误", Toast.LENGTH_LONG).show();
                         }
                     }
                 }
         );
-        bleInit = new BLEInit(
-                MainActivity.this,
-                new OnInitListener() {
+        PermisstionsUtil.checkSelfPermission(this, PermisstionsUtil.ACCESS_FINE_LOCATION, PermisstionsUtil.ACCESS_FINE_LOCATION_CODE, "6.0以上系统使用蓝牙需要位置权限",
+                new PermisstionsUtil.PermissionResult() {
                     @Override
-                    public void onInitSuccess(BluetoothAdapter bluetoothAdapter) {
-                        BLELogUtil.e("蓝牙初始化成功,bluetoothAdapter=" + bluetoothAdapter);
+                    public void granted(int requestCode) {
+                        bleInit = new BLEInit(
+                                MainActivity.this,
+                                new OnInitListener() {
+                                    @Override
+                                    public void onInitSuccess(BluetoothAdapter bluetoothAdapter) {
+                                        BLELogUtil.e(TAG, "蓝牙初始化成功,bluetoothAdapter=" + bluetoothAdapter);
+                                    }
+
+                                    @Override
+                                    public void onInitFail(Integer errorCode) {
+                                        BLELogUtil.e(TAG, "蓝牙初始化失败,errorCode=" + errorCode);
+                                    }
+                                });
+                        bleInit.registerReceiver();
+                        bleInit.startBLEService();
                     }
 
                     @Override
-                    public void onInitFail(Integer errorCode) {
-                        BLELogUtil.e("蓝牙初始化失败,errorCode=" + errorCode);
+                    public void denied(int requestCode) {
+                        Toast.makeText(MainActivity.this, "位置权限被阻止,请手动开启", Toast.LENGTH_LONG).show();
                     }
                 });
-        bleInit.registerReceiver();
-        bleInit.startBLEService();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        PermisstionsUtil.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    /**
+     * 门禁开门
+     */
+    private void guardOpen(){
+        DoorGuardSend.send(
+                mac,
+                new OnBLEWriteDataListener() {
+                    @Override
+                    public void onWriteDataFinish() {
+                        BLELogUtil.d(TAG, "所有数据发送成功,开门成功");
+                        mainHandler.obtainMessage(0, true).sendToTarget();
+                    }
+
+                    @Override
+                    public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                        BLELogUtil.d(TAG, "单次数据发送成功,gatt=" + gatt + ",data=" + BLEByteUtil.bytesToHexString(characteristic.getValue()) + ",status=" + status);
+                    }
+
+                    @Override
+                    public void onWriteDataFail(Integer errorCode) {
+                        BLELogUtil.e(TAG, "开门失败,errorCode=" + errorCode);
+                        mainHandler.obtainMessage(0, false).sendToTarget();
+                    }
+                }
+        );
+    }
+
+    /**
+     * 小嘀锁开门获取通讯秘钥
+     */
+    private void getSecretkey(){
+//        byte[] timebytes =
+//        xiaodiOpen();
+    }
+
+    /**
+     * 小嘀开门
+     */
+    private void xiaodiOpen(){
+
     }
 
     private Dialog buildProgressDialog(Activity context, String title, boolean cancelable){

@@ -1,7 +1,7 @@
 package com.bluetoothle.factory.doorguard.hainan;
 
 import com.bluetoothle.core.BLEConstants;
-import com.bluetoothle.core.BluetoothLeManage;
+import com.bluetoothle.core.BLEManage;
 import com.bluetoothle.core.init.BLEInit;
 import com.bluetoothle.core.writeData.OnBLEWriteDataListener;
 import com.bluetoothle.factory.doorguard.DoorGuardProtocol;
@@ -34,7 +34,7 @@ public class HaiNanDoorGuardSend {
         }
         byte[] data = HaiNanDoorGuardProtocol.buildOpenBLEData(cmd, mobile);
         BLELogUtil.e(TAG, "准备发送数据,mac=" + mac + ",data=" + BLEByteUtil.bytesToHexString(data));
-        send(mac, data, onBLEWriteDataListener);
+        send(mac, data, onBLEWriteDataListener, true);
     }
 
     /**
@@ -55,7 +55,7 @@ public class HaiNanDoorGuardSend {
         }
         byte[] data = HaiNanDoorGuardProtocol.buildSettingBLEData(cmd, toData);
         BLELogUtil.e(TAG, "准备发送数据,mac=" + mac + ",data=" + BLEByteUtil.bytesToHexString(data));
-        send(mac, data, onBLEWriteDataListener);
+        send(mac, data, onBLEWriteDataListener, false);
     }
 
     /**
@@ -64,7 +64,7 @@ public class HaiNanDoorGuardSend {
      * @param data  发送的数据
      * @param onBLEWriteDataListener    数据发送监听器
      */
-    private static void send(String mac, byte[] data, OnBLEWriteDataListener onBLEWriteDataListener) {
+    private static void send(String mac, byte[] data, OnBLEWriteDataListener onBLEWriteDataListener, Boolean disconnectOnFinish) {
         if(data == null){
             onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBLEDataError);
             return;
@@ -73,9 +73,9 @@ public class HaiNanDoorGuardSend {
             onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothAdapterError);
             return;
         }
-        BluetoothLeManage bluetoothLeManage = new BluetoothLeManage(BLEInit.bluetoothAdapter, mac, null, DoorGuardProtocol.buildTwoUUIDs(), null);
-        bluetoothLeManage.setData(data);
-        bluetoothLeManage.setOnBLEWriteDataListener(onBLEWriteDataListener);
-        bluetoothLeManage.write();
+        BLEManage bleManage = new BLEManage(BLEInit.bluetoothAdapter, mac, null, DoorGuardProtocol.buildTwoUUIDs(), null, disconnectOnFinish);
+        bleManage.setData(data);
+        bleManage.setOnBLEWriteDataListener(onBLEWriteDataListener);
+        bleManage.write();
     }
 }

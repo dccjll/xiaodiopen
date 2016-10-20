@@ -6,8 +6,8 @@ import android.bluetooth.BluetoothGatt;
 import android.content.Context;
 
 import com.bluetoothle.core.BLEConstants;
-import com.bluetoothle.core.BluetoothLeGattCallback;
-import com.bluetoothle.core.BluetoothLeService;
+import com.bluetoothle.core.BLEGattCallback;
+import com.bluetoothle.core.BLEService;
 import com.bluetoothle.util.BLELogUtil;
 
 /**
@@ -20,7 +20,7 @@ public class BLEConnect {
     private final static String TAG = BLEConnect.class.getSimpleName();
     private Context context;//蓝牙连接的上下文对象
     private BluetoothDevice bluetoothDevice;//需要连接的蓝牙设备
-    public static BluetoothLeGattCallback bluetoothLeGattCallback;//连接状态回调管理器
+    public static BLEGattCallback bleGattCallback;//连接状态回调管理器
     private BluetoothAdapter bluetoothAdapter;//当前设备蓝牙适配器
     private String targetMacAddress;//远程蓝牙设备的mac地址
     private OnBLEConnectListener onBLEConnectListener;//蓝牙连接监听器
@@ -41,9 +41,9 @@ public class BLEConnect {
     public BLEConnect(BluetoothDevice bluetoothDevice, OnBLEConnectListener onBLEConnectListener) {
         this.bluetoothDevice = bluetoothDevice;
         this.onBLEConnectListener = onBLEConnectListener;
-        context = BluetoothLeService.bluetoothLeService;
-        if (bluetoothLeGattCallback == null) {
-            bluetoothLeGattCallback = new BluetoothLeGattCallback();
+        context = BLEService.bleService;
+        if (bleGattCallback == null) {
+            bleGattCallback = new BLEGattCallback();
         }
     }
 
@@ -57,9 +57,9 @@ public class BLEConnect {
         this.bluetoothAdapter = bluetoothAdapter;
         this.targetMacAddress = targetMacAddress;
         this.onBLEConnectListener = onBLEConnectListener;
-        context = BluetoothLeService.bluetoothLeService;
-        if (bluetoothLeGattCallback == null) {
-            bluetoothLeGattCallback = new BluetoothLeGattCallback();
+        context = BLEService.bleService;
+        if (bleGattCallback == null) {
+            bleGattCallback = new BLEGattCallback();
         }
     }
 
@@ -79,7 +79,7 @@ public class BLEConnect {
             onBLEConnectListener.onConnectFail(BLEConstants.Error.CheckConnectDeviceError);
             return;
         }
-        bluetoothLeGattCallback.registerOnGattConnectListener(
+        bleGattCallback.registerOnGattConnectListener(
                 new OnGattBLEConnectListener() {
                     @Override
                     public void onConnectSuccss(BluetoothGatt bluetoothGatt, int status, int newState) {
@@ -115,7 +115,7 @@ public class BLEConnect {
             onBLEConnectListener.onConnectFail(BLEConstants.Error.CheckConnectDeviceError);
             return;
         }
-        bluetoothDevice.connectGatt(context, false, bluetoothLeGattCallback);
+        bluetoothDevice.connectGatt(context, false, bleGattCallback);
     }
 
     /**

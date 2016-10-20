@@ -14,11 +14,11 @@ import com.bluetoothle.util.BLELogUtil;
 /**
  * 底层蓝牙服务
  */
-public class BluetoothLeService extends Service {
+public class BLEService extends Service {
 
-	private final static String TAG = BluetoothLeService.class.getSimpleName();
+	private final static String TAG = BLEService.class.getSimpleName();
 	public final static String ACTION_BLUETOOTHLESERVICE_BOOT_COMPLETE = "com.bluetoothle.ACTION_BLUETOOTHLESERVICE_BOOT_COMPLETE";
-	public static BluetoothLeService bluetoothLeService;
+	public static BLEService bleService;
 
 	/**
 	 * 活跃在服务中的广播接收器
@@ -57,7 +57,7 @@ public class BluetoothLeService extends Service {
 	public void onCreate() {
 		super.onCreate();
 
-		bluetoothLeService = this;
+		bleService = this;
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
 		registerReceiver(bluetoothLeBroadcastReceiver, filter);
@@ -74,7 +74,7 @@ public class BluetoothLeService extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		bluetoothLeService = null;
+		bleService = null;
 		unregisterReceiver(bluetoothLeBroadcastReceiver);
 		BLELogUtil.d(TAG, "后台蓝牙服务器已关闭,当前服务主线程为====" + Thread.currentThread());
 	}

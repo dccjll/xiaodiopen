@@ -67,9 +67,9 @@ public class BLEOpenNotification {
             onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.CheckUUIDArraysError);
             return;
         }
-        BLEConnect.bluetoothLeGattCallback.setUuidCharacteristicChange(uuids[1]);
-        BLEConnect.bluetoothLeGattCallback.setUuidDescriptorWrite(uuids[2]);
-        BLEConnect.bluetoothLeGattCallback.registerOnGattBLEOpenNotificationListener(
+        BLEConnect.bleGattCallback.setUuidCharacteristicChange(uuids[1]);
+        BLEConnect.bleGattCallback.setUuidDescriptorWrite(uuids[2]);
+        BLEConnect.bleGattCallback.registerOnGattBLEOpenNotificationListener(
                 new OnGattBLEOpenNotificationListener() {
                     @Override
                     public void onOpenNotificationSuccess(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {

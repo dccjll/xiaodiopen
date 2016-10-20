@@ -11,7 +11,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.bluetoothle.core.BLEConstants;
-import com.bluetoothle.core.BluetoothLeService;
+import com.bluetoothle.core.BLEService;
 import com.bluetoothle.util.BLELogUtil;
 
 /**
@@ -37,7 +37,7 @@ public class BLEInit {
     private BroadcastReceiver initBLEBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().equalsIgnoreCase(BluetoothLeService.ACTION_BLUETOOTHLESERVICE_BOOT_COMPLETE)){
+            if(intent.getAction().equalsIgnoreCase(BLEService.ACTION_BLUETOOTHLESERVICE_BOOT_COMPLETE)){
                 new Thread(
                         new Runnable() {
                             @Override
@@ -56,7 +56,7 @@ public class BLEInit {
      * 注册蓝牙状态广播监听器
      */
     public void registerReceiver(){
-        context.registerReceiver(initBLEBroadcastReceiver, new IntentFilter(BluetoothLeService.ACTION_BLUETOOTHLESERVICE_BOOT_COMPLETE));
+        context.registerReceiver(initBLEBroadcastReceiver, new IntentFilter(BLEService.ACTION_BLUETOOTHLESERVICE_BOOT_COMPLETE));
     }
 
     /**
@@ -70,7 +70,7 @@ public class BLEInit {
      * 启动后台蓝牙服务,启动成功后手动调用initBLE,适用app启动时调用
      */
     public void startBLEService(){
-        context.startService(new Intent(context, BluetoothLeService.class));
+        context.startService(new Intent(context, BLEService.class));
     }
 
     /**

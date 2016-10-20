@@ -32,10 +32,11 @@ import java.util.UUID;
  * 蓝牙低功耗管理
  */
 
-public class BluetoothLeManage {
+public class BLEManage {
 
-    private final static String TAG = BluetoothLeManage.class.getSimpleName();
+    private final static String TAG = BLEManage.class.getSimpleName();
     public static List<BluetoothGatt> connectedBluetoothGattList = new ArrayList<>();//当前已连接的设备服务器
+    private BLECoreResponse bleCoreResponse = new BLECoreResponse();//蓝牙核心响应管理器
 
     /**
      * 蓝牙任务管理器构造器
@@ -45,12 +46,19 @@ public class BluetoothLeManage {
      * @param serviceUUIDs  设备的UUID,uuids=2 则不接受设备返回的数据, uuids=5 则接收设备返回的数据
      * @param timeoutScanBLE    扫描蓝牙超时时间
      */
-    public BluetoothLeManage(BluetoothAdapter bluetoothAdapter, final String targetDeviceAddress, final List<String> targetDeviceAddressList, final UUID[] serviceUUIDs, Integer timeoutScanBLE) {
+    public BLEManage(BluetoothAdapter bluetoothAdapter, final String targetDeviceAddress, final List<String> targetDeviceAddressList, final UUID[] serviceUUIDs, Integer timeoutScanBLE) {
         this.bluetoothAdapter = bluetoothAdapter;
         this.targetDeviceAddress = targetDeviceAddress;
         this.targetDeviceAddressList = targetDeviceAddressList;
         this.serviceUUIDs = serviceUUIDs;
         this.timeoutScanBLE = timeoutScanBLE;
+        bleCoreResponse.setRunning(true);
+        bleCoreResponse.setMac(targetDeviceAddress);
+    }
+
+    public BLEManage(BluetoothAdapter bluetoothAdapter, final String targetDeviceAddress, final List<String> targetDeviceAddressList, final UUID[] serviceUUIDs, Integer timeoutScanBLE, Boolean disconnectOnFinish) {
+        this(bluetoothAdapter, targetDeviceAddress, targetDeviceAddressList, serviceUUIDs, timeoutScanBLE);
+        bleCoreResponse.setDisconnectOnFinish(disconnectOnFinish);
     }
 
     /**
@@ -70,30 +78,30 @@ public class BluetoothLeManage {
     }
     private OnBLEScanListener onBLEScanListener_ = new OnBLEScanListener() {//临时的蓝牙扫描监听器
         @Override
-        public void foundDevice(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord) {
+        public void onFoundDevice(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord) {
             if(onBLEConnectListener != null || onBLEFindServiceListener != null || onBLEOpenNotificationListener != null || onBLEWriteDataListener != null){
                 bleConnect = new BLEConnect(bluetoothDevice, onBLEConnectListener_);
                 bleConnect.connect();
                 return;
             }
             if (onBLEScanListener != null) {
-                onBLEScanListener.foundDevice(bluetoothDevice, rssi, scanRecord);
+                bleCoreResponse.onFoundDevice(onBLEScanListener, bluetoothDevice, rssi, scanRecord);
             }
         }
 
         @Override
-        public void scanFinish(List<Map<String, Object>> bluetoothDeviceList) {
+        public void onScanFinish(List<Map<String, Object>> bluetoothDeviceList) {
             if(bluetoothDeviceList.size() == 0){
                 onResponseError(BLEConstants.Error.NotFoundDeviceError);
                 return;
             }
             if (onBLEScanListener != null) {
-                onBLEScanListener.scanFinish(bluetoothDeviceList);
+                bleCoreResponse.onScanFinish(onBLEScanListener, bluetoothDeviceList);
             }
         }
 
         @Override
-        public void scanFail(Integer errorCode) {
+        public void onScanFail(Integer errorCode) {
             BLELogUtil.e(TAG, "第" + currentScanCount + "次扫描失败,errorCode=" + errorCode);
             scan();
         }
@@ -118,11 +126,11 @@ public class BluetoothLeManage {
                 return;
             }
         }
-        if(currentScanCount ++ == BluetoothLeConfig.maxScanCount){
+        if(currentScanCount ++ == BLEConfig.maxScanCount){
             onResponseError(BLEConstants.Error.NotFoundDeviceError);
             return;
         }
-        bleScan = new BLEScan(bluetoothAdapter, targetDeviceAddress, targetDeviceAddressList, serviceUUIDs, timeoutScanBLE, onBLEScanListener_);
+        bleScan = new BLEScan(bluetoothAdapter, targetDeviceAddress, targetDeviceAddressList, null, timeoutScanBLE, onBLEScanListener_);
         bleScan.scan();
     }
 
@@ -149,14 +157,14 @@ public class BluetoothLeManage {
                 return;
             }
             if (onBLEConnectListener != null) {
-                onBLEConnectListener.onConnectSuccess(bluetoothGatt, status, newState);
+                bleCoreResponse.onConnectSuccess(onBLEConnectListener, bluetoothGatt, status, newState);
             }
         }
 
         @Override
         public void onConnectFail(Integer errorCode) {
-            BLELogUtil.e(TAG, "第" + currentConnectCount + "次连接失败,errorCode=" + errorCode);
-            if(currentConnectCount ++ == BluetoothLeConfig.maxConnectCount){
+            BLELogUtil.e(TAG, "第" + ++currentConnectCount + "次连接失败,errorCode=" + errorCode);
+            if(currentConnectCount == BLEConfig.maxConnectCount){
                 onResponseError(BLEConstants.Error.ConnectError);
                 return;
             }
@@ -170,7 +178,7 @@ public class BluetoothLeManage {
         }
         BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(targetDeviceAddress);
         if(bluetoothGatt != null){
-            onBLEConnectListener.onConnectSuccess(bluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_CONNECTED);
+            bleCoreResponse.onConnectSuccess(onBLEConnectListener, bluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_CONNECTED);
             return;
         }
         scan();
@@ -188,22 +196,27 @@ public class BluetoothLeManage {
     private OnBLEFindServiceListener onBLEFindServiceListener_ = new OnBLEFindServiceListener() {//临时的蓝牙找服务器监听器
         @Override
         public void onFindServiceSuccess(BluetoothGatt bluetoothGatt, int status, List<BluetoothGattService> bluetoothGattServices) {
-            if(onBLEOpenNotificationListener != null || onBLEWriteDataListener != null){
+            if(onBLEFindServiceListener != null){
+                bleCoreResponse.onFindServiceSuccess(onBLEFindServiceListener, bluetoothGatt, status, bluetoothGattServices);
+                return;
+            }
+            if(onBLEOpenNotificationListener != null || (onBLEWriteDataListener != null && receiveBLEData)){
                 if(bleOpenNotification == null){
                     bleOpenNotification = new BLEOpenNotification(bluetoothGattServices, bluetoothGatt, notificationuuids, onBLEOpenNotificationListener_);
                 }
                 bleOpenNotification.openNotification();
-                return;
-            }
-            if(onBLEFindServiceListener != null){
-                onBLEFindServiceListener.onFindServiceSuccess(bluetoothGatt, status, bluetoothGattServices);
+            }else{
+                if(bleWriteData == null){
+                    bleWriteData = new BLEWriteData(bluetoothGatt, writeuuids, data, onBLEWriteDataListener_);
+                }
+                bleWriteData.writeData();
             }
         }
 
         @Override
         public void onFindServiceFail(Integer errorCode) {
-            BLELogUtil.e(TAG, "第" + currentFindServiceCount + "次找服务失败,errorCode=" + errorCode);
-            if(currentFindServiceCount ++ == BluetoothLeConfig.maxFindServiceCount){
+            BLELogUtil.e(TAG, "第" + ++currentFindServiceCount + "次找服务失败,errorCode=" + errorCode);
+            if(currentFindServiceCount == BLEConfig.maxFindServiceCount){
                 onResponseError(BLEConstants.Error.FindServiceError);
                 return;
             }
@@ -216,7 +229,7 @@ public class BluetoothLeManage {
             return;
         }
         if(serviceUUIDs == null || (serviceUUIDs.length != 2 && serviceUUIDs.length != 5) ){
-            onBLEFindServiceListener.onFindServiceFail(BLEConstants.Error.CheckUUIDArraysError);
+            bleCoreResponse.onResponseError(onBLEFindServiceListener, BLEConstants.Error.CheckUUIDArraysError);
             return;
         }
         if (serviceUUIDs.length == 5) {
@@ -233,7 +246,7 @@ public class BluetoothLeManage {
                 bleFindService.findService();
                 return;
             }
-            onBLEFindServiceListener.onFindServiceSuccess(bluetoothGatt, BluetoothGatt.GATT_SUCCESS, bluetoothGatt.getServices());
+            bleCoreResponse.onFindServiceSuccess(onBLEFindServiceListener, bluetoothGatt, BluetoothGatt.GATT_SUCCESS, bluetoothGatt.getServices());
             return;
         }
         scan();
@@ -259,15 +272,15 @@ public class BluetoothLeManage {
                 return;
             }
             if(onBLEOpenNotificationListener != null){
-                onBLEOpenNotificationListener.onOpenNotificationSuccess(gatt, descriptor, status);
+                bleCoreResponse.onOpenNotificationSuccess(onBLEOpenNotificationListener, gatt, descriptor, status);
             }
         }
 
         @Override
         public void onOpenNotificationFail(Integer errorCode) {
-            BLELogUtil.e(TAG, "第" + (currentOpenNotificationCount + 1) + "次打开通知失败,errorCode=" + errorCode);
-            if(currentOpenNotificationCount ++ == BluetoothLeConfig.maxOpenNotificationCount){
-                onResponseError(BLEConstants.Error.OpenNotificationError);
+            BLELogUtil.e(TAG, "第" + ++currentOpenNotificationCount + "次打开通知失败,errorCode=" + errorCode);
+            if(currentOpenNotificationCount == BLEConfig.maxOpenNotificationCount){
+                onResponseError(errorCode);
                 return;
             }
             bleOpenNotification.openNotification();
@@ -279,7 +292,7 @@ public class BluetoothLeManage {
             return;
         }
         if(serviceUUIDs == null || (serviceUUIDs.length != 2 && serviceUUIDs.length != 5) ){
-            onBLEOpenNotificationListener.onOpenNotificationFail(BLEConstants.Error.CheckUUIDArraysError);
+            bleCoreResponse.onResponseError(onBLEOpenNotificationListener, BLEConstants.Error.CheckUUIDArraysError);
             return;
         }
         if (serviceUUIDs.length == 5) {
@@ -306,6 +319,7 @@ public class BluetoothLeManage {
     /**
      * 写数据
      */
+    private UUID[] writeuuids;//从serviceUUIDs分离出来的通知UUID,取serviceUUIDs的0,1个UUID
     private Boolean receiveBLEData = false;//是否接收设备返回的数据
     private OnBLEResponseListener onBLEResponseListener;//接收数据监听器
     public void setOnBLEResponseListener(OnBLEResponseListener onBLEResponseListener) {
@@ -324,21 +338,21 @@ public class BluetoothLeManage {
         @Override
         public void onWriteDataFinish() {
             if(onBLEWriteDataListener != null){
-                onBLEWriteDataListener.onWriteDataFinish();
+                bleCoreResponse.onWriteDataFinish(onBLEWriteDataListener);
             }
         }
 
         @Override
         public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             if(onBLEWriteDataListener != null){
-                onBLEWriteDataListener.onWriteDataSuccess(gatt, characteristic, status);
+                bleCoreResponse.onWriteDataSuccess(onBLEWriteDataListener, gatt, characteristic, status);
             }
         }
 
         @Override
         public void onWriteDataFail(Integer errorCode) {
             if(onBLEWriteDataListener != null){
-                onBLEWriteDataListener.onWriteDataFail(errorCode);
+                bleCoreResponse.onResponseError(onBLEWriteDataListener, errorCode);
             }
         }
     };
@@ -348,13 +362,16 @@ public class BluetoothLeManage {
             return;
         }
         if(data == null || data.length == 0){
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBLEDataError);
+            bleCoreResponse.onResponseError(onBLEWriteDataListener, BLEConstants.Error.CheckBLEDataError);
             return;
         }
         if(serviceUUIDs == null || (serviceUUIDs.length != 2 && serviceUUIDs.length != 5) ){
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckUUIDArraysError);
+            bleCoreResponse.onResponseError(onBLEWriteDataListener, BLEConstants.Error.CheckUUIDArraysError);
             return;
         }
+        writeuuids = new UUID[2];
+        writeuuids[0] = serviceUUIDs[0];
+        writeuuids[1] = serviceUUIDs[1];
         if (serviceUUIDs.length == 5) {
             notificationuuids = new UUID[3];
             notificationuuids[0] = serviceUUIDs[2];
@@ -363,13 +380,13 @@ public class BluetoothLeManage {
             receiveBLEData = true;
         }
         if(receiveBLEData && onBLEResponseListener == null){
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckOnBLEResponseListenerError);
+            bleCoreResponse.onResponseError(onBLEWriteDataListener, BLEConstants.Error.CheckOnBLEResponseListenerError);
             return;
         }
-        if(BLEConnect.bluetoothLeGattCallback == null){
-            BLEConnect.bluetoothLeGattCallback = new BluetoothLeGattCallback();
+        if(BLEConnect.bleGattCallback == null){
+            BLEConnect.bleGattCallback = new BLEGattCallback();
         }
-        BLEConnect.bluetoothLeGattCallback.registerOnBLEResponseListener(onBLEResponseListener);
+        BLEConnect.bleGattCallback.registerOnBLEResponseListener(onBLEResponseListener);
         BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(targetDeviceAddress);
         if(bluetoothGatt != null){
             if(bluetoothGatt.getServices() == null || bluetoothGatt.getServices().size() == 0){
@@ -390,23 +407,23 @@ public class BluetoothLeManage {
      */
     private void onResponseError(Integer errorCode){
         if(onBLEWriteDataListener != null){
-            onBLEWriteDataListener.onWriteDataFail(errorCode);
+            bleCoreResponse.onResponseError(onBLEWriteDataListener, errorCode);
             return;
         }
         if(onBLEOpenNotificationListener != null){
-            onBLEOpenNotificationListener.onOpenNotificationFail(errorCode);
+            bleCoreResponse.onResponseError(onBLEOpenNotificationListener, errorCode);
             return;
         }
         if(onBLEFindServiceListener != null){
-            onBLEFindServiceListener.onFindServiceFail(errorCode);
+            bleCoreResponse.onResponseError(onBLEFindServiceListener, errorCode);
             return;
         }
         if(onBLEConnectListener != null){
-            onBLEConnectListener.onConnectFail(errorCode);
+            bleCoreResponse.onResponseError(onBLEConnectListener, errorCode);
             return;
         }
         if(onBLEScanListener != null){
-            onBLEScanListener.scanFail(errorCode);
+            bleCoreResponse.onResponseError(onBLEScanListener, errorCode);
         }
     }
 }

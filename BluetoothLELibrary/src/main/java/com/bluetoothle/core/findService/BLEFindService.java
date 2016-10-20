@@ -50,7 +50,7 @@ public class BLEFindService {
             onBLEFindServiceListener.onFindServiceFail(BLEConstants.Error.CheckBluetoothGattError);
             return;
         }
-        BLEConnect.bluetoothLeGattCallback.registerOnGattBLEFindServiceListener(
+        BLEConnect.bleGattCallback.registerOnGattBLEFindServiceListener(
                 new OnGattBLEFindServiceListener() {
                     @Override
                     public void onFindServiceSuccess(BluetoothGatt bluetoothGatt, int status, List<BluetoothGattService> bluetoothGattServices) {

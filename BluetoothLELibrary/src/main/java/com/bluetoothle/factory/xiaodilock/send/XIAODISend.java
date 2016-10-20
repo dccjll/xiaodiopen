@@ -1,7 +1,7 @@
 package com.bluetoothle.factory.xiaodilock.send;
 
 import com.bluetoothle.core.BLEConstants;
-import com.bluetoothle.core.BluetoothLeManage;
+import com.bluetoothle.core.BLEManage;
 import com.bluetoothle.core.init.BLEInit;
 import com.bluetoothle.core.writeData.OnBLEWriteDataListener;
 import com.bluetoothle.factory.xiaodilock.protocol.XIAODIBLEProtocol;
@@ -43,10 +43,10 @@ public class XIAODISend {
             onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothAdapterError);
             return;
         }
-        BluetoothLeManage bluetoothLeManage = new BluetoothLeManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildTwoUUIDs(), null);
-        bluetoothLeManage.setData(data);
-        bluetoothLeManage.setOnBLEWriteDataListener(onBLEWriteDataListener);
-        bluetoothLeManage.write();
+        BLEManage bleManage = new BLEManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildTwoUUIDs(), null);
+        bleManage.setData(data);
+        bleManage.setOnBLEWriteDataListener(onBLEWriteDataListener);
+        bleManage.write();
     }
 
     /**
@@ -77,10 +77,10 @@ public class XIAODISend {
             onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothAdapterError);
             return;
         }
-        BluetoothLeManage bluetoothLeManage = new BluetoothLeManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildTwoUUIDs(), null);
-        bluetoothLeManage.setData(data);
-        bluetoothLeManage.setOnBLEWriteDataListener(onBLEWriteDataListener);
-        bluetoothLeManage.setOnBLEResponseListener(XIAODIDataReceived);
-        bluetoothLeManage.write();
+        BLEManage bleManage = new BLEManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildTwoUUIDs(), null);
+        bleManage.setData(data);
+        bleManage.setOnBLEWriteDataListener(onBLEWriteDataListener);
+        bleManage.setOnBLEResponseListener(XIAODIDataReceived);
+        bleManage.write();
     }
 }

@@ -20,7 +20,7 @@ public class BLEUtil {
      * @return  true 连接存在 false 连接不存在
      */
     public static Boolean checkConnectStatus(String targetMac){
-        for(BluetoothGatt gatt : BluetoothLeManage.connectedBluetoothGattList){
+        for(BluetoothGatt gatt : BLEManage.connectedBluetoothGattList){
             if(gatt.getDevice().getAddress().equalsIgnoreCase(targetMac)){
                 return true;
             }
@@ -34,7 +34,7 @@ public class BLEUtil {
      * @return  一个连接
      */
     public static BluetoothGatt getBluetoothGatt(String targetMac){
-        for(BluetoothGatt gatt : BluetoothLeManage.connectedBluetoothGattList){
+        for(BluetoothGatt gatt : BLEManage.connectedBluetoothGattList){
             if(gatt.getDevice().getAddress().equalsIgnoreCase(targetMac)){
                 return gatt;
             }
@@ -47,7 +47,7 @@ public class BLEUtil {
      * @param targetMac 目标设备mac地址
      */
     public static void removeConnect(String targetMac){
-        Iterator<BluetoothGatt> gattIterator = BluetoothLeManage.connectedBluetoothGattList.iterator();
+        Iterator<BluetoothGatt> gattIterator = BLEManage.connectedBluetoothGattList.iterator();
         while(gattIterator.hasNext()){
             if(gattIterator.next().getDevice().getAddress().equalsIgnoreCase(targetMac)){
                 gattIterator.remove();
@@ -60,14 +60,23 @@ public class BLEUtil {
      * 断开一个蓝牙连接
      * @param targetMac 目标设备mac地址
      */
-    public static void closeBluetoothGatt(String targetMac){
-        for(BluetoothGatt gatt : BluetoothLeManage.connectedBluetoothGattList){
+    public static void disconnectBluetoothGatt(String targetMac){
+        for(BluetoothGatt gatt : BLEManage.connectedBluetoothGattList){
             if(gatt.getDevice().getAddress().equalsIgnoreCase(targetMac)){
                 removeConnect(targetMac);
                 gatt.disconnect();
-                gatt.close();
                 break;
             }
+        }
+    }
+
+    /**
+     * 断开所有连接
+     */
+    public static void disconnectAllBluetoothGatt(){
+        for(BluetoothGatt gatt : BLEManage.connectedBluetoothGattList){
+            removeConnect(gatt.getDevice().getAddress());
+            gatt.disconnect();
         }
     }
 

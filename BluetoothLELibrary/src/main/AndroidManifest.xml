@@ -29,7 +29,7 @@
         android:allowBackup="true"
         android:label="@string/app_name"
         android:supportsRtl="true">
-        <service android:name=".core.BluetoothLeService" android:enabled="true"/>
+        <service android:name=".core.BLEService" android:enabled="true"/>
     </application>
 
 </manifest>

@@ -1,7 +1,7 @@
 package com.bluetoothle.factory.doorguard;
 
 import com.bluetoothle.core.BLEConstants;
-import com.bluetoothle.core.BluetoothLeManage;
+import com.bluetoothle.core.BLEManage;
 import com.bluetoothle.core.init.BLEInit;
 import com.bluetoothle.core.writeData.OnBLEWriteDataListener;
 import com.bluetoothle.util.BLEByteUtil;
@@ -31,9 +31,9 @@ public class DoorGuardSend {
             onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothAdapterError);
             return;
         }
-        BluetoothLeManage bluetoothLeManage = new BluetoothLeManage(BLEInit.bluetoothAdapter, mac, null, DoorGuardProtocol.buildTwoUUIDs(), null);
-        bluetoothLeManage.setData(data);
-        bluetoothLeManage.setOnBLEWriteDataListener(onBLEWriteDataListener);
-        bluetoothLeManage.write();
+        BLEManage bleManage = new BLEManage(BLEInit.bluetoothAdapter, mac, null, DoorGuardProtocol.buildTwoUUIDs(), null, true);
+        bleManage.setData(data);
+        bleManage.setOnBLEWriteDataListener(onBLEWriteDataListener);
+        bleManage.write();
     }
 }

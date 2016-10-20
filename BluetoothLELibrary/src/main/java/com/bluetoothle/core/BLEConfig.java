@@ -5,7 +5,7 @@ package com.bluetoothle.core;
  * 蓝牙连接参数配置
  */
 
-public class BluetoothLeConfig {
+public class BLEConfig {
     public final static Integer maxScanCount = 2;//最多扫描次数
     public final static Integer maxConnectCount = 3;//最多连接次数
     public final static Integer maxFindServiceCount = 2;//最多找服务次数
