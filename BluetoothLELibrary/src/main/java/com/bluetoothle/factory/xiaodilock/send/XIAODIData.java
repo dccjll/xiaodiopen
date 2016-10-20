@@ -4,11 +4,10 @@ package com.bluetoothle.factory.xiaodilock.send;
  * 数据中心集合
  */
 public class XIAODIData {
-	private byte[] channelpwd;		//信道密码
-	private byte[] newchannelpwd;	//新信道密码
-	private byte[] mobileaccount;	//手机账号
+	private String channelpwd;		//信道密码
+	private String newchannelpwd;	//新信道密码
+	private String mobileaccount;	//手机账号
 	private byte[] openlocktype;	//开锁方式
-	private byte[] time;			//时间
 	private byte[] fingerpageid;	//指纹ID
 	private byte[] smartkeyid;		//智能钥匙ID
 	private byte[] lockname;		//锁名称
@@ -26,24 +25,25 @@ public class XIAODIData {
 	private byte[] secretkey13;		//自己生成的13个字节秘钥
 	private byte[] lockmac;			//mac地址
 	private boolean enbleWifi;		//是否开启WIFI
-	public byte[] getChannelpwd() {
+
+	public String getChannelpwd() {
 		return channelpwd;
 	}
-	public XIAODIData setChannelpwd(byte[] channelpwd) {
+	public XIAODIData setChannelpwd(String channelpwd) {
 		this.channelpwd = channelpwd;
 		return this;
 	}
-	public byte[] getNewchannelpwd() {
+	public String getNewchannelpwd() {
 		return newchannelpwd;
 	}
-	public XIAODIData setNewchannelpwd(byte[] newchannelpwd) {
+	public XIAODIData setNewchannelpwd(String newchannelpwd) {
 		this.newchannelpwd = newchannelpwd;
 		return this;
 	}
-	public byte[] getMobileaccount() {
+	public String getMobileaccount() {
 		return mobileaccount;
 	}
-	public XIAODIData setMobileaccount(byte[] mobileaccount) {
+	public XIAODIData setMobileaccount(String mobileaccount) {
 		this.mobileaccount = mobileaccount;
 		return this;
 	}
@@ -52,13 +52,6 @@ public class XIAODIData {
 	}
 	public XIAODIData setOpenlocktype(byte[] openlocktype) {
 		this.openlocktype = openlocktype;
-		return this;
-	}
-	public byte[] getTime() {
-		return time;
-	}
-	public XIAODIData setTime(byte[] time) {
-		this.time = time;
 		return this;
 	}
 	public byte[] getFingerpageid() {

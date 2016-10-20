@@ -7,6 +7,11 @@ import com.bluetoothle.factory.xiaodilock.util.XIAODIBLECRCUtil;
 import com.bluetoothle.factory.xiaodilock.util.XIAODIBLEUtil;
 import com.bluetoothle.util.BLEByteUtil;
 import com.bluetoothle.util.BLELogUtil;
+import com.bluetoothle.util.BLEStringUtil;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * 小嘀蓝牙协议封装
@@ -71,7 +76,7 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_param_error,"0x01"));
                 return false;
             }
-            byte[] channelpwd = xiaodiData.getChannelpwd();
+            byte[] channelpwd = getChannelPwdBytes(xiaodiData.getChannelpwd());
             if (channelpwd == null || channelpwd.length != XIAODIBLELengthCheck.BLELOCKCHANNELPASSWORDLENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_channel_length_error,"0x01"));
                 return false;
@@ -85,8 +90,8 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_param_error,"0x02"));
                 return false;
             }
-            byte[] channelpwd = xiaodiData.getChannelpwd();
-            byte[] newchannelpwd = xiaodiData.getNewchannelpwd();
+            byte[] channelpwd = getChannelPwdBytes(xiaodiData.getChannelpwd());
+            byte[] newchannelpwd = getChannelPwdBytes(xiaodiData.getNewchannelpwd());
             if (channelpwd == null || channelpwd.length != XIAODIBLELengthCheck.BLELOCKCHANNELPASSWORDLENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_channel_length_error,"0x02"));
                 return false;
@@ -105,20 +110,19 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_param_error,"0x03"));
                 return false;
             }
-            byte[] channelpwd = xiaodiData.getChannelpwd();
-            byte[] mobileaccount = xiaodiData.getMobileaccount();
-            if (channelpwd.length != XIAODIBLELengthCheck.BLELOCKCHANNELPASSWORDLENGTH) {
+            byte[] channelpwd = getChannelPwdBytes(xiaodiData.getChannelpwd());
+            byte[] mobileaccount = getMobileBytes(xiaodiData.getMobileaccount());
+            if (channelpwd == null || channelpwd.length != XIAODIBLELengthCheck.BLELOCKCHANNELPASSWORDLENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_channel_length_error,"0x03"));
                 return false;
             }
-            byte[] usermobileaccountbytes = initUserMobileAccount(new String(mobileaccount).replace(" ", ""));
-            if (usermobileaccountbytes == null) {
+            if (mobileaccount == null) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.mobile_init_error));
                 return false;
             }
             dataArea = new byte[XIAODIBLELengthCheck.BLELOCKCHANNELPASSWORDLENGTH + XIAODIBLELengthCheck.BLELOCKMOBILEACCOUNTLENGTH];
             System.arraycopy(channelpwd, 0, dataArea, 0, channelpwd.length);
-            System.arraycopy(usermobileaccountbytes, 0, dataArea, channelpwd.length, usermobileaccountbytes.length);
+            System.arraycopy(mobileaccount, 0, dataArea, channelpwd.length, mobileaccount.length);
         } else if (XIAODIBLECMDType.BLE_CMDTYPE_GETBLELOCKINFO.equals(bleCmdType)) {
             cmd[0] = (byte) 0x20;
             //数据包格式:无 长度:0byte
@@ -144,7 +148,7 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_param_error,"0x23"));
                 return false;
             }
-            byte[] time = xiaodiData.getTime();
+            byte[] time = getTimeBytes();
             if (time == null || time.length != XIAODIBLELengthCheck.BLELOCKTIMELENGTH) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.param_error,"0x22,时间"));
                 return false;
@@ -163,8 +167,7 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_param_error,"0x25"));
                 return false;
             }
-            byte[] mobileaccount = xiaodiData.getMobileaccount();
-            byte[] usermobileaccountbytes = initUserMobileAccount(new String(mobileaccount).replace(" ", ""));
+            byte[] usermobileaccountbytes = getMobileBytes(xiaodiData.getMobileaccount());
             if (usermobileaccountbytes == null) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.mobile_init_error));
                 return false;
@@ -217,9 +220,10 @@ public class XIAODIBLEProtocol {
                 return false;
             }
             byte[] tempData = new byte[23];
-            System.arraycopy(xiaodiData.getChannelpwd(), 0, tempData, 0, xiaodiData.getChannelpwd().length);
-            System.arraycopy(xiaodiData.getSecretkey13(), 0, tempData, xiaodiData.getChannelpwd().length, xiaodiData.getSecretkey13().length);
-            System.arraycopy(xiaodiData.getLockmac(), 0, tempData, xiaodiData.getChannelpwd().length + xiaodiData.getSecretkey13().length, xiaodiData.getLockmac().length);
+            byte[] channelpwdbytes = getChannelPwdBytes(xiaodiData.getChannelpwd());
+            System.arraycopy(channelpwdbytes, 0, tempData, 0, channelpwdbytes.length);
+            System.arraycopy(xiaodiData.getSecretkey13(), 0, tempData, channelpwdbytes.length, xiaodiData.getSecretkey13().length);
+            System.arraycopy(xiaodiData.getLockmac(), 0, tempData, channelpwdbytes.length + xiaodiData.getSecretkey13().length, xiaodiData.getLockmac().length);
 
             //字节分段
             byte[][] tempDataArray = new byte[2][8];
@@ -280,8 +284,7 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_param_error,"0x29"));
                 return false;
             }
-            byte[] mobileaccount = xiaodiData.getMobileaccount();
-            byte[] usermobileaccountbytes = initUserMobileAccount(new String(mobileaccount));
+            byte[] usermobileaccountbytes = getMobileBytes(xiaodiData.getMobileaccount());
             if (usermobileaccountbytes == null) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.mobile_init_error));
                 return false;
@@ -366,11 +369,11 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_param_error,"0x2C"));
                 return false;
             }
-            byte[] mobileaccount = xiaodiData.getMobileaccount();
+            byte[] mobileaccount = getMobileBytes(xiaodiData.getMobileaccount());
             byte[] lovealarmflag = xiaodiData.getLovealarmflag();
             byte[] timestatus = xiaodiData.getTimestatus();
             byte[] timerange = xiaodiData.getTimerange();
-            byte[] usermobileaccountbytes = initUserMobileAccount(new String(mobileaccount));
+            byte[] usermobileaccountbytes = getMobileBytes(new String(mobileaccount));
             if (usermobileaccountbytes == null) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.mobile_init_error));
                 return false;
@@ -512,7 +515,7 @@ public class XIAODIBLEProtocol {
 //    			return false false;
 //    		}
 //    		byte[] mobileaccount = dataSendCenter.getMobileaccount();
-//    		byte[] usermobileaccountbytes = initUserMobileAccount(context, new String(mobileaccount));
+//    		byte[] usermobileaccountbytes = getMobileBytes(context, new String(mobileaccount));
 //    		if(usermobileaccountbytes == null){
 //    			ViewUtil.printLogAndTips(context, "手机账号初始化失败");
 //    			return false false;
@@ -560,16 +563,16 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_param_error,"0x39"));
                 return false;
             }
-            byte[] channelpwdbytes = xiaodiData.getChannelpwd();
-            byte[] mobilebytes = xiaodiData.getMobileaccount();
-            byte[] timebytes = xiaodiData.getTime();
+            byte[] channelpwdbytes = getChannelPwdBytes(xiaodiData.getChannelpwd());
+            byte[] mobilebytes = getMobileBytes(xiaodiData.getMobileaccount());
+            byte[] timebytes = getTimeBytes();
             byte[] secretkeybytes = xiaodiData.getSecretkey();
             if (xiaodiData == null || channelpwdbytes == null || mobilebytes == null || timebytes == null
                     || channelpwdbytes.length == 0 || mobilebytes.length == 0 || timebytes.length == 0 || secretkeybytes == null || secretkeybytes.length == 0) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.param_check_error,"0x39"));
                 return false;
             }
-            byte[] usermobileaccountbytes = initUserMobileAccount(new String(mobilebytes).replace(" ", ""));
+            byte[] usermobileaccountbytes = getMobileBytes(new String(mobilebytes).replace(" ", ""));
             if (usermobileaccountbytes == null) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.mobile_init_error));
                 return false;
@@ -702,14 +705,41 @@ public class XIAODIBLEProtocol {
     }
 
     /**
-     * 初始化手机账号
+     * 计算手机账号字节数组
      * @param usermobileaccount 手机账号
-     * @return
+     * @return  计算结果
      */
-    private byte[] initUserMobileAccount(String usermobileaccount) {
+    private byte[] getMobileBytes(String usermobileaccount) {
+        usermobileaccount = usermobileaccount.replace(" ", "");
         if (!XIAODIBLEUtil.checkMobileAccount(usermobileaccount)) {
             return null;
         }
-        return XIAODIBLEUtil.convertStringToBytesWithLength(new String(usermobileaccount.getBytes()), (byte) XIAODIBLELengthCheck.BLELOCKMOBILEACCOUNTLENGTH);
+        return XIAODIBLEUtil.convertStringToBytesWithLength(usermobileaccount, (byte) XIAODIBLELengthCheck.BLELOCKMOBILEACCOUNTLENGTH);
+    }
+
+    /**
+     * 计算设备信道密码字节数组
+     * @param channelpwd    设备信道密码
+     * @return  计算结果
+     */
+    private byte[] getChannelPwdBytes(String channelpwd){
+        byte[] channelpwdbytes = new byte[4];
+        if(BLEStringUtil.isEmpty(channelpwd) || channelpwd.length() != 8){
+            return null;
+        }
+        String[] lockchannelarray = new String[channelpwdbytes.length];
+        for(int i=0;i<lockchannelarray.length;i++){
+            lockchannelarray[i] = channelpwd.substring(i*2, i*2 + 2);
+            channelpwdbytes[i] = (byte) Integer.parseInt(lockchannelarray[i], 16);
+        }
+        return channelpwdbytes;
+    }
+
+    /**
+     * 计算开门时间转换字节
+     * @return  计算结果
+     */
+    private byte[]  getTimeBytes(){
+        return XIAODIBLEUtil.parseServerTimeToProtocolBytes(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(new Date(System.currentTimeMillis())));
     }
 }

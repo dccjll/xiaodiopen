@@ -31,7 +31,7 @@ public class XIAODIBLECMDType {
     public final static String BLE_CMDTYPE_CHECKBLELOCKMANAGEPASSWORD = "com.dsm.ble.BLE_CMDTYPE_CHECKBLELOCKMANAGEPASSWORD";                       //锁管理密码验证 (0x36)
     public final static String BLE_CMDTYPE_GETBLELOCKSOFTWAREVERSION = "com.dsm.ble.BLE_CMDTYPE_GETBLELOCKSOFTWAREVERSION";                         //锁固件版本获取 (0x37)
     public final static String BLE_CMDTYPE_CONFIGBLELOCKALARMPWD = "com.dsm.ble.BLE_CMDTYPE_CONFIGBLELOCKALARMPWD";                                 //报警密码设置 (0x38)
-    public final static String BLE_CMDTYPE_OPENBLELOCKENHANCE = "com.dsm.ble.BLE_CMDTYPE_OPENBLELOCKENHANCE";                                       //手机开锁验证加密版 (0x39)													//手机开锁验证加密版 (0x39)
+    public final static String BLE_CMDTYPE_OPENBLELOCKENHANCE = "com.dsm.ble.BLE_CMDTYPE_OPENBLELOCKENHANCE";                                       //手机开锁验证加密版 (0x39)
     public final static String BLE_CMDTYPE_GETBLELOCKSECRETKEY = "com.dsm.ble.BLE_CMDTYPE_GETBLELOCKSECRETKEY";                                     //手机秘钥获取 (0x3A)
     public final static String BLE_CMDTYPE_SMARTKEYGETSECRETKEY = "com.dsm.ble.BLE_CMDTYPE_SMARTKEYGETSECRETKEY";                                   //智能钥匙授权获取随机数秘钥(0x3D)
     public final static String BLE_CMDTYPE_REGISTERSMARTKEYGETSECRETKEY = "com.dsm.ble.BLE_CMDTYPE_REGISTERSMARTKEYGETSECRETKEY";                   //锁注册秘钥获取 (0x3E)

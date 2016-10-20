@@ -19,6 +19,13 @@ import com.bluetoothle.core.init.BLEInit;
 import com.bluetoothle.core.init.OnInitListener;
 import com.bluetoothle.core.writeData.OnBLEWriteDataListener;
 import com.bluetoothle.factory.doorguard.DoorGuardSend;
+import com.bluetoothle.factory.xiaodilock.OnXIAODIBLEListener;
+import com.bluetoothle.factory.xiaodilock.protocol.XIAODIBLECMDType;
+import com.bluetoothle.factory.xiaodilock.protocol.XIAODIBLEProtocol;
+import com.bluetoothle.factory.xiaodilock.received.XIAODIDataReceived;
+import com.bluetoothle.factory.xiaodilock.received.XIAODIDataReceivedAnalyzer;
+import com.bluetoothle.factory.xiaodilock.send.XIAODIData;
+import com.bluetoothle.factory.xiaodilock.send.XIAODISend;
 import com.bluetoothle.util.BLEByteUtil;
 import com.bluetoothle.util.BLELogUtil;
 import com.dsm.xiaodiopen.util.PermisstionsUtil;
@@ -192,15 +199,91 @@ public class MainActivity extends Activity {
      * 小嘀锁开门获取通讯秘钥
      */
     private void getSecretkey(){
-//        byte[] timebytes =
-//        xiaodiOpen();
+        XIAODISend.send(
+                mac,
+                XIAODIBLECMDType.BLE_CMDTYPE_GETBLELOCKSECRETKEY,
+                null,
+                false,
+                new OnBLEWriteDataListener() {
+                    @Override
+                    public void onWriteDataFinish() {
+                        BLELogUtil.d(TAG, "获取通讯密钥，数据写入完成");
+                    }
+
+                    @Override
+                    public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                        BLELogUtil.d(TAG, "获取通讯密钥，单次数据写入完成");
+                    }
+
+                    @Override
+                    public void onWriteDataFail(Integer errorCode) {
+                        BLELogUtil.d(TAG, "获取通讯密钥，数据写入失败，errorCode=" + errorCode);
+                        mainHandler.obtainMessage(0, false).sendToTarget();
+                    }
+                },
+                new XIAODIDataReceived(
+                        new byte[]{0x3A},
+                        new OnXIAODIBLEListener.OnCommonListener() {
+                            @Override
+                            public void success(XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                                BLELogUtil.d(TAG, "获取通讯密钥，数据接收成功" + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
+                                xiaodiOpen(xiaodiDataReceivedAnalyzer.getDataArea());
+                            }
+
+                            @Override
+                            public void failure(Integer errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                                BLELogUtil.d(TAG, "获取通讯密钥，数据接收失败,errorCode=" + errorCode + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
+                                mainHandler.obtainMessage(0, false).sendToTarget();
+                            }
+                        }
+                )
+        );
     }
 
     /**
      * 小嘀开门
+     * @param secretbytes   锁返回的密钥字节
      */
-    private void xiaodiOpen(){
+    private void xiaodiOpen(byte[] secretbytes){
+        XIAODISend.send(
+                mac,
+                XIAODIBLECMDType.BLE_CMDTYPE_OPENBLELOCKENHANCE,
+                new XIAODIData().setMobileaccount(mobile).setChannelpwd(channelpwd).setSecretkey(secretbytes),
+                true,
+                new OnBLEWriteDataListener() {
+                    @Override
+                    public void onWriteDataFinish() {
+                        BLELogUtil.d(TAG, "小嘀开门，数据写入完成");
+                    }
 
+                    @Override
+                    public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                        BLELogUtil.d(TAG, "小嘀开门，单次数据写入完成");
+                    }
+
+                    @Override
+                    public void onWriteDataFail(Integer errorCode) {
+                        BLELogUtil.d(TAG, "小嘀开门，数据写入失败，errorCode=" + errorCode);
+                        mainHandler.obtainMessage(0, false).sendToTarget();
+                    }
+                },
+                new XIAODIDataReceived(
+                        new byte[]{0x3A},
+                        new OnXIAODIBLEListener.OnCommonListener() {
+                            @Override
+                            public void success(XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                                BLELogUtil.d(TAG, "小嘀开门，数据接收成功" + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
+                                mainHandler.obtainMessage(0, true).sendToTarget();
+                            }
+
+                            @Override
+                            public void failure(Integer errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                                BLELogUtil.d(TAG, "小嘀开门，数据接收失败,errorCode=" + errorCode + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
+                                mainHandler.obtainMessage(0, false).sendToTarget();
+                            }
+                        }
+                )
+        );
     }
 
     private Dialog buildProgressDialog(Activity context, String title, boolean cancelable){

@@ -25,9 +25,10 @@ public class XIAODISend {
      * @param mac   目前设备mac地址
      * @param cmdType   命令字类型
      * @param xiaodiData    要发送的数据集合
+     * @param disconnectOnFinish    任务完成后是否断开蓝牙连接
      * @param onBLEWriteDataListener    数据发送监听器
      */
-    public static void send(String mac, String cmdType, XIAODIData xiaodiData, final OnBLEWriteDataListener onBLEWriteDataListener){
+    public static void send(String mac, String cmdType, XIAODIData xiaodiData, Boolean disconnectOnFinish, final OnBLEWriteDataListener onBLEWriteDataListener){
         if(onBLEWriteDataListener == null){
             BLELogUtil.e(TAG, "没有配置回调接口");
             return;
@@ -43,7 +44,7 @@ public class XIAODISend {
             onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothAdapterError);
             return;
         }
-        BLEManage bleManage = new BLEManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildTwoUUIDs(), null);
+        BLEManage bleManage = new BLEManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildTwoUUIDs(), null, disconnectOnFinish);
         bleManage.setData(data);
         bleManage.setOnBLEWriteDataListener(onBLEWriteDataListener);
         bleManage.write();
@@ -54,10 +55,11 @@ public class XIAODISend {
      * @param mac   目前设备mac地址
      * @param cmdType   命令字类型
      * @param xiaodiData    要发送的数据集合
+     * @param disconnectOnFinish    任务完成后是否断开蓝牙连接
      * @param onBLEWriteDataListener    数据发送监听器
      * @param XIAODIDataReceived    数据接收监听器
      */
-    public static void send(String mac, String cmdType, XIAODIData xiaodiData, final OnBLEWriteDataListener onBLEWriteDataListener, final XIAODIDataReceived XIAODIDataReceived){
+    public static void send(String mac, String cmdType, XIAODIData xiaodiData, Boolean disconnectOnFinish, final OnBLEWriteDataListener onBLEWriteDataListener, final XIAODIDataReceived XIAODIDataReceived){
         if(onBLEWriteDataListener == null){
             BLELogUtil.e(TAG, "没有配置发送数据回调接口");
             return;
@@ -77,7 +79,7 @@ public class XIAODISend {
             onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothAdapterError);
             return;
         }
-        BLEManage bleManage = new BLEManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildTwoUUIDs(), null);
+        BLEManage bleManage = new BLEManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildTwoUUIDs(), null, disconnectOnFinish);
         bleManage.setData(data);
         bleManage.setOnBLEWriteDataListener(onBLEWriteDataListener);
         bleManage.setOnBLEResponseListener(XIAODIDataReceived);

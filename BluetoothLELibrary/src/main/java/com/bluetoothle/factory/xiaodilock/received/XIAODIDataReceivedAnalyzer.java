@@ -4,6 +4,8 @@ import com.bluetoothle.factory.xiaodilock.util.XIAODIConstants;
 import com.bluetoothle.util.BLEByteUtil;
 import com.bluetoothle.util.BLELogUtil;
 
+import java.util.Arrays;
+
 /**
  * Created by dessmann on 16/10/18.
  * 小嘀数据接收分析器
@@ -122,5 +124,19 @@ public class XIAODIDataReceivedAnalyzer {
             return XIAODIConstants.Error.CheckSubBytesError;
         }
         return XIAODIConstants.Error.CorretCode;
+    }
+
+    @Override
+    public String toString() {
+        return "XIAODIDataReceivedAnalyzer{" +
+                "bleDataReceived=" + BLEByteUtil.bytesToHexString(bleDataReceived) +
+                ", packageHead=" + BLEByteUtil.bytesToHexString(packageHead) +
+                ", packageAttribute=" + BLEByteUtil.bytesToHexString(packageAttribute) +
+                ", cmd=" + BLEByteUtil.bytesToHexString(cmd) +
+                ", dataAreaLength=" + BLEByteUtil.bytesToHexString(dataAreaLength) +
+                ", ack=" + BLEByteUtil.bytesToHexString(ack) +
+                ", dataArea=" + BLEByteUtil.bytesToHexString(dataArea) +
+                ", crc=" + BLEByteUtil.bytesToHexString(crc) +
+                '}';
     }
 }

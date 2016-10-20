@@ -1,7 +1,14 @@
 package com.bluetoothle.factory.xiaodilock.util;
 
 
+import com.bluetoothle.util.BLEByteUtil;
+import com.bluetoothle.util.BLELogUtil;
 import com.bluetoothle.util.BLEStringUtil;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 /**
  * 小滴管家蓝牙工具类
@@ -87,5 +94,42 @@ public class XIAODIBLEUtil {
 			return false;
 		}
 		return true;
+	}
+
+	//将服务器的时间转换为固定协议的字节数组
+	public static byte[] parseServerTimeToProtocolBytes(String time) {
+		//2016-02-25 03:41:50
+		if (BLEStringUtil.isEmpty(time)) {
+			return null;
+		}
+		Calendar calendar = Calendar.getInstance();
+		try {
+			calendar.setTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).parse(time));
+		} catch (ParseException e) {
+			e.printStackTrace();
+			return null;
+		}
+		byte[] timebytes = new byte[7];
+		String[] timearray = new String[7];
+		timearray[0] = (Calendar.getInstance().get(Calendar.YEAR) + "").substring(2);
+		timearray[1] = calendar.get(Calendar.MONTH) + 1 + "";
+		timearray[2] = calendar.get(Calendar.DAY_OF_MONTH) + "";
+		timearray[3] = calendar.get(Calendar.DAY_OF_WEEK) == 1 ? "7" : (calendar.get(Calendar.DAY_OF_WEEK) - 1 + "");
+		timearray[4] = calendar.get(Calendar.HOUR_OF_DAY) + "";
+		timearray[5] = calendar.get(Calendar.MINUTE) + "";
+		timearray[6] = calendar.get(Calendar.SECOND) + "";
+
+		for (int i = 0; i < timearray.length; i++) {
+			if (timearray[i].length() == 1) {
+				timearray[i] = "0" + timearray[i];
+			}
+			BLELogUtil.d("timearray[" + i + "]=" + timearray[i]);
+		}
+		for (int i = 0; i < timebytes.length; i++) {
+			timebytes[i] = BLEByteUtil.parseTenDescToDescByte(timearray[i]);
+		}
+		BLELogUtil.d("time from server:" + time);
+		BLELogUtil.d("time to   ble:" + BLEByteUtil.bytesToHexString(timebytes));
+		return timebytes;
 	}
 }
