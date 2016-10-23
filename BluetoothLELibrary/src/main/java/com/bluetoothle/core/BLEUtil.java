@@ -6,6 +6,7 @@ import com.bluetoothle.util.BLEStringUtil;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by dessmann on 16/10/18.
@@ -20,9 +21,13 @@ public class BLEUtil {
      * @return  true 连接存在 false 连接不存在
      */
     public static Boolean checkConnectStatus(String targetMac){
-        for(BluetoothGatt gatt : BLEManage.connectedBluetoothGattList){
-            if(gatt.getDevice().getAddress().equalsIgnoreCase(targetMac)){
-                return true;
+        Iterator<Map<BluetoothGatt,Long>> bluetoothGattListIte = BLEManage.connectedBluetoothGattList.iterator();
+        while(bluetoothGattListIte.hasNext()){
+            Map<BluetoothGatt,Long> bluetoothGattLongMap = bluetoothGattListIte.next();
+            for(Map.Entry<BluetoothGatt,Long> entry : bluetoothGattLongMap.entrySet()){
+                if(entry.getKey().getDevice().getAddress().equalsIgnoreCase(targetMac)){
+                    return true;
+                }
             }
         }
         return false;
@@ -34,9 +39,13 @@ public class BLEUtil {
      * @return  一个连接
      */
     public static BluetoothGatt getBluetoothGatt(String targetMac){
-        for(BluetoothGatt gatt : BLEManage.connectedBluetoothGattList){
-            if(gatt.getDevice().getAddress().equalsIgnoreCase(targetMac)){
-                return gatt;
+        Iterator<Map<BluetoothGatt,Long>> bluetoothGattListIte = BLEManage.connectedBluetoothGattList.iterator();
+        while(bluetoothGattListIte.hasNext()){
+            Map<BluetoothGatt,Long> bluetoothGattLongMap = bluetoothGattListIte.next();
+            for(Map.Entry<BluetoothGatt,Long> entry : bluetoothGattLongMap.entrySet()){
+                if(entry.getKey().getDevice().getAddress().equalsIgnoreCase(targetMac)){
+                    return entry.getKey();
+                }
             }
         }
         return null;
@@ -47,11 +56,13 @@ public class BLEUtil {
      * @param targetMac 目标设备mac地址
      */
     public static void removeConnect(String targetMac){
-        Iterator<BluetoothGatt> gattIterator = BLEManage.connectedBluetoothGattList.iterator();
-        while(gattIterator.hasNext()){
-            if(gattIterator.next().getDevice().getAddress().equalsIgnoreCase(targetMac)){
-                gattIterator.remove();
-                break;
+        Iterator<Map<BluetoothGatt,Long>> bluetoothGattListIte = BLEManage.connectedBluetoothGattList.iterator();
+        while(bluetoothGattListIte.hasNext()){
+            Map<BluetoothGatt,Long> bluetoothGattLongMap = bluetoothGattListIte.next();
+            for(Map.Entry<BluetoothGatt,Long> entry : bluetoothGattLongMap.entrySet()){
+                if(entry.getKey().getDevice().getAddress().equalsIgnoreCase(targetMac)){
+                    bluetoothGattListIte.remove();
+                }
             }
         }
     }
@@ -61,11 +72,15 @@ public class BLEUtil {
      * @param targetMac 目标设备mac地址
      */
     public static void disconnectBluetoothGatt(String targetMac){
-        for(BluetoothGatt gatt : BLEManage.connectedBluetoothGattList){
-            if(gatt.getDevice().getAddress().equalsIgnoreCase(targetMac)){
-                removeConnect(targetMac);
-                gatt.disconnect();
-                break;
+        Iterator<Map<BluetoothGatt,Long>> bluetoothGattListIte = BLEManage.connectedBluetoothGattList.iterator();
+        while(bluetoothGattListIte.hasNext()){
+            Map<BluetoothGatt,Long> bluetoothGattLongMap = bluetoothGattListIte.next();
+            for(Map.Entry<BluetoothGatt,Long> entry : bluetoothGattLongMap.entrySet()){
+                if(entry.getKey().getDevice().getAddress().equalsIgnoreCase(targetMac)){
+                    removeConnect(targetMac);
+                    entry.getKey().disconnect();
+                    break;
+                }
             }
         }
     }
@@ -74,9 +89,31 @@ public class BLEUtil {
      * 断开所有连接
      */
     public static void disconnectAllBluetoothGatt(){
-        for(BluetoothGatt gatt : BLEManage.connectedBluetoothGattList){
-            removeConnect(gatt.getDevice().getAddress());
-            gatt.disconnect();
+        Iterator<Map<BluetoothGatt,Long>> bluetoothGattListIte = BLEManage.connectedBluetoothGattList.iterator();
+        while(bluetoothGattListIte.hasNext()){
+            Map<BluetoothGatt,Long> bluetoothGattLongMap = bluetoothGattListIte.next();
+            for(Map.Entry<BluetoothGatt,Long> entry : bluetoothGattLongMap.entrySet()){
+                removeConnect(entry.getKey().getDevice().getAddress());
+                entry.getKey().disconnect();
+            }
+        }
+    }
+
+    /**
+     * 更新某一个连接对象上一次通讯的时间戳
+     * @param bluetoothGatt 某一个连接对象
+     * @param lastCommunicationTime 最后一次通讯的时间戳
+     */
+    public static void updateBluetoothGattLastCommunicationTime(BluetoothGatt bluetoothGatt, Long lastCommunicationTime){
+        Iterator<Map<BluetoothGatt,Long>> bluetoothGattListIte = BLEManage.connectedBluetoothGattList.iterator();
+        while(bluetoothGattListIte.hasNext()){
+            Map<BluetoothGatt,Long> bluetoothGattLongMap = bluetoothGattListIte.next();
+            for(Map.Entry<BluetoothGatt,Long> entry : bluetoothGattLongMap.entrySet()){
+                if(entry.getKey() == bluetoothGatt){
+                    entry.setValue(lastCommunicationTime);
+                    break;
+                }
+            }
         }
     }
 

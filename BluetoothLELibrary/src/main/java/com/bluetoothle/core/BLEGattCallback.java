@@ -13,6 +13,7 @@ import com.bluetoothle.core.response.OnBLEResponseListener;
 import com.bluetoothle.util.BLEByteUtil;
 import com.bluetoothle.util.BLELogUtil;
 import com.bluetoothle.core.writeData.BLEWriteData;
+import com.bluetoothle.util.BLEStringUtil;
 
 import java.util.UUID;
 
@@ -123,6 +124,7 @@ public class BLEGattCallback extends BluetoothGattCallback {
     @Override
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         BLELogUtil.e(TAG, "onCharacteristicWrite,gatt=" + gatt + ",characteristic=" + characteristic + ",status=" + status + ",writedData=" + BLEByteUtil.bytesToHexString(characteristic.getValue()));
+        BLEUtil.updateBluetoothGattLastCommunicationTime(gatt, System.currentTimeMillis());
         if(status != BluetoothGatt.GATT_SUCCESS || !characteristic.getUuid().toString().equalsIgnoreCase(uuidCharacteristicWrite.toString())){
             if(onGattBLEWriteDataListener != null){
                 onGattBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
@@ -137,6 +139,7 @@ public class BLEGattCallback extends BluetoothGattCallback {
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
         BLELogUtil.e(TAG, "onCharacteristicChanged,gatt=" + gatt + ",characteristic=" + characteristic + ",receivedData=" + BLEByteUtil.bytesToHexString(characteristic.getValue()));
+        BLEUtil.updateBluetoothGattLastCommunicationTime(gatt, System.currentTimeMillis());
         if(characteristic.getUuid().toString().equalsIgnoreCase(uuidCharacteristicChange.toString())){//接收到数据
             if(onBLEResponseListener != null){
                 onBLEResponseListener.receiveData(gatt, characteristic);

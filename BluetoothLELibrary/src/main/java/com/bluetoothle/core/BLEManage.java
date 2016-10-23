@@ -23,6 +23,7 @@ import com.bluetoothle.util.BLELogUtil;
 import com.bluetoothle.util.BLEStringUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -35,7 +36,8 @@ import java.util.UUID;
 public class BLEManage {
 
     private final static String TAG = BLEManage.class.getSimpleName();
-    public static List<BluetoothGatt> connectedBluetoothGattList = new ArrayList<>();//当前已连接的设备服务器
+    public static List<Map<BluetoothGatt, Long>> connectedBluetoothGattList = new ArrayList<>();//当前已连接的设备服务器连接池  第一次参数表示某一个连接对象，第二个参数表示该连接上一次通讯(读过或接收过数据)的时间戳
+    private BluetoothGatt bluetoothGatt;//当前已连接的设备服务器
     private BLECoreResponse bleCoreResponse = new BLECoreResponse();//蓝牙核心响应管理器
 
     /**
@@ -126,7 +128,7 @@ public class BLEManage {
                 return;
             }
         }
-        if(currentScanCount ++ == BLEConfig.maxScanCount){
+        if(currentScanCount ++ == BLEConfig.MaxScanCount){
             onResponseError(BLEConstants.Error.NotFoundDeviceError);
             return;
         }
@@ -146,8 +148,11 @@ public class BLEManage {
     private OnBLEConnectListener onBLEConnectListener_ = new OnBLEConnectListener() {//临时的蓝牙连接监听器
         @Override
         public void onConnectSuccess(BluetoothGatt bluetoothGatt, int status, int newState) {
+            BLEManage.this.bluetoothGatt = bluetoothGatt;
             if (BLEUtil.getBluetoothGatt(bluetoothGatt.getDevice().getAddress()) == null) {
-                connectedBluetoothGattList.add(bluetoothGatt);
+                Map<BluetoothGatt, Long> bluetoothGattLongMap = new HashMap<>();
+                bluetoothGattLongMap.put(bluetoothGatt, System.currentTimeMillis());
+                connectedBluetoothGattList.add(bluetoothGattLongMap);
             }
             if(onBLEFindServiceListener != null || onBLEOpenNotificationListener != null || onBLEWriteDataListener != null){
                 if(bleFindService == null){
@@ -164,7 +169,7 @@ public class BLEManage {
         @Override
         public void onConnectFail(Integer errorCode) {
             BLELogUtil.e(TAG, "第" + ++currentConnectCount + "次连接失败,errorCode=" + errorCode);
-            if(currentConnectCount == BLEConfig.maxConnectCount){
+            if(currentConnectCount == BLEConfig.MaxConnectCount){
                 onResponseError(BLEConstants.Error.ConnectError);
                 return;
             }
@@ -188,6 +193,7 @@ public class BLEManage {
      * 寻找服务
      */
     private Integer currentFindServiceCount = 0;//当前找服务次数
+    private Integer currentReconnectCountWhenDisconnectedOnFindService = 0;//当前找服务时断开连接重连的次数
     private BLEFindService bleFindService;//蓝牙找服务管理器
     private OnBLEFindServiceListener onBLEFindServiceListener;//找服务监听器
     public void setOnBLEFindServiceListener(OnBLEFindServiceListener onBLEFindServiceListener) {
@@ -216,8 +222,17 @@ public class BLEManage {
         @Override
         public void onFindServiceFail(Integer errorCode) {
             BLELogUtil.e(TAG, "第" + ++currentFindServiceCount + "次找服务失败,errorCode=" + errorCode);
-            if(currentFindServiceCount == BLEConfig.maxFindServiceCount){
-                onResponseError(BLEConstants.Error.FindServiceError);
+            if(errorCode == BLEConstants.Error.DisconnectError){//找服务时断开连接，有限的次数重新连接
+                if(currentReconnectCountWhenDisconnectedOnFindService ++ < BLEConfig.MaxReconnectCountWhenDisconnectedOnFindService){
+                    bluetoothGatt.connect();
+                    BLELogUtil.e(TAG, "找服务时断开连接，第" + currentReconnectCountWhenDisconnectedOnFindService + "次重连");
+                    return;
+                }
+                onResponseError(errorCode);
+                return;
+            }
+            if(currentFindServiceCount == BLEConfig.MaxFindServiceCount){
+                onResponseError(errorCode);
                 return;
             }
             bleFindService.findService();
@@ -256,6 +271,7 @@ public class BLEManage {
      * 打开通知
      */
     private Integer currentOpenNotificationCount = 0;//当前打开通知次数
+    private Integer currentReconnectCountWhenDisconnectedOnOpenNotification = 0;//当前打开通知时断开连接重连的次数
     private BLEOpenNotification bleOpenNotification;//蓝牙打开通知管理器
     private OnBLEOpenNotificationListener onBLEOpenNotificationListener;//打开通知监听器
     public void setOnBLEOpenNotificationListener(OnBLEOpenNotificationListener onBLEOpenNotificationListener) {
@@ -279,7 +295,16 @@ public class BLEManage {
         @Override
         public void onOpenNotificationFail(Integer errorCode) {
             BLELogUtil.e(TAG, "第" + ++currentOpenNotificationCount + "次打开通知失败,errorCode=" + errorCode);
-            if(currentOpenNotificationCount == BLEConfig.maxOpenNotificationCount){
+            if(errorCode == BLEConstants.Error.DisconnectError){
+                if(currentReconnectCountWhenDisconnectedOnOpenNotification ++ < BLEConfig.MaxReconnectCountWhenDisconnectedOnOpenNotification){
+                    BLELogUtil.e(TAG, "打开通知时断开连接，第" + currentReconnectCountWhenDisconnectedOnOpenNotification + "次重连");
+                    bluetoothGatt.connect();
+                    return;
+                }
+                onResponseError(errorCode);
+                return;
+            }
+            if(currentOpenNotificationCount == BLEConfig.MaxOpenNotificationCount){
                 onResponseError(errorCode);
                 return;
             }
