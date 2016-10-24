@@ -1,5 +1,7 @@
 package com.bluetoothle.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -178,5 +180,36 @@ public class BLEByteUtil {
             return null;
         }
         return (byte) ((byte) ((Byte.parseByte(tendesc.substring(0, 1))) << 4) | (Byte.parseByte(tendesc.substring(1, 2))));
+    }
+
+    /**
+     * 将一个字节数组转换成等长的字节数组列表
+     * @param srcBytes  源字节数组
+     * @param maxLength 长度
+     * @return  字节数组列表
+     */
+    public static List<byte[]> paeseByteArrayToByteList(byte[] srcBytes, Integer maxLength){
+        if(srcBytes == null || srcBytes.length == 0 || maxLength == null || maxLength == 0){
+            return null;
+        }
+        List<byte[]> byteList = new ArrayList<>();
+        if(maxLength >= srcBytes.length){
+            byteList.add(srcBytes);
+            return byteList;
+        }
+        int num = srcBytes.length/maxLength;
+        int level = srcBytes.length%maxLength;
+        for(int index=0;index<num;index+=maxLength){
+            byteList.add(getSubbytes(srcBytes, index, index + maxLength));
+        }
+        byteList.add(getSubbytes(srcBytes, maxLength * num, level));
+        return byteList;
+    }
+
+    public static void main(String[] args){
+        List<byte[]> bytes = paeseByteArrayToByteList(new byte[]{(byte) 0xFE,0x01,0x39,00, 0x18, 65, 0x6A, 0x3F, 0x59, 10, 0x2A, (byte) 0xCB, 0x16, 0x22, 0x3A, 0x23, 0x33, 0x2E, 0x29, (byte) 0xCB, 0x10, 0x14, 0x14, 0x02, 0x21, 0x1A, 0x0E, (byte) 0xF3, 0x00, 0x06, 0x1E}, 20);
+        for(int i=0;i<bytes.size();i++){
+            System.out.println(bytesToHexString(bytes.get(i)));
+        }
     }
 }

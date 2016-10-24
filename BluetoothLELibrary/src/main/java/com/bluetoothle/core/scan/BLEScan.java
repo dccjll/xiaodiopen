@@ -108,19 +108,6 @@ public class BLEScan {
                 }
             }
         };
-
-        scanHandler = new Handler();
-        scanRunnable = new Runnable() {
-            @Override
-            public void run() {
-                scanControl(false);
-                if(BLEStringUtil.isNotEmpty(targetDeviceAddress) || (targetDeviceAddressList.size() > 0)){
-                    onBLEScanListener.onScanFail(BLEConstants.Error.NotFoundDeviceError);
-                    return;
-                }
-                onBLEScanListener.onScanFinish(foundDeviceList);
-            }
-        };
     }
 
     /**
@@ -135,6 +122,18 @@ public class BLEScan {
             onBLEScanListener.onScanFail(BLEConstants.Error.CheckBluetoothAdapterError);
             return;
         }
+        scanHandler = new Handler();
+        scanRunnable = new Runnable() {
+            @Override
+            public void run() {
+                scanControl(false);
+                if(BLEStringUtil.isNotEmpty(targetDeviceAddress) || (targetDeviceAddressList.size() > 0)){
+                    onBLEScanListener.onScanFail(BLEConstants.Error.NotFoundDeviceError);
+                    return;
+                }
+                onBLEScanListener.onScanFinish(foundDeviceList);
+            }
+        };
         scanHandler.postDelayed(scanRunnable, timeoutScanBLE);
         foundDeviceList.clear();
         try {

@@ -111,10 +111,6 @@ public class BLEGattCallback extends BluetoothGattCallback {
             if(onGattBLEFindServiceListener != null){
                 onGattBLEFindServiceListener.onFindServiceSuccess(gatt, status, gatt.getServices());
             }
-        }else{
-            if (onGattBLEFindServiceListener != null) {
-                onGattBLEFindServiceListener.onFindServiceFail(BLEConstants.Error.FindServiceError);
-            }
         }
     }
 
@@ -127,14 +123,10 @@ public class BLEGattCallback extends BluetoothGattCallback {
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         BLELogUtil.e(TAG, "onCharacteristicWrite,gatt=" + gatt + ",characteristic=" + characteristic + ",status=" + status + ",writedData=" + BLEByteUtil.bytesToHexString(characteristic.getValue()));
         BLEUtil.updateBluetoothGattLastCommunicationTime(gatt, System.currentTimeMillis());
-        if(status != BluetoothGatt.GATT_SUCCESS || !characteristic.getUuid().toString().equalsIgnoreCase(uuidCharacteristicWrite.toString())){
+        if(status == BluetoothGatt.GATT_SUCCESS && characteristic.getUuid().toString().equalsIgnoreCase(uuidCharacteristicWrite.toString())){
             if(onGattBLEWriteDataListener != null){
-                onGattBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
+                onGattBLEWriteDataListener.onWriteDataSuccess(gatt, characteristic, status);
             }
-            return;
-        }
-        if(onGattBLEWriteDataListener != null){
-            onGattBLEWriteDataListener.onWriteDataSuccess(gatt, characteristic, status);
         }
     }
 
@@ -157,14 +149,10 @@ public class BLEGattCallback extends BluetoothGattCallback {
     @Override
     public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
         BLELogUtil.e(TAG, "onDescriptorWrite,gatt=" + gatt + ",descriptor=" + descriptor + ",status=" + status);
-        if(status != BluetoothGatt.GATT_SUCCESS || !descriptor.getUuid().toString().equalsIgnoreCase(uuidDescriptorWrite.toString())){
-            if (onGattBLEOpenNotificationListener != null) {
-                onGattBLEOpenNotificationListener.onOpenNotificationFail(BLEConstants.Error.OpenNotificationError);
+        if(status == BluetoothGatt.GATT_SUCCESS && descriptor.getUuid().toString().equalsIgnoreCase(uuidDescriptorWrite.toString())){
+            if(onGattBLEOpenNotificationListener != null){
+                onGattBLEOpenNotificationListener.onOpenNotificationSuccess(gatt, descriptor, status);
             }
-            return;
-        }
-        if(onGattBLEOpenNotificationListener != null){
-            onGattBLEOpenNotificationListener.onOpenNotificationSuccess(gatt, descriptor, status);
         }
     }
 

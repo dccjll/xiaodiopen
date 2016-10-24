@@ -564,15 +564,14 @@ public class XIAODIBLEProtocol {
                 return false;
             }
             byte[] channelpwdbytes = getChannelPwdBytes(xiaodiData.getChannelpwd());
-            byte[] mobilebytes = getMobileBytes(xiaodiData.getMobileaccount());
+            byte[] usermobileaccountbytes = getMobileBytes(xiaodiData.getMobileaccount());
             byte[] timebytes = getTimeBytes();
             byte[] secretkeybytes = xiaodiData.getSecretkey();
-            if (xiaodiData == null || channelpwdbytes == null || mobilebytes == null || timebytes == null
-                    || channelpwdbytes.length == 0 || mobilebytes.length == 0 || timebytes.length == 0 || secretkeybytes == null || secretkeybytes.length == 0) {
+            if (xiaodiData == null || channelpwdbytes == null || usermobileaccountbytes == null || timebytes == null
+                    || channelpwdbytes.length == 0 || usermobileaccountbytes.length == 0 || timebytes.length == 0 || secretkeybytes == null || secretkeybytes.length == 0) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.param_check_error,"0x39"));
                 return false;
             }
-            byte[] usermobileaccountbytes = getMobileBytes(new String(mobilebytes).replace(" ", ""));
             if (usermobileaccountbytes == null) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.mobile_init_error));
                 return false;

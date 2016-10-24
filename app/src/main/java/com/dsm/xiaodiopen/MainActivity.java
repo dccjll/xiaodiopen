@@ -21,7 +21,6 @@ import com.bluetoothle.core.writeData.OnBLEWriteDataListener;
 import com.bluetoothle.factory.doorguard.DoorGuardSend;
 import com.bluetoothle.factory.xiaodilock.OnXIAODIBLEListener;
 import com.bluetoothle.factory.xiaodilock.protocol.XIAODIBLECMDType;
-import com.bluetoothle.factory.xiaodilock.protocol.XIAODIBLEProtocol;
 import com.bluetoothle.factory.xiaodilock.received.XIAODIDataReceived;
 import com.bluetoothle.factory.xiaodilock.received.XIAODIDataReceivedAnalyzer;
 import com.bluetoothle.factory.xiaodilock.send.XIAODIData;
@@ -225,9 +224,16 @@ public class MainActivity extends Activity {
                         new byte[]{0x3A},
                         new OnXIAODIBLEListener.OnCommonListener() {
                             @Override
-                            public void success(XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                            public void success(final XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
                                 BLELogUtil.d(TAG, "获取通讯密钥，数据接收成功" + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
-                                xiaodiOpen(xiaodiDataReceivedAnalyzer.getDataArea());
+                                runOnUiThread(
+                                        new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                xiaodiOpen(xiaodiDataReceivedAnalyzer.getDataArea());
+                                            }
+                                        }
+                                );
                             }
 
                             @Override
@@ -268,7 +274,7 @@ public class MainActivity extends Activity {
                     }
                 },
                 new XIAODIDataReceived(
-                        new byte[]{0x3A},
+                        new byte[]{0x39},
                         new OnXIAODIBLEListener.OnCommonListener() {
                             @Override
                             public void success(XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {

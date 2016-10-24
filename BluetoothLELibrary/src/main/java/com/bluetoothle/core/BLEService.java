@@ -79,18 +79,24 @@ public class BLEService extends Service {
 					@Override
 					public void run() {
 						while(true){
-							if(BLEManage.connectedBluetoothGattList != null && BLEManage.connectedBluetoothGattList.size() > 0){
-								Iterator<Map<BluetoothGatt,Long>> bluetoothGattListIte = BLEManage.connectedBluetoothGattList.iterator();
-								while(bluetoothGattListIte.hasNext()){
-									Map<BluetoothGatt,Long> bluetoothGattLongMap = bluetoothGattListIte.next();
-									for(Map.Entry<BluetoothGatt,Long> entry : bluetoothGattLongMap.entrySet()){
-										Long timeInterval = System.currentTimeMillis() - entry.getValue();
-										if(timeInterval >= BLEConfig.MaxWaitDisconnectTimeInterval){
-											BLELogUtil.e(TAG, "连接" + entry.getKey() + "超过规定的时间仍然没有通讯，主动断开连接,mac=" + entry.getKey().getDevice().getAddress());
-											entry.getKey().disconnect();
-										}
-									}
+							try {
+								synchronized (BLEManage.connectedBluetoothGattList) {
+									if(BLEManage.connectedBluetoothGattList != null && BLEManage.connectedBluetoothGattList.size() > 0){
+                                        Iterator<Map<BluetoothGatt,Long>> bluetoothGattListIte = BLEManage.connectedBluetoothGattList.iterator();
+                                        while(bluetoothGattListIte.hasNext()){
+                                            Map<BluetoothGatt,Long> bluetoothGattLongMap = bluetoothGattListIte.next();
+                                            for(Map.Entry<BluetoothGatt,Long> entry : bluetoothGattLongMap.entrySet()){
+                                                Long timeInterval = System.currentTimeMillis() - entry.getValue();
+                                                if(timeInterval >= BLEConfig.MaxWaitDisconnectTimeInterval){
+                                                    BLELogUtil.e(TAG, "连接" + entry.getKey() + "超过规定的时间仍然没有通讯，主动断开连接,mac=" + entry.getKey().getDevice().getAddress());
+                                                    entry.getKey().disconnect();
+                                                }
+                                            }
+                                        }
+                                    }
 								}
+							} catch (Exception e) {
+								e.printStackTrace();
 							}
 						}
 					}

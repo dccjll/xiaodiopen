@@ -4,8 +4,6 @@ import com.bluetoothle.factory.xiaodilock.util.XIAODIConstants;
 import com.bluetoothle.util.BLEByteUtil;
 import com.bluetoothle.util.BLELogUtil;
 
-import java.util.Arrays;
-
 /**
  * Created by dessmann on 16/10/18.
  * 小嘀数据接收分析器
@@ -115,9 +113,9 @@ public class XIAODIDataReceivedAnalyzer {
             BLELogUtil.d(TAG, "dataAreaLength=" + BLEByteUtil.bytesToHexString(dataAreaLength));
             ack = BLEByteUtil.getSubbytes(bleDataReceived, 5, 1);
             BLELogUtil.d(TAG, "ack=" + BLEByteUtil.bytesToHexString(ack));
+            crc = BLEByteUtil.getSubbytes(bleDataReceived, bleDataReceived.length - 2, 2);
             dataArea = BLEByteUtil.getSubbytes(bleDataReceived, 6, bleDataReceived.length - packageHead.length - packageAttribute.length - cmd.length - dataAreaLength.length - ack.length - crc.length);
             BLELogUtil.d(TAG, "dataArea=" + BLEByteUtil.bytesToHexString(dataArea));
-            crc = BLEByteUtil.getSubbytes(bleDataReceived, bleDataReceived.length - 2, 2);
             BLELogUtil.d(TAG, "crc=" + BLEByteUtil.bytesToHexString(crc));
         } catch (Exception e) {
             e.printStackTrace();

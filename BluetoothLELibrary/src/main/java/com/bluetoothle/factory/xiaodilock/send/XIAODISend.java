@@ -79,7 +79,7 @@ public class XIAODISend {
             onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothAdapterError);
             return;
         }
-        BLEManage bleManage = new BLEManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildTwoUUIDs(), null, disconnectOnFinish);
+        BLEManage bleManage = new BLEManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildFiveUUIDs(), null, disconnectOnFinish);
         bleManage.setData(data);
         bleManage.setOnBLEWriteDataListener(onBLEWriteDataListener);
         bleManage.setOnBLEResponseListener(XIAODIDataReceived);

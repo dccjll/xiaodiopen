@@ -20,7 +20,7 @@ public class BLEUtil {
      * @param targetMac   目标设备mac地址
      * @return  true 连接存在 false 连接不存在
      */
-    public static Boolean checkConnectStatus(String targetMac){
+    public synchronized static Boolean checkConnectStatus(String targetMac){
         Iterator<Map<BluetoothGatt,Long>> bluetoothGattListIte = BLEManage.connectedBluetoothGattList.iterator();
         while(bluetoothGattListIte.hasNext()){
             Map<BluetoothGatt,Long> bluetoothGattLongMap = bluetoothGattListIte.next();
@@ -38,7 +38,7 @@ public class BLEUtil {
      * @param targetMac 目标设备mac地址
      * @return  一个连接
      */
-    public static BluetoothGatt getBluetoothGatt(String targetMac){
+    public synchronized static BluetoothGatt getBluetoothGatt(String targetMac){
         Iterator<Map<BluetoothGatt,Long>> bluetoothGattListIte = BLEManage.connectedBluetoothGattList.iterator();
         while(bluetoothGattListIte.hasNext()){
             Map<BluetoothGatt,Long> bluetoothGattLongMap = bluetoothGattListIte.next();
@@ -55,7 +55,7 @@ public class BLEUtil {
      * 删除一个断开的连接
      * @param targetMac 目标设备mac地址
      */
-    public static void removeConnect(String targetMac){
+    public synchronized static void removeConnect(String targetMac){
         Iterator<Map<BluetoothGatt,Long>> bluetoothGattListIte = BLEManage.connectedBluetoothGattList.iterator();
         while(bluetoothGattListIte.hasNext()){
             Map<BluetoothGatt,Long> bluetoothGattLongMap = bluetoothGattListIte.next();
@@ -71,7 +71,7 @@ public class BLEUtil {
      * 断开一个蓝牙连接
      * @param targetMac 目标设备mac地址
      */
-    public static void disconnectBluetoothGatt(String targetMac){
+    public synchronized static void disconnectBluetoothGatt(String targetMac){
         Iterator<Map<BluetoothGatt,Long>> bluetoothGattListIte = BLEManage.connectedBluetoothGattList.iterator();
         while(bluetoothGattListIte.hasNext()){
             Map<BluetoothGatt,Long> bluetoothGattLongMap = bluetoothGattListIte.next();
@@ -88,7 +88,7 @@ public class BLEUtil {
     /**
      * 断开所有连接
      */
-    public static void disconnectAllBluetoothGatt(){
+    public synchronized static void disconnectAllBluetoothGatt(){
         Iterator<Map<BluetoothGatt,Long>> bluetoothGattListIte = BLEManage.connectedBluetoothGattList.iterator();
         while(bluetoothGattListIte.hasNext()){
             Map<BluetoothGatt,Long> bluetoothGattLongMap = bluetoothGattListIte.next();
@@ -104,7 +104,7 @@ public class BLEUtil {
      * @param bluetoothGatt 某一个连接对象
      * @param lastCommunicationTime 最后一次通讯的时间戳
      */
-    public static void updateBluetoothGattLastCommunicationTime(BluetoothGatt bluetoothGatt, Long lastCommunicationTime){
+    public synchronized static void updateBluetoothGattLastCommunicationTime(BluetoothGatt bluetoothGatt, Long lastCommunicationTime){
         Iterator<Map<BluetoothGatt,Long>> bluetoothGattListIte = BLEManage.connectedBluetoothGattList.iterator();
         while(bluetoothGattListIte.hasNext()){
             Map<BluetoothGatt,Long> bluetoothGattLongMap = bluetoothGattListIte.next();

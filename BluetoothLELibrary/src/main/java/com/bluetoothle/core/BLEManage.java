@@ -202,15 +202,14 @@ public class BLEManage {
     private OnBLEFindServiceListener onBLEFindServiceListener_ = new OnBLEFindServiceListener() {//临时的蓝牙找服务器监听器
         @Override
         public void onFindServiceSuccess(BluetoothGatt bluetoothGatt, int status, List<BluetoothGattService> bluetoothGattServices) {
-            if(onBLEFindServiceListener != null){
-                bleCoreResponse.onFindServiceSuccess(onBLEFindServiceListener, bluetoothGatt, status, bluetoothGattServices);
-                return;
-            }
-            if(onBLEOpenNotificationListener != null || (onBLEWriteDataListener != null && receiveBLEData)){
+            if(receiveBLEData){
                 if(bleOpenNotification == null){
                     bleOpenNotification = new BLEOpenNotification(bluetoothGattServices, bluetoothGatt, notificationuuids, onBLEOpenNotificationListener_);
                 }
                 bleOpenNotification.openNotification();
+            }else if(onBLEFindServiceListener != null){
+                bleCoreResponse.onFindServiceSuccess(onBLEFindServiceListener, bluetoothGatt, status, bluetoothGattServices);
+                return;
             }else{
                 if(bleWriteData == null){
                     bleWriteData = new BLEWriteData(bluetoothGatt, writeuuids, data, onBLEWriteDataListener_);
@@ -282,7 +281,7 @@ public class BLEManage {
         public void onOpenNotificationSuccess(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             if(onBLEWriteDataListener != null){
                 if(bleWriteData == null){
-                    bleWriteData = new BLEWriteData(gatt, serviceUUIDs, data, onBLEWriteDataListener_);
+                    bleWriteData = new BLEWriteData(gatt, writeuuids, data, onBLEWriteDataListener_);
                 }
                 bleWriteData.writeData();
                 return;
@@ -344,7 +343,7 @@ public class BLEManage {
     /**
      * 写数据
      */
-    private UUID[] writeuuids;//从serviceUUIDs分离出来的通知UUID,取serviceUUIDs的0,1个UUID
+    private UUID[] writeuuids;//从serviceUUIDs分离出来的写数据UUID,取serviceUUIDs的0,1个UUID,分别为服务与特征uuid
     private Boolean receiveBLEData = false;//是否接收设备返回的数据
     private OnBLEResponseListener onBLEResponseListener;//接收数据监听器
     public void setOnBLEResponseListener(OnBLEResponseListener onBLEResponseListener) {
@@ -419,8 +418,15 @@ public class BLEManage {
                 bleFindService.findService();
                 return;
             }
-            bleOpenNotification = new BLEOpenNotification(bluetoothGatt.getServices(), bluetoothGatt, notificationuuids, onBLEOpenNotificationListener_);
-            bleOpenNotification.openNotification();
+            if (onBLEOpenNotificationListener != null) {
+                bleOpenNotification = new BLEOpenNotification(bluetoothGatt.getServices(), bluetoothGatt, notificationuuids, onBLEOpenNotificationListener_);
+                bleOpenNotification.openNotification();
+                return;
+            }
+            if(bleWriteData == null){
+                bleWriteData = new BLEWriteData(bluetoothGatt, writeuuids, data, onBLEWriteDataListener_);
+            }
+            bleWriteData.writeData();
             return;
         }
         scan();

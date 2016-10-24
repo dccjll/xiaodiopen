@@ -9,6 +9,7 @@ import com.bluetoothle.core.connect.BLEConnect;
 import com.bluetoothle.util.BLEByteUtil;
 import com.bluetoothle.util.BLELogUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -22,7 +23,11 @@ public class BLEWriteData {
     private BluetoothGatt bluetoothGatt;
     private UUID[] uuids;
     private byte[] data;
+    private List<byte[]> dataList;
     private OnBLEWriteDataListener onBLEWriteDataListener;
+    private BluetoothGattService bluetoothGattService;
+    private BluetoothGattCharacteristic bluetoothGattCharacteristic;
+    private Integer index = 0;//当前发送的第几个数据包
 
     public interface OnGattBLEWriteDataListener{
         void onWriteDataFinish();
@@ -65,6 +70,11 @@ public class BLEWriteData {
             onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBLEDataError);
             return;
         }
+        dataList = BLEByteUtil.paeseByteArrayToByteList(data, MAX_BYTES);
+        if(dataList == null){
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBLEDataError);
+            return;
+        }
         writtenDataLength = 0;
         BLEConnect.bleGattCallback.setUuidCharacteristicWrite(uuids[1]);
         BLEConnect.bleGattCallback.registerOnGattBLEWriteDataListener(
@@ -79,7 +89,15 @@ public class BLEWriteData {
                         onBLEWriteDataListener.onWriteDataSuccess(gatt, characteristic, status);
                         if((writtenDataLength += characteristic.getValue().length) == data.length){
                             onWriteDataFinish();
+                            return;
                         }
+                        try {
+                            BLELogUtil.d(TAG, "间隔" + INTERVAL_SEND_NEXT_PACKAGE + "ms再发送下一个数据包");
+                            Thread.sleep(INTERVAL_SEND_NEXT_PACKAGE);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        sendBLEData(dataList.get(++index));
                     }
 
                     @Override
@@ -88,68 +106,84 @@ public class BLEWriteData {
                     }
                 }
         );
-        BluetoothGattService bluetoothGattService = bluetoothGatt.getService(uuids[0]);
+        bluetoothGattService = bluetoothGatt.getService(uuids[0]);
         if(bluetoothGattService == null){
             onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothGattError);
             return;
         }
-        BluetoothGattCharacteristic bluetoothGattCharacteristic = bluetoothGattService.getCharacteristic(uuids[1]);
+        bluetoothGattCharacteristic = bluetoothGattService.getCharacteristic(uuids[1]);
         if(bluetoothGattCharacteristic == null){
             onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothGattCharacteristicError);
             return;
         }
-        try {
-            divideSendBLEData(bluetoothGattCharacteristic, data);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
-            return;
-        }
+//        try {
+//            divideSendBLEData(bluetoothGattCharacteristic, data);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
+//            return;
+//        }
+        sendBLEData(dataList.get(index));
     }
 
     private final static long INTERVAL_SEND_NEXT_PACKAGE = 70;//发送多个数据包时的时间间隔
     private final static int MAX_BYTES = 20;// 蓝牙发送数据分包，每个包的最大长度为20个字节
     /**
-     * 拆分写数据
-     * @param bluetoothGattCharacteristic 写入的蓝牙特征对象
+     * 写数据
      * @param value 写入的数据
      */
-    private void divideSendBLEData(final BluetoothGattCharacteristic bluetoothGattCharacteristic, byte[] value) throws InterruptedException {
-        int length = value.length;
-        int sendLength = 0;
-        int position = 0;
-
-        while (length > 0) {
-            if (length > MAX_BYTES) {
-                sendLength = MAX_BYTES;
-                if(length < value.length){
-                    BLELogUtil.d(TAG, "间隔" + INTERVAL_SEND_NEXT_PACKAGE + "ms再发送下一个数据包");
-                    Thread.sleep(INTERVAL_SEND_NEXT_PACKAGE);
-                }
-            } else if (length > 0) {
-                sendLength = length;
-                if(length < value.length){
-                    BLELogUtil.d(TAG, "间隔" + INTERVAL_SEND_NEXT_PACKAGE + "ms再发送最后一个数据包");
-                    Thread.sleep(INTERVAL_SEND_NEXT_PACKAGE);
-                }
-            } else{
-                onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
-                return;
-            }
-            // 发送数据
-            byte[] sendValue = BLEByteUtil.getSubbytes(value, position, sendLength);
-            if (sendValue == null) {
-                onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
-                return;
-            }
-            if (!bluetoothGattCharacteristic.setValue(sendValue)) {
-                onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
-                return;
-            }
-            BLELogUtil.d(TAG, "position=" + position + ",sendValue=" + BLEByteUtil.bytesToHexString(sendValue));
-            bluetoothGatt.writeCharacteristic(bluetoothGattCharacteristic);
-            length -= sendLength;
-            position += sendLength;
+    private void sendBLEData(byte[] value) {
+        if (!bluetoothGattCharacteristic.setValue(value)) {
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
+            return;
+        }
+        BLELogUtil.d(TAG, "sendValue=" + BLEByteUtil.bytesToHexString(value));
+        if(!bluetoothGatt.writeCharacteristic(bluetoothGattCharacteristic)){
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
+            return;
         }
     }
+//    /**
+//     * 拆分写数据
+//     * @param bluetoothGattCharacteristic 写入的蓝牙特征对象
+//     * @param value 写入的数据
+//     */
+//    private void divideSendBLEData(final BluetoothGattCharacteristic bluetoothGattCharacteristic, byte[] value) throws InterruptedException {
+//        int length = value.length;
+//        int sendLength = 0;
+//        int position = 0;
+//
+//        while (length > 0) {
+//            if (length > MAX_BYTES) {
+//                sendLength = MAX_BYTES;
+//                if(length < value.length){
+//                    BLELogUtil.d(TAG, "间隔" + INTERVAL_SEND_NEXT_PACKAGE + "ms再发送下一个数据包");
+//                    Thread.sleep(INTERVAL_SEND_NEXT_PACKAGE);
+//                }
+//            } else if (length > 0) {
+//                sendLength = length;
+//                if(length < value.length){
+//                    BLELogUtil.d(TAG, "间隔" + INTERVAL_SEND_NEXT_PACKAGE + "ms再发送最后一个数据包");
+//                    Thread.sleep(INTERVAL_SEND_NEXT_PACKAGE);
+//                }
+//            } else{
+//                onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
+//                return;
+//            }
+//            // 发送数据
+//            byte[] sendValue = BLEByteUtil.getSubbytes(value, position, sendLength);
+//            if (sendValue == null) {
+//                onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
+//                return;
+//            }
+//            if (!bluetoothGattCharacteristic.setValue(sendValue)) {
+//                onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.WriteDataError);
+//                return;
+//            }
+//            BLELogUtil.d(TAG, "position=" + position + ",sendValue=" + BLEByteUtil.bytesToHexString(sendValue));
+//            bluetoothGatt.writeCharacteristic(bluetoothGattCharacteristic);
+//            length -= sendLength;
+//            position += sendLength;
+//        }
+//    }
 }
