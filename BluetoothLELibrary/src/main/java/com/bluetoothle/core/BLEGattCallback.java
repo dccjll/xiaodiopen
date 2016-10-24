@@ -10,10 +10,9 @@ import com.bluetoothle.core.connect.BLEConnect;
 import com.bluetoothle.core.findService.BLEFindService;
 import com.bluetoothle.core.openNotification.BLEOpenNotification;
 import com.bluetoothle.core.response.OnBLEResponseListener;
+import com.bluetoothle.core.writeData.BLEWriteData;
 import com.bluetoothle.util.BLEByteUtil;
 import com.bluetoothle.util.BLELogUtil;
-import com.bluetoothle.core.writeData.BLEWriteData;
-import com.bluetoothle.util.BLEStringUtil;
 
 import java.util.UUID;
 
@@ -94,10 +93,13 @@ public class BLEGattCallback extends BluetoothGattCallback {
             }else if(newState == BluetoothProfile.STATE_DISCONNECTED){
                 BLELogUtil.e(TAG, "已断开,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
                 BLEUtil.removeConnect(gatt.getDevice().getAddress());
+                gatt.close();
                 onResponseError(BLEConstants.Error.DisconnectError);
             }
         }else{
             BLELogUtil.e(TAG, "收到蓝牙底层协议栈异常消息,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
+            gatt.disconnect();
+            gatt.close();
             onResponseError(BLEConstants.Error.ReceivedBLEStackCodeError);
         }
     }
