@@ -60,6 +60,13 @@ public class XIAODIBLEProtocol {
     }
 
     /**
+     * 初始化智能钥匙初始化数据
+     */
+    public static byte[] buildSmartKeyInitData(){
+        return "DSM".getBytes();
+    }
+
+    /**
      * 封装待发送的数据包
      * @return
      */
@@ -183,9 +190,18 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_param_error,"0x26"));
                 return false;
             }
-            byte[] tempData = new byte[13];
-            System.arraycopy(xiaodiData.getSecretkey13(), 0, tempData, 0, xiaodiData.getSecretkey13().length);
-
+            byte[] tempData = xiaodiData.getSecretkey13();
+            if(tempData == null || tempData.length != 13){
+                BLELogUtil.e(TAG, "转换13个字节秘钥失败");
+                return false;
+            }
+            BLELogUtil.e(TAG, "0X26,13个字节秘钥字节数组=" + BLEByteUtil.bytesToHexString(tempData));
+            byte[] secregkeybytes = xiaodiData.getSecretkey();
+            if(secregkeybytes == null || secregkeybytes.length != 8){
+                BLELogUtil.e(TAG, "通讯秘钥格式不正确");
+                return false;
+            }
+            BLELogUtil.e(TAG, "通讯秘钥=" + BLEByteUtil.bytesToHexString(secregkeybytes));
             //字节分段
             //前8个字节
             byte[] tempDataArray = BLEByteUtil.getSubbytes(tempData, 0, 8);
@@ -198,11 +214,11 @@ public class XIAODIBLEProtocol {
             //加密
             //前8个字节加密
             for (int j = 0; j < tempDataArray.length; j++) {
-                tempDataArray[j] = (byte) (tempDataArray[j] ^ xiaodiData.getSecretkey()[j]);
+                tempDataArray[j] = (byte) (tempDataArray[j] ^ secregkeybytes[j]);
             }
-            //最后7个字节加密
+            //最后5个字节加密
             for (int i = 0; i < tempDataEnd.length; i++) {
-                tempDataEnd[i] = (byte) (tempDataEnd[i] ^ xiaodiData.getSecretkey()[i]);
+                tempDataEnd[i] = (byte) (tempDataEnd[i] ^ secregkeybytes[i]);
             }
 
             BLELogUtil.d(TAG, "加密后，tempDataArray=" + BLEByteUtil.bytesToHexString(tempDataArray));
@@ -221,9 +237,27 @@ public class XIAODIBLEProtocol {
             }
             byte[] tempData = new byte[23];
             byte[] channelpwdbytes = getChannelPwdBytes(xiaodiData.getChannelpwd());
+            if(channelpwdbytes == null){
+                BLELogUtil.e(TAG, "0x27,信道密码转换失败");
+                return false;
+            }
+            BLELogUtil.e(TAG, "0x27,信道密码字节数组=" + BLEByteUtil.bytesToHexString(channelpwdbytes));
+            byte[] secretkeys = xiaodiData.getSecretkey13();
+            if(secretkeys == null || secretkeys.length != 13){
+                BLELogUtil.e(TAG, "0x27,转换13个字节秘钥失败");
+                return false;
+            }
+            BLELogUtil.e(TAG, "0x27,13个字节秘钥字节数组=" + BLEByteUtil.bytesToHexString(secretkeys));
+            String mac = xiaodiData.getLockmac();
+            if(BLEStringUtil.isEmpty(mac) || mac.split(":").length != 6){
+                BLELogUtil.e(TAG, "0x27,mac地址不正确");
+                return false;
+            }
+            byte[] macbytes = BLEByteUtil.parseRadixStringToBytes(mac.replace(":", ""), 16);
+            BLELogUtil.e(TAG, "0x27,mac地址字节数组=" + BLEByteUtil.bytesToHexString(macbytes));
             System.arraycopy(channelpwdbytes, 0, tempData, 0, channelpwdbytes.length);
-            System.arraycopy(xiaodiData.getSecretkey13(), 0, tempData, channelpwdbytes.length, xiaodiData.getSecretkey13().length);
-            System.arraycopy(xiaodiData.getLockmac(), 0, tempData, channelpwdbytes.length + xiaodiData.getSecretkey13().length, xiaodiData.getLockmac().length);
+            System.arraycopy(secretkeys, 0, tempData, channelpwdbytes.length, secretkeys.length);
+            System.arraycopy(macbytes, 0, tempData, channelpwdbytes.length + secretkeys.length, macbytes.length);
 
             //字节分段
             byte[][] tempDataArray = new byte[2][8];
@@ -234,9 +268,9 @@ public class XIAODIBLEProtocol {
             }
             //最后7个字节一段
             tempDataEnd = BLEByteUtil.getSubbytes(tempData, 16, tempDataEnd.length);
-            BLELogUtil.d(TAG, "加密前，tempDataArray[0]=" + BLEByteUtil.bytesToHexString(tempDataArray[0]));
-            BLELogUtil.d(TAG, "加密前，tempDataArray[1]=" + BLEByteUtil.bytesToHexString(tempDataArray[1]));
-            BLELogUtil.d(TAG, "加密前, tempDataEnd=" + BLEByteUtil.bytesToHexString(tempDataEnd));
+            BLELogUtil.d(TAG, "0x27.加密前，tempDataArray[0]=" + BLEByteUtil.bytesToHexString(tempDataArray[0]));
+            BLELogUtil.d(TAG, "0x27.加密前，tempDataArray[1]=" + BLEByteUtil.bytesToHexString(tempDataArray[1]));
+            BLELogUtil.d(TAG, "0x27.加密前, tempDataEnd=" + BLEByteUtil.bytesToHexString(tempDataEnd));
 
             //加密
             //前16个字节加密
@@ -250,9 +284,9 @@ public class XIAODIBLEProtocol {
                 tempDataEnd[i] = (byte) (tempDataEnd[i] ^ xiaodiData.getSecretkey()[i]);
             }
 
-            BLELogUtil.d(TAG, "加密后，tempDataArray[0]=" + BLEByteUtil.bytesToHexString(tempDataArray[0]));
-            BLELogUtil.d(TAG, "加密后，tempDataArray[1]=" + BLEByteUtil.bytesToHexString(tempDataArray[1]));
-            BLELogUtil.d(TAG, "加密后, tempDataEnd=" + BLEByteUtil.bytesToHexString(tempDataEnd));
+            BLELogUtil.d(TAG, "0x27.加密后，tempDataArray[0]=" + BLEByteUtil.bytesToHexString(tempDataArray[0]));
+            BLELogUtil.d(TAG, "0x27.加密后，tempDataArray[1]=" + BLEByteUtil.bytesToHexString(tempDataArray[1]));
+            BLELogUtil.d(TAG, "0x27.加密后, tempDataEnd=" + BLEByteUtil.bytesToHexString(tempDataEnd));
             dataArea = new byte[23];
             System.arraycopy(tempDataArray[0], 0, dataArea, 0, tempDataArray[0].length);
             System.arraycopy(tempDataArray[1], 0, dataArea, tempDataArray[0].length, tempDataArray[1].length);
@@ -740,5 +774,21 @@ public class XIAODIBLEProtocol {
      */
     private byte[]  getTimeBytes(){
         return XIAODIBLEUtil.parseServerTimeToProtocolBytes(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(new Date(System.currentTimeMillis())));
+    }
+
+    /**
+     * 转换13个字节的秘钥
+     * @param mobile    当前用户手机号码
+     * @return  13个字节的秘钥
+     */
+    public static byte[] parse13Secretkeys(String mobile){
+        StringBuffer stringBuffer = new StringBuffer();
+        if(BLEStringUtil.isEmpty(mobile) || mobile.length() != 11){
+            BLELogUtil.e(TAG, "手机号码为空或长度不正确");
+            return null;
+        }
+        stringBuffer.append(new SimpleDateFormat(("yyyyMMddHHmmss"), Locale.US).format(new Date())).append(mobile.substring(0, 1)).append(mobile);
+        BLELogUtil.e(TAG, "13个字节秘钥=" + stringBuffer.toString());
+        return BLEByteUtil.parseRadixStringToBytes(stringBuffer.toString(), 16);
     }
 }

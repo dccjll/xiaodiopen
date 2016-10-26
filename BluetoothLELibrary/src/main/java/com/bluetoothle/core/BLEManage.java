@@ -202,6 +202,16 @@ public class BLEManage {
     private OnBLEFindServiceListener onBLEFindServiceListener_ = new OnBLEFindServiceListener() {//临时的蓝牙找服务器监听器
         @Override
         public void onFindServiceSuccess(BluetoothGatt bluetoothGatt, int status, List<BluetoothGattService> bluetoothGattServices) {
+            //遍历服务
+            for(BluetoothGattService bluetoothGattService : bluetoothGattServices){
+                BLELogUtil.e(TAG, "++++service uuid:" + bluetoothGattService.getUuid());
+                for(BluetoothGattCharacteristic bluetoothGattCharacteristic : bluetoothGattService.getCharacteristics()){
+                    BLELogUtil.e(TAG, "--------characteristics uuid:" + bluetoothGattCharacteristic.getUuid());
+                    for(BluetoothGattDescriptor bluetoothGattDescriptor : bluetoothGattCharacteristic.getDescriptors()){
+                        BLELogUtil.e(TAG, "------------descriptor uuid:" + bluetoothGattDescriptor.getUuid());
+                    }
+                }
+            }
             if(receiveBLEData){
                 if(bleOpenNotification == null){
                     bleOpenNotification = new BLEOpenNotification(bluetoothGattServices, bluetoothGatt, notificationuuids, onBLEOpenNotificationListener_);

@@ -26,6 +26,9 @@ public class XIAODIDataReceived implements OnBLEResponseListener {
 	private OnXIAODIBLEListener.OnCheckManagePwdListener onCheckManagePwdListener;//小嘀验证管理密码接收数据监听器
 	private OnXIAODIBLEListener.OnAddFingerListener onAddFingerListener;//小嘀添加指纹接收数据监听器
 
+	public XIAODIDataReceived() {
+	}
+
 	public XIAODIDataReceived(byte[] sendCMD, OnXIAODIBLEListener.OnCommonListener onCommonListener) {
 		this.sendCMD = sendCMD;
 		this.onCommonListener = onCommonListener;

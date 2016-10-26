@@ -1,11 +1,13 @@
 package com.dsm.xiaodiopen;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -21,6 +23,7 @@ import com.bluetoothle.core.writeData.OnBLEWriteDataListener;
 import com.bluetoothle.factory.doorguard.DoorGuardSend;
 import com.bluetoothle.factory.xiaodilock.OnXIAODIBLEListener;
 import com.bluetoothle.factory.xiaodilock.protocol.XIAODIBLECMDType;
+import com.bluetoothle.factory.xiaodilock.protocol.XIAODIBLEProtocol;
 import com.bluetoothle.factory.xiaodilock.received.XIAODIDataReceived;
 import com.bluetoothle.factory.xiaodilock.received.XIAODIDataReceivedAnalyzer;
 import com.bluetoothle.factory.xiaodilock.send.XIAODIData;
@@ -43,23 +46,25 @@ public class MainActivity extends Activity {
 
     private final static String TAG = MainActivity.class.getSimpleName();
 
+    private String macSmartKey = "23:A2:CD:ED:00:F7";
+
     private Dialog dialog;
     private BLEInit bleInit;
     private String mac;//设备mac地址
     private String mobile;//注册到锁上的用户手机号码
     private String channelpwd;//锁的信道密码
+    private Map<String, String> item;
+    private byte[] openSecretKeyBytes;
 
     private MainHandler mainHandler = new MainHandler();
     private class MainHandler extends Handler{
         @Override
         public void handleMessage(Message msg) {
             dismissDialog(dialog);
-            Boolean flag = (Boolean) msg.obj;
-            if(flag){
-                Toast.makeText(MainActivity.this, "开门成功", Toast.LENGTH_LONG).show();
-            }else{
-                Toast.makeText(MainActivity.this, "开门失败", Toast.LENGTH_LONG).show();
-            }
+            Bundle bundle = (Bundle) msg.obj;
+            Boolean flag = bundle.getBoolean("flag");
+            String desc = bundle.getString("desc");
+            Toast.makeText(MainActivity.this, desc + (flag ? "成功" : "失败"), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -118,9 +123,10 @@ public class MainActivity extends Activity {
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         dialog = buildProgressDialog(MainActivity.this, "正在开门", false);
                         dialog.show();
-                        Map<String, String> item = mainList.get(position);
+                        item = mainList.get(position);
                         String deviceType = item.get("deviceType");
                         mac = item.get("deviceMac");
+                        channelpwd = item.get("channelpwd");
                         if("11".equalsIgnoreCase(deviceType)){
                             mobile = item.get("mobile");
                             channelpwd = item.get("channelpwd");
@@ -130,6 +136,48 @@ public class MainActivity extends Activity {
                         }else{
                             Toast.makeText(MainActivity.this, "设备类型错误", Toast.LENGTH_LONG).show();
                         }
+                    }
+                }
+        );
+        mainListView.setOnItemLongClickListener(
+                new AdapterView.OnItemLongClickListener() {
+                    @Override
+                    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                        item = mainList.get(position);
+                        mac = item.get("deviceMac");
+                        channelpwd = item.get("channelpwd");
+                        new AlertDialog.Builder(MainActivity.this)
+                                .setTitle("选择操作")
+                                .setItems(
+                                        new String[]{"注册智能钥匙", "添加智能钥匙"},
+                                        new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface _dialog, int which) {
+                                                dialog = buildProgressDialog(MainActivity.this, "正在注册智能钥匙", false);
+                                                dialog.show();
+                                                openSecretKeyBytes = XIAODIBLEProtocol.parse13Secretkeys("18668165280");
+                                                if(which == 0){
+                                                    XIAODISend.smartKeyInit(
+                                                            macSmartKey,
+                                                            new XIAODISend.OnSmartKeyInitListener() {
+                                                                @Override
+                                                                public void onInitSuccess() {
+                                                                    getSecretKeyOnSmarKey();
+                                                                }
+
+                                                                @Override
+                                                                public void onInitFaiure(Object obj) {
+                                                                    BLELogUtil.e(TAG, "智能钥匙初始化失败,obj=" + obj);
+                                                                    mainHandler.obtainMessage(0, buildBundle("注册智能钥匙", false)).sendToTarget();
+                                                                }
+                                                            });
+                                                }else if(which == 1){
+                                                    getSecretKeyOnLock();
+                                                }
+                                            }
+                                        })
+                                .show();
+                        return true;
                     }
                 }
         );
@@ -177,7 +225,7 @@ public class MainActivity extends Activity {
                     @Override
                     public void onWriteDataFinish() {
                         BLELogUtil.d(TAG, "所有数据发送成功,开门成功");
-                        mainHandler.obtainMessage(0, true).sendToTarget();
+                        mainHandler.obtainMessage(0, buildBundle("开门", true)).sendToTarget();
                     }
 
                     @Override
@@ -188,7 +236,7 @@ public class MainActivity extends Activity {
                     @Override
                     public void onWriteDataFail(Integer errorCode) {
                         BLELogUtil.e(TAG, "开门失败,errorCode=" + errorCode);
-                        mainHandler.obtainMessage(0, false).sendToTarget();
+                        mainHandler.obtainMessage(0, buildBundle("开门", false)).sendToTarget();
                     }
                 }
         );
@@ -217,7 +265,7 @@ public class MainActivity extends Activity {
                     @Override
                     public void onWriteDataFail(Integer errorCode) {
                         BLELogUtil.d(TAG, "获取通讯密钥，数据写入失败，errorCode=" + errorCode);
-                        mainHandler.obtainMessage(0, false).sendToTarget();
+                        mainHandler.obtainMessage(0, buildBundle("开门", false)).sendToTarget();
                     }
                 },
                 new XIAODIDataReceived(
@@ -239,7 +287,7 @@ public class MainActivity extends Activity {
                             @Override
                             public void failure(Integer errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
                                 BLELogUtil.d(TAG, "获取通讯密钥，数据接收失败,errorCode=" + errorCode + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
-                                mainHandler.obtainMessage(0, false).sendToTarget();
+                                mainHandler.obtainMessage(0, buildBundle("开门", false)).sendToTarget();
                             }
                         }
                 )
@@ -270,7 +318,7 @@ public class MainActivity extends Activity {
                     @Override
                     public void onWriteDataFail(Integer errorCode) {
                         BLELogUtil.d(TAG, "小嘀开门，数据写入失败，errorCode=" + errorCode);
-                        mainHandler.obtainMessage(0, false).sendToTarget();
+                        mainHandler.obtainMessage(0, buildBundle("开门", false)).sendToTarget();
                     }
                 },
                 new XIAODIDataReceived(
@@ -279,13 +327,202 @@ public class MainActivity extends Activity {
                             @Override
                             public void success(XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
                                 BLELogUtil.d(TAG, "小嘀开门，数据接收成功" + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
-                                mainHandler.obtainMessage(0, true).sendToTarget();
+                                mainHandler.obtainMessage(0, buildBundle("开门", true)).sendToTarget();
                             }
 
                             @Override
                             public void failure(Integer errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
                                 BLELogUtil.d(TAG, "小嘀开门，数据接收失败,errorCode=" + errorCode + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
-                                mainHandler.obtainMessage(0, false).sendToTarget();
+                                mainHandler.obtainMessage(0, buildBundle("开门", false)).sendToTarget();
+                            }
+                        }
+                )
+        );
+    }
+
+    /**
+     * 从智能钥匙获取通讯秘钥
+     */
+    private void getSecretKeyOnSmarKey(){
+        XIAODISend.send(
+                macSmartKey,
+                XIAODIBLECMDType.BLE_CMDTYPE_SMARTKEYGETSECRETKEY,
+                null,
+                false,
+                new OnBLEWriteDataListener() {
+                    @Override
+                    public void onWriteDataFinish() {
+                        BLELogUtil.d(TAG, "从智能钥匙获取通讯秘钥，数据写入完成");
+                    }
+
+                    @Override
+                    public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                        BLELogUtil.d(TAG, "从智能钥匙获取通讯秘钥，单次数据写入完成");
+                    }
+
+                    @Override
+                    public void onWriteDataFail(Integer errorCode) {
+                        BLELogUtil.d(TAG, "从智能钥匙获取通讯秘钥，数据写入失败，errorCode=" + errorCode);
+                        mainHandler.obtainMessage(0, buildBundle("注册智能钥匙", false)).sendToTarget();
+                    }
+                },new XIAODIDataReceived(
+                        new byte[]{0x3D},
+                        new OnXIAODIBLEListener.OnCommonListener() {
+                            @Override
+                            public void success(XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                                BLELogUtil.d(TAG, "从智能钥匙获取通讯秘钥，数据接收成功" + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
+                                registerOnSmartKey(channelpwd, openSecretKeyBytes, mac, xiaodiDataReceivedAnalyzer.getDataArea());
+                            }
+
+                            @Override
+                            public void failure(Integer errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                                BLELogUtil.d(TAG, "从智能钥匙获取通讯秘钥，数据接收失败,errorCode=" + errorCode + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
+                                mainHandler.obtainMessage(0, buildBundle("注册智能钥匙", false)).sendToTarget();
+                            }
+                        }
+                )
+        );
+    }
+
+    /**
+     * 智能钥匙上添加开门秘钥
+     * @param mac   设备mac地址
+     * @param channelPwd    信道密码
+     * @param openSecretKeyBytes    开门秘钥
+     * @param secretKeyBytes    通讯秘钥
+     */
+    private void registerOnSmartKey(final String channelPwd, final byte[] openSecretKeyBytes, final String mac, final byte[] secretKeyBytes){
+        XIAODISend.send(
+                macSmartKey,
+                XIAODIBLECMDType.BLE_CMDTYPE_ADDSMARTKEY,
+                new XIAODIData().setChannelpwd(channelPwd).setSecretkey13(openSecretKeyBytes).setLockmac(mac).setSecretkey(secretKeyBytes),
+                true,
+                new OnBLEWriteDataListener() {
+                    @Override
+                    public void onWriteDataFinish() {
+                        BLELogUtil.d(TAG, "智能钥匙上添加开门秘钥，数据写入完成");
+                    }
+
+                    @Override
+                    public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                        BLELogUtil.d(TAG, "智能钥匙上添加开门秘钥，单次数据写入完成");
+                    }
+
+                    @Override
+                    public void onWriteDataFail(Integer errorCode) {
+                        BLELogUtil.d(TAG, "智能钥匙上添加开门秘钥，数据写入失败，errorCode=" + errorCode);
+                        mainHandler.obtainMessage(0, buildBundle("注册智能钥匙", false)).sendToTarget();
+                    }
+                },
+                new XIAODIDataReceived(
+                        new byte[]{0x27},
+                        new OnXIAODIBLEListener.OnCommonListener() {
+                            @Override
+                            public void success(XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                                BLELogUtil.d(TAG, "智能钥匙上添加开门秘钥，数据接收成功" + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
+                                mainHandler.obtainMessage(0, buildBundle("注册智能钥匙", true)).sendToTarget();
+                            }
+
+                            @Override
+                            public void failure(Integer errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                                BLELogUtil.d(TAG, "智能钥匙上添加开门秘钥，数据接收失败,errorCode=" + errorCode + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
+                                mainHandler.obtainMessage(0, buildBundle("注册智能钥匙", false)).sendToTarget();
+                            }
+                        }
+                )
+        );
+    }
+
+    /**
+     * 从锁上获取通讯秘钥
+     */
+    private void getSecretKeyOnLock(){
+        dialog = buildProgressDialog(MainActivity.this, "正在添加智能钥匙", false);
+        dialog.show();
+        final String tag = "从锁上获取通讯秘钥";
+        XIAODISend.send(
+                mac,
+                XIAODIBLECMDType.BLE_CMDTYPE_REGISTERSMARTKEYGETSECRETKEY,
+                null,
+                false,
+                new OnBLEWriteDataListener() {
+                    @Override
+                    public void onWriteDataFinish() {
+                        BLELogUtil.d(TAG, tag + "，数据写入完成");
+                    }
+
+                    @Override
+                    public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                        BLELogUtil.d(TAG, tag + "，单次数据写入完成");
+                    }
+
+                    @Override
+                    public void onWriteDataFail(Integer errorCode) {
+                        BLELogUtil.d(TAG, tag + "，数据写入失败，errorCode=" + errorCode);
+                        mainHandler.obtainMessage(0, buildBundle(tag, false)).sendToTarget();
+                    }
+                },
+                new XIAODIDataReceived(
+                        new byte[]{0x3E},
+                        new OnXIAODIBLEListener.OnCommonListener() {
+                            @Override
+                            public void success(XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                                BLELogUtil.d(TAG, tag + "，数据接收成功" + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
+                                addSmartKeyOnLock(openSecretKeyBytes, xiaodiDataReceivedAnalyzer.getDataArea());
+                            }
+
+                            @Override
+                            public void failure(Integer errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                                BLELogUtil.d(TAG, tag + "，数据接收失败,errorCode=" + errorCode + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
+                                mainHandler.obtainMessage(0, buildBundle(tag, false)).sendToTarget();
+                            }
+                        }
+                )
+        );
+    }
+
+    /**
+     * 锁上添加智能钥匙
+     * @param openSecretKeyBytes   开门秘钥
+     * @param secretKeyBytes    通讯秘钥
+     */
+    private void addSmartKeyOnLock(final byte[] openSecretKeyBytes, final byte[] secretKeyBytes){
+        final String tag = "锁上添加智能钥匙";
+        XIAODISend.send(
+                mac,
+                XIAODIBLECMDType.BLE_CMDTYPE_ADDSMARTKEYAUTH,
+                new XIAODIData().setSecretkey13(openSecretKeyBytes).setSecretkey(secretKeyBytes),
+                true,
+                new OnBLEWriteDataListener() {
+                    @Override
+                    public void onWriteDataFinish() {
+                        BLELogUtil.d(TAG, tag + "，数据写入完成");
+                    }
+
+                    @Override
+                    public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                        BLELogUtil.d(TAG, tag + "，单次数据写入完成");
+                    }
+
+                    @Override
+                    public void onWriteDataFail(Integer errorCode) {
+                        BLELogUtil.d(TAG, tag + "，数据写入失败，errorCode=" + errorCode);
+                        mainHandler.obtainMessage(0, buildBundle(tag, false)).sendToTarget();
+                    }
+                },
+                new XIAODIDataReceived(
+                        new byte[]{0x3E},
+                        new OnXIAODIBLEListener.OnCommonListener() {
+                            @Override
+                            public void success(XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                                BLELogUtil.d(TAG, tag + "，数据接收成功" + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
+                                mainHandler.obtainMessage(0, buildBundle(tag, true)).sendToTarget();
+                            }
+
+                            @Override
+                            public void failure(Integer errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                                BLELogUtil.d(TAG, tag + "，数据接收失败,errorCode=" + errorCode + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
+                                mainHandler.obtainMessage(0, buildBundle(tag, false)).sendToTarget();
                             }
                         }
                 )
@@ -303,6 +540,19 @@ public class MainActivity extends Activity {
         if(dialog != null && dialog.isShowing()){
             dialog.dismiss();
         }
+    }
+
+    /**
+     * 构建bundle
+     * @param desc  操作描述
+     * @param flag  操作状态
+     * @return
+     */
+    private Bundle buildBundle(String desc, Boolean flag){
+        Bundle bundle = new Bundle();
+        bundle.putString("desc", desc);
+        bundle.putBoolean("flag", flag);
+        return bundle;
     }
 
     @Override

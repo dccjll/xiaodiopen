@@ -23,7 +23,7 @@ public class XIAODIData {
 	private byte[] secretkey;		//秘钥
 	private byte[] openlogtoggle;	//开锁日志开关
 	private byte[] secretkey13;		//自己生成的13个字节秘钥
-	private byte[] lockmac;			//mac地址
+	private String lockmac;			//mac地址
 	private boolean enbleWifi;		//是否开启WIFI
 
 	public String getChannelpwd() {
@@ -159,10 +159,10 @@ public class XIAODIData {
 		this.secretkey13 = secretkey13;
 		return this;
 	}
-	public byte[] getLockmac() {
+	public String getLockmac() {
 		return lockmac;
 	}
-	public XIAODIData setLockmac(byte[] lockmac) {
+	public XIAODIData setLockmac(String lockmac) {
 		this.lockmac = lockmac;
 		return this;
 	}

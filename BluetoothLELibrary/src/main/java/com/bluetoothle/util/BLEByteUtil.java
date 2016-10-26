@@ -132,6 +132,33 @@ public class BLEByteUtil {
         }
         return srcbytes;
     }
+    /**
+     * 将指定进制字(10进制或16进制)符串转换成字节数组
+     * @param src   源字符串
+     * @param radix 进制数
+     * @return
+     */
+    public static byte[] parseRadixStringToBytes(String src, int radix){
+        try {
+            if (src == null || src.length() <= 0) {
+                return null;
+            }
+            StringBuffer stringBuffer = new StringBuffer();
+            for(int index=0;index<src.length();index+=2){
+                if(index == src.length() - 1){
+                    stringBuffer.append(src.substring(index, index + 1));
+                }else if(index == src.length() - 2){
+                    stringBuffer.append(src.substring(index, index + 2));
+                }else{
+                    stringBuffer.append(src.substring(index, index + 2) + " ");
+                }
+            }
+            return radixStringToBytes(stringBuffer.toString(), radix);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     /**
      * 将一个小于8个字节的字节数组转换成长整形
@@ -207,9 +234,10 @@ public class BLEByteUtil {
     }
 
     public static void main(String[] args){
-        List<byte[]> bytes = paeseByteArrayToByteList(new byte[]{(byte) 0xFE,0x01,0x39,00, 0x18, 65, 0x6A, 0x3F, 0x59, 10, 0x2A, (byte) 0xCB, 0x16, 0x22, 0x3A, 0x23, 0x33, 0x2E, 0x29, (byte) 0xCB, 0x10, 0x14, 0x14, 0x02, 0x21, 0x1A, 0x0E, (byte) 0xF3, 0x00, 0x06, 0x1E}, 20);
-        for(int i=0;i<bytes.size();i++){
-            System.out.println(bytesToHexString(bytes.get(i)));
-        }
+//        List<byte[]> bytes = paeseByteArrayToByteList(new byte[]{(byte) 0xFE,0x01,0x39,00, 0x18, 65, 0x6A, 0x3F, 0x59, 10, 0x2A, (byte) 0xCB, 0x16, 0x22, 0x3A, 0x23, 0x33, 0x2E, 0x29, (byte) 0xCB, 0x10, 0x14, 0x14, 0x02, 0x21, 0x1A, 0x0E, (byte) 0xF3, 0x00, 0x06, 0x1E}, 20);
+//        for(int i=0;i<bytes.size();i++){
+//            System.out.println(bytesToHexString(bytes.get(i)));
+//        }
+        System.out.println(bytesToHexString(parseRadixStringToBytes("20161026133603118668165280", 16)));
     }
 }
