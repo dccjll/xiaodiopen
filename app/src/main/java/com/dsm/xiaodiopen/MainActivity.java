@@ -115,6 +115,14 @@ public class MainActivity extends Activity {
         mainData6.put("deviceType", "13");
         mainList.add(mainData6);
 
+        Map<String, String> mainData7 = new HashMap<>();
+        mainData7.put("deviceName", "叶飞测试锁");
+        mainData7.put("deviceMac", "DF:6D:0A:4A:BA:25");
+        mainData7.put("deviceType", "11");
+        mainData7.put("mobile", "18668165280");
+        mainData7.put("channelpwd", "DA45B5F5");
+        mainList.add(mainData7);
+
         mainListView.setAdapter(new SimpleAdapter(this, mainList, android.R.layout.simple_list_item_2, new String[]{"deviceName", "deviceMac"}, new int[]{android.R.id.text1, android.R.id.text2}));
 
         mainListView.setOnItemClickListener(
