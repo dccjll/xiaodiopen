@@ -196,17 +196,17 @@ public class XIAODIBLEProtocol {
                 return false;
             }
             BLELogUtil.e(TAG, "0X26,13个字节秘钥字节数组=" + BLEByteUtil.bytesToHexString(tempData));
-            byte[] secregkeybytes = xiaodiData.getSecretkey();
-            if(secregkeybytes == null || secregkeybytes.length != 8){
+            byte[] secretkeybytes = xiaodiData.getSecretkey();
+            if(secretkeybytes == null || secretkeybytes.length != 8){
                 BLELogUtil.e(TAG, "通讯秘钥格式不正确");
                 return false;
             }
-            BLELogUtil.e(TAG, "通讯秘钥=" + BLEByteUtil.bytesToHexString(secregkeybytes));
+            BLELogUtil.e(TAG, "通讯秘钥=" + BLEByteUtil.bytesToHexString(secretkeybytes));
             //字节分段
             //前8个字节
             byte[] tempDataArray = BLEByteUtil.getSubbytes(tempData, 0, 8);
             //最后5个字节
-            byte[] tempDataEnd = BLEByteUtil.getSubbytes(tempData, 8, 13);
+            byte[] tempDataEnd = BLEByteUtil.getSubbytes(tempData, 8, 5);
 
             BLELogUtil.d(TAG, "加密前，tempDataArray=" + BLEByteUtil.bytesToHexString(tempDataArray));
             BLELogUtil.d(TAG, "加密前，tempDataEnd=" + BLEByteUtil.bytesToHexString(tempDataEnd));
@@ -214,11 +214,11 @@ public class XIAODIBLEProtocol {
             //加密
             //前8个字节加密
             for (int j = 0; j < tempDataArray.length; j++) {
-                tempDataArray[j] = (byte) (tempDataArray[j] ^ secregkeybytes[j]);
+                tempDataArray[j] = (byte) (tempDataArray[j] ^ secretkeybytes[j]);
             }
             //最后5个字节加密
             for (int i = 0; i < tempDataEnd.length; i++) {
-                tempDataEnd[i] = (byte) (tempDataEnd[i] ^ secregkeybytes[i]);
+                tempDataEnd[i] = (byte) (tempDataEnd[i] ^ secretkeybytes[i]);
             }
 
             BLELogUtil.d(TAG, "加密后，tempDataArray=" + BLEByteUtil.bytesToHexString(tempDataArray));
