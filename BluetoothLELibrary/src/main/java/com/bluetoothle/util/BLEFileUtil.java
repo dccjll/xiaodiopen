@@ -170,6 +170,12 @@ public class BLEFileUtil {
         FileWriter fileWriter = null;
         try {
             createFile(filePath);
+            File tempFile = new File(filePath);
+            if(!tempFile.exists()){
+                if(!tempFile.mkdirs()){
+                    return false;
+                }
+            }
             fileWriter = new FileWriter(filePath, append);
             fileWriter.write(content);
             fileWriter.flush();

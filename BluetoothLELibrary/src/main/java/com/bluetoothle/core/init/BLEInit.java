@@ -7,8 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.os.Handler;
-import android.os.Looper;
 
 import com.bluetoothle.core.BLEConstants;
 import com.bluetoothle.core.BLEService;
@@ -23,7 +21,7 @@ public class BLEInit {
 
     private final static String TAG = BLEInit.class.getSimpleName();
     public static Boolean BLUETOOTH_IS_OPEN = false;//当前设备蓝牙开关默认设置为关闭状态
-    public static Integer timeoutOpenBluetooth = 10*1000;//打开蓝牙超时时间
+//    public static Integer timeoutOpenBluetooth = 10*1000;//打开蓝牙超时时间
     public static BluetoothAdapter bluetoothAdapter;
 
     private Context context;
@@ -42,9 +40,9 @@ public class BLEInit {
                         new Runnable() {
                             @Override
                             public void run() {
-                                Looper.prepare();
+//                                Looper.prepare();
                                 initBLE();
-                                Looper.loop();
+//                                Looper.loop();
                             }
                         }
                 ).start();
@@ -102,15 +100,15 @@ public class BLEInit {
         //如果蓝牙是关闭的,则请求打开蓝牙
         if(!bluetoothAdapter.isEnabled()){
             BLUETOOTH_IS_OPEN = false;
-            Handler openBluetoothHandler = new Handler();
-            Runnable openBluetoothRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    bluetoothAdapter.disable();
-                    onInitListener.onInitFail(BLEConstants.Error.OpenBluetoothTimeoutError);
-                }
-            };
-            openBluetoothHandler.postDelayed(openBluetoothRunnable, timeoutOpenBluetooth);
+//            Handler openBluetoothHandler = new Handler();
+//            Runnable openBluetoothRunnable = new Runnable() {
+//                @Override
+//                public void run() {
+//                    bluetoothAdapter.disable();
+//                    onInitListener.onInitFail(BLEConstants.Error.OpenBluetoothTimeoutError);
+//                }
+//            };
+//            openBluetoothHandler.postDelayed(openBluetoothRunnable, timeoutOpenBluetooth);
             bluetoothAdapter.enable();
             while(!BLUETOOTH_IS_OPEN){
                 BLELogUtil.e("正在打开蓝牙...");
@@ -118,12 +116,12 @@ public class BLEInit {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                    openBluetoothHandler.removeCallbacks(openBluetoothRunnable);
+//                    openBluetoothHandler.removeCallbacks(openBluetoothRunnable);
                     onInitListener.onInitFail(BLEConstants.Error.OpenBluetoothSleepError);
-                    break;
+                    return;
                 }
             }
-            openBluetoothHandler.removeCallbacks(openBluetoothRunnable);
+//            openBluetoothHandler.removeCallbacks(openBluetoothRunnable);
             onInitListener.onInitSuccess(bluetoothAdapter);
             return;
         }

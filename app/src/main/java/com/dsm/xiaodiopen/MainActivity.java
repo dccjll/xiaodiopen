@@ -30,6 +30,7 @@ import com.bluetoothle.factory.xiaodilock.send.XIAODIData;
 import com.bluetoothle.factory.xiaodilock.send.XIAODISend;
 import com.bluetoothle.util.BLEByteUtil;
 import com.bluetoothle.util.BLELogUtil;
+import com.bluetoothle.util.BLEStringUtil;
 import com.dsm.xiaodiopen.util.PermisstionsUtil;
 
 import java.util.ArrayList;
@@ -201,6 +202,13 @@ public class MainActivity extends Activity {
                     }
                 }
         );
+        requestLocationPermission();
+    }
+
+    /**
+     * 请求位置权限
+     */
+    private void requestLocationPermission(){
         PermisstionsUtil.checkSelfPermission(this, PermisstionsUtil.ACCESS_FINE_LOCATION, PermisstionsUtil.ACCESS_FINE_LOCATION_CODE, "6.0以上系统使用蓝牙需要位置权限",
                 new PermisstionsUtil.PermissionResult() {
                     @Override
@@ -211,6 +219,7 @@ public class MainActivity extends Activity {
                                     @Override
                                     public void onInitSuccess(BluetoothAdapter bluetoothAdapter) {
                                         BLELogUtil.e(TAG, "蓝牙初始化成功,bluetoothAdapter=" + bluetoothAdapter);
+                                        requestSdcardControlPermission();
                                     }
 
                                     @Override
@@ -229,8 +238,28 @@ public class MainActivity extends Activity {
                 });
     }
 
+    /**
+     * 请求读写sd卡权限
+     */
+    private void requestSdcardControlPermission(){
+        PermisstionsUtil.checkSelfPermission(this, PermisstionsUtil.STORAGE, PermisstionsUtil.STORAGE_CODE, "写日志到后台需要读写sd卡权限",
+                new PermisstionsUtil.PermissionResult() {
+                    @Override
+                    public void granted(int requestCode) {
+                        BLELogUtil.e(TAG, "允许读写sd卡,日志将写入到文件,请在" + BLELogUtil.LOG_FILEPATH + "目录查看日志");
+                    }
+
+                    @Override
+                    public void denied(int requestCode) {
+                        BLELogUtil.e(TAG, "读写sd卡权限被阻止,日志将无法写入到文件");
+                        BLELogUtil.LOG_WRITE_TO_FILE = false;
+                    }
+                });
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        BLELogUtil.e(TAG, "requestCode=" + requestCode + ",premissions[0]=" + permissions[0] + ",grantResults[0]=" + grantResults[0]);
         PermisstionsUtil.onRequestPermissionsResult(requestCode, permissions, grantResults);
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
@@ -415,7 +444,7 @@ public class MainActivity extends Activity {
         XIAODISend.send(
                 macSmartKey,
                 XIAODIBLECMDType.BLE_CMDTYPE_ADDSMARTKEY,
-                new XIAODIData().setChannelpwd(channelPwd).setSecretkey13(openSecretKeyBytes).setLockmac(mac).setSecretkey(secretKeyBytes),
+                new XIAODIData().setChannelpwd(channelPwd).setSecretkey13(openSecretKeyBytes).setLockmac(BLEStringUtil.reserveString(mac, true)).setSecretkey(secretKeyBytes),
                 true,
                 new OnBLEWriteDataListener() {
                     @Override
@@ -531,7 +560,7 @@ public class MainActivity extends Activity {
                     }
                 },
                 new XIAODIDataReceived(
-                        new byte[]{0x3E},
+                        new byte[]{0x26},
                         new OnXIAODIBLEListener.OnCommonListener() {
                             @Override
                             public void success(XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {

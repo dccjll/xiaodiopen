@@ -96,7 +96,11 @@ public class XIAODIBLEUtil {
 		return true;
 	}
 
-	//将服务器的时间转换为固定协议的字节数组
+	/**
+	 * 将服务器的时间转换为固定协议的字节数组
+	 * @param time
+	 * @return
+     */
 	public static byte[] parseServerTimeToProtocolBytes(String time) {
 		//2016-02-25 03:41:50
 		if (BLEStringUtil.isEmpty(time)) {

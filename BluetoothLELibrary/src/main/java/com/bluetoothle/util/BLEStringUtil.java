@@ -8,6 +8,7 @@ import java.util.Locale;
 
 /**
  * Created by dessmann on 16/7/11.
+ * BLE相关的字符串操作类
  */
 public class BLEStringUtil {
     public static boolean isNotEmpty(String str) {

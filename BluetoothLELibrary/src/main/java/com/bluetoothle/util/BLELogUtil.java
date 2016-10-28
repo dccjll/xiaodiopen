@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * 带日志文件输入的，又可控开关的日志调试
@@ -17,13 +18,13 @@ import java.util.List;
  */
 public class BLELogUtil {
     private static String tag = "BLELogUtil";
-    public static Boolean LOG_SWITCH = true; // 日志文件总开关
-    public static Boolean LOG_WRITE_TO_FILE = false;// 日志写入文件开关
+    public static Boolean LOG_SWITCH = true; // 日志控制总开关 true 在开发工具后台打印日志 false 不打印日志
+    public static Boolean LOG_WRITE_TO_FILE = true;// 日志写入文件开关
     private static char LOG_TYPE = 'v';// 输入日志类型，w代表只输出告警信息等，v代表输出所有信息
-    private static String LOG_FILEPATH = Environment.getExternalStorageDirectory() + "/secondlock/BLELogUtil/";// 本类输出的日志文件名称
+    public static String LOG_FILEPATH = Environment.getExternalStorageDirectory() + "/xiaodiopen/BLELogUtil/";// 本类输出的日志文件名称
     private static String LOG_FILENAME = "log.txt";// 本类输出的日志文件名称
-    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 日志的输出格式
-    private static SimpleDateFormat log_sdf = new SimpleDateFormat("yyyy-MM-dd");// 日志文件的输出格式
+    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);// 日志的输出格式
+    private static SimpleDateFormat log_sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);// 日志文件的输出格式
 
     public static void w(Object msg) { // 警告信息  
         log(tag, msg.toString(), 'w');

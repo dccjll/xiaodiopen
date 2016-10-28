@@ -80,6 +80,7 @@ public class BLEService extends Service {
 					public void run() {
 						while(true){
 							try {
+								Thread.sleep(5000);
 								synchronized (BLEManage.connectedBluetoothGattList) {
 									if(BLEManage.connectedBluetoothGattList != null && BLEManage.connectedBluetoothGattList.size() > 0){
                                         Iterator<Map<BluetoothGatt,Long>> bluetoothGattListIte = BLEManage.connectedBluetoothGattList.iterator();
