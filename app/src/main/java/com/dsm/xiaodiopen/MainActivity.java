@@ -123,6 +123,14 @@ public class MainActivity extends Activity {
         mainData7.put("channelpwd", "DA45B5F5");
         mainList.add(mainData7);
 
+        Map<String, String> mainData8 = new HashMap<>();
+        mainData8.put("deviceName", "测试锁");
+        mainData8.put("deviceMac", "FD:27:F0:5E:F2:5C");
+        mainData8.put("deviceType", "11");
+        mainData8.put("mobile", "18668165280");
+        mainData8.put("channelpwd", "12345678");
+        mainList.add(mainData8);
+
         mainListView.setAdapter(new SimpleAdapter(this, mainList, android.R.layout.simple_list_item_2, new String[]{"deviceName", "deviceMac"}, new int[]{android.R.id.text1, android.R.id.text2}));
 
         mainListView.setOnItemClickListener(
@@ -163,7 +171,11 @@ public class MainActivity extends Activity {
                                             public void onClick(DialogInterface _dialog, int which) {
                                                 dialog = buildProgressDialog(MainActivity.this, "正在注册智能钥匙", false);
                                                 dialog.show();
-                                                openSecretKeyBytes = XIAODIBLEProtocol.parse13Secretkeys("18668165280");
+                                                if ("测试锁".equalsIgnoreCase(item.get("deviceName"))) {
+                                                    openSecretKeyBytes = BLEByteUtil.parseRadixStringToBytes("112233445566778899AABBCCDD", 16);
+                                                }else{
+                                                    openSecretKeyBytes = XIAODIBLEProtocol.parse13Secretkeys("18668165280");
+                                                }
                                                 if(which == 0){
                                                     XIAODISend.smartKeyInit(
                                                             macSmartKey,
