@@ -1,13 +1,11 @@
 package com.dsm.xiaodiopen;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -47,7 +45,8 @@ public class MainActivity extends Activity {
 
     private final static String TAG = MainActivity.class.getSimpleName();
 
-    private String macSmartKey = "23:A2:CD:ED:00:F7";
+//    private String macSmartKey = "23:A2:CD:ED:00:F7";
+      private String macSmartKey = "81:00:51:7D:00:36";
 
     private Dialog dialog;
     private BLEInit bleInit;
@@ -129,7 +128,7 @@ public class MainActivity extends Activity {
         mainData8.put("deviceMac", "FD:27:F0:5E:F2:5C");
         mainData8.put("deviceType", "11");
         mainData8.put("mobile", "18668165280");
-        mainData8.put("channelpwd", "12345678");
+        mainData8.put("channelpwd", "A30DA10F");
         mainList.add(mainData8);
 
         mainListView.setAdapter(new SimpleAdapter(this, mainList, android.R.layout.simple_list_item_2, new String[]{"deviceName", "deviceMac"}, new int[]{android.R.id.text1, android.R.id.text2}));
@@ -163,41 +162,63 @@ public class MainActivity extends Activity {
                         item = mainList.get(position);
                         mac = item.get("deviceMac");
                         channelpwd = item.get("channelpwd");
-                        new AlertDialog.Builder(MainActivity.this)
-                                .setTitle("选择操作")
-                                .setItems(
-                                        new String[]{"注册智能钥匙", "添加智能钥匙"},
-                                        new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface _dialog, int which) {
-                                                dialog = buildProgressDialog(MainActivity.this, "正在注册智能钥匙", false);
-                                                dialog.show();
-                                                if ("测试锁".equalsIgnoreCase(item.get("deviceName"))) {
-                                                    openSecretKeyBytes = BLEByteUtil.parseRadixStringToBytes("112233445566778899AABBCCDD", 16);
-                                                }else{
-                                                    openSecretKeyBytes = XIAODIBLEProtocol.parse13Secretkeys("18668165280");
-                                                }
-                                                if(which == 0){
-                                                    XIAODISend.smartKeyInit(
-                                                            macSmartKey,
-                                                            new XIAODISend.OnSmartKeyInitListener() {
-                                                                @Override
-                                                                public void onInitSuccess() {
-                                                                    getSecretKeyOnSmarKey();
-                                                                }
+//                        new AlertDialog.Builder(MainActivity.this)
+//                                .setTitle("选择操作")
+//                                .setItems(
+//                                        new String[]{"注册智能钥匙", "添加智能钥匙"},
+//                                        new DialogInterface.OnClickListener() {
+//                                            @Override
+//                                            public void onClick(DialogInterface _dialog, int which) {
+//                                                if ("测试锁".equalsIgnoreCase(item.get("deviceName"))) {
+//                                                    openSecretKeyBytes = BLEByteUtil.parseRadixStringToBytes("112233445566778899AABBCCDD", 16);
+//                                                }else{
+//                                                    openSecretKeyBytes = XIAODIBLEProtocol.parse13Secretkeys("18668165280");
+//                                                }
+//                                                if(which == 0){
+//                                                    dialog = buildProgressDialog(MainActivity.this, "正在注册智能钥匙", false);
+//                                                    dialog.show();
+//                                                    XIAODISend.smartKeyInit(
+//                                                            macSmartKey,
+//                                                            new XIAODISend.OnSmartKeyInitListener() {
+//                                                                @Override
+//                                                                public void onInitSuccess() {
+//                                                                    getSecretKeyOnSmarKey();
+//                                                                }
+//
+//                                                                @Override
+//                                                                public void onInitFaiure(Object obj) {
+//                                                                    BLELogUtil.e(TAG, "智能钥匙初始化失败,obj=" + obj);
+//                                                                    mainHandler.obtainMessage(0, buildBundle("注册智能钥匙", false)).sendToTarget();
+//                                                                }
+//                                                            });
+//                                                }else if(which == 1){
+//                                                    getSecretKeyOnLock();
+//                                                }
+//                                            }
+//                                        })
+//                                .show();
+//                        if ("测试锁".equalsIgnoreCase(item.get("deviceName"))) {
+//                            openSecretKeyBytes = BLEByteUtil.parseRadixStringToBytes("112233445566778899AABBCCDD", 16);
+//                        }else{
+//                            openSecretKeyBytes = XIAODIBLEProtocol.parse13Secretkeys("18668165280");
+//                        }
+                        openSecretKeyBytes = XIAODIBLEProtocol.parse13Secretkeys("18668165280");
+                        dialog = buildProgressDialog(MainActivity.this, "正在注册智能钥匙", false);
+                        dialog.show();
+                        XIAODISend.smartKeyInit(
+                                macSmartKey,
+                                new XIAODISend.OnSmartKeyInitListener() {
+                                    @Override
+                                    public void onInitSuccess() {
+                                        getSecretKeyOnSmarKey();
+                                    }
 
-                                                                @Override
-                                                                public void onInitFaiure(Object obj) {
-                                                                    BLELogUtil.e(TAG, "智能钥匙初始化失败,obj=" + obj);
-                                                                    mainHandler.obtainMessage(0, buildBundle("注册智能钥匙", false)).sendToTarget();
-                                                                }
-                                                            });
-                                                }else if(which == 1){
-                                                    getSecretKeyOnLock();
-                                                }
-                                            }
-                                        })
-                                .show();
+                                    @Override
+                                    public void onInitFaiure(Object obj) {
+                                        BLELogUtil.e(TAG, "智能钥匙初始化失败,obj=" + obj);
+                                        mainHandler.obtainMessage(0, buildBundle("注册智能钥匙", false)).sendToTarget();
+                                    }
+                                });
                         return true;
                     }
                 }
@@ -467,9 +488,18 @@ public class MainActivity extends Activity {
                         new byte[]{0x27},
                         new OnXIAODIBLEListener.OnCommonListener() {
                             @Override
-                            public void success(XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
-                                BLELogUtil.d(TAG, "智能钥匙上添加开门秘钥，数据接收成功" + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
-                                mainHandler.obtainMessage(0, buildBundle("注册智能钥匙", true)).sendToTarget();
+                            public void success(final XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                                runOnUiThread(
+                                        new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                BLELogUtil.d(TAG, "智能钥匙上添加开门秘钥，数据接收成功" + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
+//                                mainHandler.obtainMessage(0, buildBundle("注册智能钥匙", true)).sendToTarget();
+                                                dismissDialog(dialog);
+                                                getSecretKeyOnLock();
+                                            }
+                                        }
+                                );
                             }
 
                             @Override
