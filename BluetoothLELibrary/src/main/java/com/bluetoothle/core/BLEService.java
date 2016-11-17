@@ -81,7 +81,7 @@ public class BLEService extends Service {
 						while(true){
 							try {
 								Thread.sleep(5000);
-								synchronized (BLEManage.connectedBluetoothGattList) {
+								synchronized (TAG) {
 									if(BLEManage.connectedBluetoothGattList != null && BLEManage.connectedBluetoothGattList.size() > 0){
                                         Iterator<Map<BluetoothGatt,Long>> bluetoothGattListIte = BLEManage.connectedBluetoothGattList.iterator();
                                         while(bluetoothGattListIte.hasNext()){
@@ -110,10 +110,10 @@ public class BLEService extends Service {
 
 	@Override
 	public void onDestroy() {
-		super.onDestroy();
 		bleService = null;
 		unregisterReceiver(bluetoothLeBroadcastReceiver);
 		BLELogUtil.d(TAG, "后台蓝牙服务器已关闭,当前服务主线程为====" + Thread.currentThread());
+		super.onDestroy();
 	}
 
 	@Override
