@@ -26,4 +26,7 @@
     <string name="open_lock_record_data_length_error">开锁记录开关数据长度不正确</string>
     <string name="unknown_order">,无法识别的指令</string>
 
+    <string name="smartkey_opensecret_check_error">智能钥匙开门秘钥校验失败</string>
+    <string name="smartkey_secret_check_error">智能钥匙秘钥校验失败</string>
+
 </resources>

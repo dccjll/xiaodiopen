@@ -486,20 +486,6 @@ public class XIAODIBLEProtocol {
             }
             dataArea = new byte[XIAODIBLELengthCheck.BLELOCKNAMELENGTH];
             System.arraycopy(locknamebytes, 0, dataArea, 0, locknamebytes.length);
-        } else if (XIAODIBLECMDType.BLE_CMDTYPE_CLOSELOCKOPENPASSWORD.equals(bleCmdType)) {
-            cmd[0] = (byte) 0x30;
-            //数据包格式:关闭开锁密码8字节 	长度: 8byte
-            if (xiaodiData == null) {
-                BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_param_error,"0x30"));
-                return false;
-            }
-            byte[] closelockpwd = xiaodiData.getCloselockpwd();
-            if (closelockpwd == null || closelockpwd.length != XIAODIBLELengthCheck.BLECLOSELOCKOPENLOCKPASSWORDLENGTH) {
-                BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.close_open_pwd_error));
-                return false;
-            }
-            dataArea = new byte[XIAODIBLELengthCheck.BLECLOSELOCKOPENLOCKPASSWORDLENGTH];
-            System.arraycopy(closelockpwd, 0, dataArea, 0, closelockpwd.length);
         } else if (XIAODIBLECMDType.BLE_CMDTYPE_UPDATEBLELOCKOPENLOCKPASSWORD.equals(bleCmdType)) {
             cmd[0] = (byte) 0x30;
             //数据包格式:开锁密码8字节 	长度: 8byte
@@ -606,10 +592,6 @@ public class XIAODIBLEProtocol {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.param_check_error,"0x39"));
                 return false;
             }
-            if (usermobileaccountbytes == null) {
-                BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.mobile_init_error));
-                return false;
-            }
             if (XIAODIBLELengthCheck.OPENBLELOCKENHANCEDATAAREALENGTH != channelpwdbytes.length + usermobileaccountbytes.length + timebytes.length) {
                 BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.data_length_check_error));
                 return false;
@@ -660,6 +642,40 @@ public class XIAODIBLEProtocol {
                 dataArea[0] = 0x00;
             } else {
                 dataArea[0] = 0x11;
+            }
+        }else if(XIAODIBLECMDType.BLE_CMDTYPE_GETSMARTKEYSECRETKEY.equalsIgnoreCase(bleCmdType)){
+            cmd[0] = 0x50;
+        } else if(XIAODIBLECMDType.BLE_CMDTYPE_QUERYSMARTKEYLOCKINFO.equalsIgnoreCase(bleCmdType)){
+            cmd[0] = 0x51;
+            if(xiaodiData == null){
+                BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_param_error,"0x51"));
+                return false;
+            }
+            byte[] secretkeybytes = xiaodiData.getSecretkey();
+            byte[] SEARCHSE = "SEARCHSE".getBytes();
+            if(secretkeybytes == null || secretkeybytes.length != SEARCHSE.length){
+                BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.smartkey_secret_check_error));
+                return false;
+            }
+            dataArea = new byte[SEARCHSE.length];
+            for(int i=0;i<secretkeybytes.length;i++){
+                dataArea[i] = (byte) (secretkeybytes[i] ^ SEARCHSE[i]);
+            }
+        } else if(XIAODIBLECMDType.BLE_CMDTYPE_CLEANSMARTKEYINFO.equalsIgnoreCase(bleCmdType)){
+            cmd[0] = 0x52;
+            if(xiaodiData == null){
+                BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.cmd_param_error,"0x52"));
+                return false;
+            }
+            byte[] secretkeybytes = xiaodiData.getSecretkey();
+            byte[] DELETSEC = "DELETSEC".getBytes();
+            if(secretkeybytes == null || secretkeybytes.length != DELETSEC.length){
+                BLELogUtil.e(TAG, BLEApp.bleApp.getString(R.string.smartkey_secret_check_error));
+                return false;
+            }
+            dataArea = new byte[DELETSEC.length];
+            for(int i=0;i<secretkeybytes.length;i++){
+                dataArea[i] = (byte) (secretkeybytes[i] ^ DELETSEC[i]);
             }
         } else if (XIAODIBLECMDType.BLE_CMDTYPE_DISCONNECTBLEDEVICE.equals(bleCmdType)) {
             cmd[0] = (byte) 0xF0;
