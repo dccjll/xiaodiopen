@@ -19,6 +19,7 @@ import com.bluetoothle.core.scan.BLEScan;
 import com.bluetoothle.core.scan.OnBLEScanListener;
 import com.bluetoothle.core.writeData.BLEWriteData;
 import com.bluetoothle.core.writeData.OnBLEWriteDataListener;
+import com.bluetoothle.util.BLEByteUtil;
 import com.bluetoothle.util.BLELogUtil;
 import com.bluetoothle.util.BLEStringUtil;
 
@@ -109,8 +110,8 @@ public class BLEManage {
         }
     };
     public void scan(){
-        if(onBLEScanListener == null && onBLEConnectListener == null && onBLEFindServiceListener == null && onBLEOpenNotificationListener == null && onBLEWriteDataListener == null){
-            BLELogUtil.e(TAG, "没有配置回调接口");
+        if(onBLEScanListener == null && onBLEConnectListener == null && onBLEFindServiceListener == null && onBLEOpenNotificationListener == null && onBLEWriteDataListener == null && onBLEResponseListener == null){
+            BLELogUtil.e(TAG, "scan,没有配置回调接口");
             return;
         }
         if(BLEStringUtil.isEmpty(targetDeviceAddress) && targetDeviceAddressList == null){
@@ -177,8 +178,8 @@ public class BLEManage {
         }
     };
     public void connect(){
-        if(onBLEConnectListener == null){
-            BLELogUtil.e(TAG, "没有配置回调接口");
+        if(onBLEConnectListener == null && onBLEFindServiceListener == null && onBLEOpenNotificationListener == null && onBLEWriteDataListener == null && onBLEResponseListener == null){
+            BLELogUtil.e(TAG, "connect,没有配置回调接口");
             return;
         }
         BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(targetDeviceAddress);
@@ -248,8 +249,8 @@ public class BLEManage {
         }
     };
     public void findService(){
-        if(onBLEFindServiceListener == null){
-            BLELogUtil.e(TAG, "没有配置回调接口");
+        if(onBLEFindServiceListener == null && onBLEOpenNotificationListener == null && onBLEWriteDataListener == null && onBLEResponseListener == null){
+            BLELogUtil.e(TAG, "findService,没有配置回调接口");
             return;
         }
         if(serviceUUIDs == null || (serviceUUIDs.length != 2 && serviceUUIDs.length != 5) ){
@@ -321,8 +322,8 @@ public class BLEManage {
         }
     };
     public void openNotification(){
-        if(onBLEOpenNotificationListener == null){
-            BLELogUtil.e(TAG, "没有配置回调接口");
+        if(onBLEOpenNotificationListener == null && onBLEWriteDataListener == null && onBLEResponseListener == null){
+            BLELogUtil.e(TAG, "openNotification,没有配置回调接口");
             return;
         }
         if(serviceUUIDs == null || (serviceUUIDs.length != 2 && serviceUUIDs.length != 5) ){
@@ -371,6 +372,7 @@ public class BLEManage {
     private OnBLEWriteDataListener onBLEWriteDataListener_ = new OnBLEWriteDataListener() {//临时的写数据监听器
         @Override
         public void onWriteDataFinish() {
+            BLELogUtil.i(TAG, "onWriteDataFinish");
             if(onBLEWriteDataListener != null){
                 bleCoreResponse.onWriteDataFinish(onBLEWriteDataListener);
             }
@@ -378,6 +380,7 @@ public class BLEManage {
 
         @Override
         public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            BLELogUtil.i(TAG, "onWriteDataSuccess, writtenData=" + BLEByteUtil.bytesToHexString(characteristic.getValue()));
             if(onBLEWriteDataListener != null){
                 bleCoreResponse.onWriteDataSuccess(onBLEWriteDataListener, gatt, characteristic, status);
             }
@@ -387,6 +390,9 @@ public class BLEManage {
         public void onWriteDataFail(String errorCode) {
             if(onBLEWriteDataListener != null){
                 bleCoreResponse.onResponseError(onBLEWriteDataListener, errorCode);
+            }
+            if(onBLEResponseListener != null){
+                bleCoreResponse.onResponseError(onBLEResponseListener, errorCode);
             }
         }
     };

@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothGattService;
 import com.bluetoothle.core.connect.OnBLEConnectListener;
 import com.bluetoothle.core.findService.OnBLEFindServiceListener;
 import com.bluetoothle.core.openNotification.OnBLEOpenNotificationListener;
+import com.bluetoothle.core.response.OnBLEResponseListener;
 import com.bluetoothle.core.scan.OnBLEScanListener;
 import com.bluetoothle.core.writeData.OnBLEWriteDataListener;
 import com.bluetoothle.factory.xiaodilock.received.XIAODIDataReceived;
@@ -165,7 +166,9 @@ public class BLECoreResponse {
             onBLEDisconnectErrorCode(objectListener, errorCode);
             return;
         }
-        if(objectListener instanceof OnBLEScanListener){
+        if(objectListener instanceof OnBLEResponseListener){
+            ((OnBLEResponseListener)objectListener).onError(errorCode);
+        }else if(objectListener instanceof OnBLEScanListener){
             ((OnBLEScanListener)objectListener).onScanFail(errorCode);
         }else if(objectListener instanceof OnBLEConnectListener){
             ((OnBLEConnectListener)objectListener).onConnectFail(errorCode);
