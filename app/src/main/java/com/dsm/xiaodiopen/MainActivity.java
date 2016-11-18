@@ -224,6 +224,8 @@ public class MainActivity extends Activity {
                 }
         );
         requestLocationPermission();
+        requestSdcardControlPermission();
+        bleInit();
     }
 
     /**
@@ -234,22 +236,7 @@ public class MainActivity extends Activity {
                 new PermisstionsUtil.PermissionResult() {
                     @Override
                     public void granted(int requestCode) {
-                        bleInit = new BLEInit(
-                                MainActivity.this,
-                                new OnInitListener() {
-                                    @Override
-                                    public void onInitSuccess(BluetoothAdapter bluetoothAdapter) {
-                                        BLELogUtil.e(TAG, "蓝牙初始化成功,bluetoothAdapter=" + bluetoothAdapter);
-                                        requestSdcardControlPermission();
-                                    }
-
-                                    @Override
-                                    public void onInitFail(Integer errorCode) {
-                                        BLELogUtil.e(TAG, "蓝牙初始化失败,errorCode=" + errorCode);
-                                    }
-                                });
-                        bleInit.registerReceiver();
-                        bleInit.startBLEService();
+                        BLELogUtil.e(TAG, "允许请求位置权限");
                     }
 
                     @Override
@@ -278,6 +265,26 @@ public class MainActivity extends Activity {
                 });
     }
 
+    /**
+     * BLE初始化
+     */
+    private void bleInit() {
+        new BLEInit(getApplication()).startBLEService(
+                new OnInitListener() {
+                    @Override
+                    public void onInitSuccess(BluetoothAdapter bluetoothAdapter) {
+                        BLELogUtil.e(TAG, "蓝牙初始化成功,bluetoothAdapter=" + bluetoothAdapter);
+
+                    }
+
+                    @Override
+                    public void onInitFail(String errorCode) {
+                        BLELogUtil.e(TAG, "蓝牙初始化失败,errorCode=" + errorCode);
+                    }
+                }
+        );
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         BLELogUtil.e(TAG, "requestCode=" + requestCode + ",premissions[0]=" + permissions[0] + ",grantResults[0]=" + grantResults[0]);
@@ -304,7 +311,7 @@ public class MainActivity extends Activity {
                     }
 
                     @Override
-                    public void onWriteDataFail(Integer errorCode) {
+                    public void onWriteDataFail(String errorCode) {
                         BLELogUtil.e(TAG, "开门失败,errorCode=" + errorCode);
                         mainHandler.obtainMessage(0, buildBundle("开门", false)).sendToTarget();
                     }
@@ -321,23 +328,6 @@ public class MainActivity extends Activity {
                 XIAODIBLECMDType.BLE_CMDTYPE_GETBLELOCKSECRETKEY,
                 null,
                 false,
-                new OnBLEWriteDataListener() {
-                    @Override
-                    public void onWriteDataFinish() {
-                        BLELogUtil.d(TAG, "获取通讯密钥，数据写入完成");
-                    }
-
-                    @Override
-                    public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                        BLELogUtil.d(TAG, "获取通讯密钥，单次数据写入完成");
-                    }
-
-                    @Override
-                    public void onWriteDataFail(Integer errorCode) {
-                        BLELogUtil.d(TAG, "获取通讯密钥，数据写入失败，errorCode=" + errorCode);
-                        mainHandler.obtainMessage(0, buildBundle("开门", false)).sendToTarget();
-                    }
-                },
                 new XIAODIDataReceived(
                         new byte[]{0x3A},
                         new OnXIAODIBLEListener.OnCommonListener() {
@@ -355,7 +345,7 @@ public class MainActivity extends Activity {
                             }
 
                             @Override
-                            public void failure(Integer errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                            public void failure(String errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
                                 BLELogUtil.d(TAG, "获取通讯密钥，数据接收失败,errorCode=" + errorCode + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
                                 mainHandler.obtainMessage(0, buildBundle("开门", false)).sendToTarget();
                             }
@@ -374,23 +364,6 @@ public class MainActivity extends Activity {
                 XIAODIBLECMDType.BLE_CMDTYPE_OPENBLELOCKENHANCE,
                 new XIAODIData().setMobileaccount(mobile).setChannelpwd(channelpwd).setSecretkey(secretbytes),
                 true,
-                new OnBLEWriteDataListener() {
-                    @Override
-                    public void onWriteDataFinish() {
-                        BLELogUtil.d(TAG, "小嘀开门，数据写入完成");
-                    }
-
-                    @Override
-                    public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                        BLELogUtil.d(TAG, "小嘀开门，单次数据写入完成");
-                    }
-
-                    @Override
-                    public void onWriteDataFail(Integer errorCode) {
-                        BLELogUtil.d(TAG, "小嘀开门，数据写入失败，errorCode=" + errorCode);
-                        mainHandler.obtainMessage(0, buildBundle("开门", false)).sendToTarget();
-                    }
-                },
                 new XIAODIDataReceived(
                         new byte[]{0x39},
                         new OnXIAODIBLEListener.OnCommonListener() {
@@ -401,7 +374,7 @@ public class MainActivity extends Activity {
                             }
 
                             @Override
-                            public void failure(Integer errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                            public void failure(String errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
                                 BLELogUtil.d(TAG, "小嘀开门，数据接收失败,errorCode=" + errorCode + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
                                 mainHandler.obtainMessage(0, buildBundle("开门", false)).sendToTarget();
                             }
@@ -419,23 +392,7 @@ public class MainActivity extends Activity {
                 XIAODIBLECMDType.BLE_CMDTYPE_SMARTKEYGETSECRETKEY,
                 null,
                 false,
-                new OnBLEWriteDataListener() {
-                    @Override
-                    public void onWriteDataFinish() {
-                        BLELogUtil.d(TAG, "从智能钥匙获取通讯秘钥，数据写入完成");
-                    }
-
-                    @Override
-                    public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                        BLELogUtil.d(TAG, "从智能钥匙获取通讯秘钥，单次数据写入完成");
-                    }
-
-                    @Override
-                    public void onWriteDataFail(Integer errorCode) {
-                        BLELogUtil.d(TAG, "从智能钥匙获取通讯秘钥，数据写入失败，errorCode=" + errorCode);
-                        mainHandler.obtainMessage(0, buildBundle("注册智能钥匙", false)).sendToTarget();
-                    }
-                },new XIAODIDataReceived(
+                new XIAODIDataReceived(
                         new byte[]{0x3D},
                         new OnXIAODIBLEListener.OnCommonListener() {
                             @Override
@@ -445,7 +402,7 @@ public class MainActivity extends Activity {
                             }
 
                             @Override
-                            public void failure(Integer errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                            public void failure(String errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
                                 BLELogUtil.d(TAG, "从智能钥匙获取通讯秘钥，数据接收失败,errorCode=" + errorCode + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
                                 mainHandler.obtainMessage(0, buildBundle("注册智能钥匙", false)).sendToTarget();
                             }
@@ -467,23 +424,6 @@ public class MainActivity extends Activity {
                 XIAODIBLECMDType.BLE_CMDTYPE_ADDSMARTKEY,
                 new XIAODIData().setChannelpwd(channelPwd).setSecretkey13(openSecretKeyBytes).setLockmac(BLEStringUtil.reserveString(mac, true)).setSecretkey(secretKeyBytes),
                 true,
-                new OnBLEWriteDataListener() {
-                    @Override
-                    public void onWriteDataFinish() {
-                        BLELogUtil.d(TAG, "智能钥匙上添加开门秘钥，数据写入完成");
-                    }
-
-                    @Override
-                    public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                        BLELogUtil.d(TAG, "智能钥匙上添加开门秘钥，单次数据写入完成");
-                    }
-
-                    @Override
-                    public void onWriteDataFail(Integer errorCode) {
-                        BLELogUtil.d(TAG, "智能钥匙上添加开门秘钥，数据写入失败，errorCode=" + errorCode);
-                        mainHandler.obtainMessage(0, buildBundle("注册智能钥匙", false)).sendToTarget();
-                    }
-                },
                 new XIAODIDataReceived(
                         new byte[]{0x27},
                         new OnXIAODIBLEListener.OnCommonListener() {
@@ -503,7 +443,7 @@ public class MainActivity extends Activity {
                             }
 
                             @Override
-                            public void failure(Integer errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                            public void failure(String errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
                                 BLELogUtil.d(TAG, "智能钥匙上添加开门秘钥，数据接收失败,errorCode=" + errorCode + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
                                 mainHandler.obtainMessage(0, buildBundle("注册智能钥匙", false)).sendToTarget();
                             }
@@ -524,23 +464,6 @@ public class MainActivity extends Activity {
                 XIAODIBLECMDType.BLE_CMDTYPE_REGISTERSMARTKEYGETSECRETKEY,
                 null,
                 false,
-                new OnBLEWriteDataListener() {
-                    @Override
-                    public void onWriteDataFinish() {
-                        BLELogUtil.d(TAG, tag + "，数据写入完成");
-                    }
-
-                    @Override
-                    public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                        BLELogUtil.d(TAG, tag + "，单次数据写入完成");
-                    }
-
-                    @Override
-                    public void onWriteDataFail(Integer errorCode) {
-                        BLELogUtil.d(TAG, tag + "，数据写入失败，errorCode=" + errorCode);
-                        mainHandler.obtainMessage(0, buildBundle(tag, false)).sendToTarget();
-                    }
-                },
                 new XIAODIDataReceived(
                         new byte[]{0x3E},
                         new OnXIAODIBLEListener.OnCommonListener() {
@@ -551,7 +474,7 @@ public class MainActivity extends Activity {
                             }
 
                             @Override
-                            public void failure(Integer errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                            public void failure(String errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
                                 BLELogUtil.d(TAG, tag + "，数据接收失败,errorCode=" + errorCode + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
                                 mainHandler.obtainMessage(0, buildBundle(tag, false)).sendToTarget();
                             }
@@ -572,23 +495,6 @@ public class MainActivity extends Activity {
                 XIAODIBLECMDType.BLE_CMDTYPE_ADDSMARTKEYAUTH,
                 new XIAODIData().setSecretkey13(openSecretKeyBytes).setSecretkey(secretKeyBytes),
                 true,
-                new OnBLEWriteDataListener() {
-                    @Override
-                    public void onWriteDataFinish() {
-                        BLELogUtil.d(TAG, tag + "，数据写入完成");
-                    }
-
-                    @Override
-                    public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                        BLELogUtil.d(TAG, tag + "，单次数据写入完成");
-                    }
-
-                    @Override
-                    public void onWriteDataFail(Integer errorCode) {
-                        BLELogUtil.d(TAG, tag + "，数据写入失败，errorCode=" + errorCode);
-                        mainHandler.obtainMessage(0, buildBundle(tag, false)).sendToTarget();
-                    }
-                },
                 new XIAODIDataReceived(
                         new byte[]{0x26},
                         new OnXIAODIBLEListener.OnCommonListener() {
@@ -599,7 +505,7 @@ public class MainActivity extends Activity {
                             }
 
                             @Override
-                            public void failure(Integer errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
+                            public void failure(String errorCode, XIAODIDataReceivedAnalyzer xiaodiDataReceivedAnalyzer) {
                                 BLELogUtil.d(TAG, tag + "，数据接收失败,errorCode=" + errorCode + ",xiaodiDataReceivedAnalyzer=" + xiaodiDataReceivedAnalyzer);
                                 mainHandler.obtainMessage(0, buildBundle(tag, false)).sendToTarget();
                             }
@@ -637,7 +543,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        bleInit.unregisterReceiver();
         dismissDialog(dialog);
     }
 }

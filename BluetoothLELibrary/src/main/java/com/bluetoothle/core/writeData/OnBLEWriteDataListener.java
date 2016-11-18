@@ -11,5 +11,5 @@ import android.bluetooth.BluetoothGattCharacteristic;
 public interface OnBLEWriteDataListener {
     void onWriteDataFinish();
     void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status);
-    void onWriteDataFail(Integer errorCode);
+    void onWriteDataFail(String errorCode);
 }

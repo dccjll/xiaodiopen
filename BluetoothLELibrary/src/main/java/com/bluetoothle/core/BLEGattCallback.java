@@ -94,13 +94,19 @@ public class BLEGattCallback extends BluetoothGattCallback {
                 BLELogUtil.e(TAG, "已断开,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
                 BLEUtil.removeConnect(gatt.getDevice().getAddress());
                 gatt.close();
-                onResponseError(BLEConstants.Error.DisconnectError);
+                onResponseError(BLEConstants.Error.Disconnect);
             }
         }else{
-            BLELogUtil.e(TAG, "收到蓝牙底层协议栈异常消息,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
-            gatt.disconnect();
+            BLELogUtil.e(TAG, "收到蓝牙底层协议栈异常消息,gatt=" + gatt + ",status=" + status + ",newState=" + newState + ",休眠2000ms执行断开与关闭连接操作");
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+//            gatt.disconnect();
+            BLEUtil.disconnectBluetoothGatt(gatt.getDevice().getAddress());
             gatt.close();
-            onResponseError(BLEConstants.Error.ReceivedBLEStackCodeError);
+            onResponseError(BLEConstants.Error.ReceivedBLEStackExceptionCode);
         }
     }
 
@@ -175,7 +181,7 @@ public class BLEGattCallback extends BluetoothGattCallback {
      * 响应失败回复
      * @param errorCode     错误码
      */
-    private void onResponseError(Integer errorCode){
+    private void onResponseError(String errorCode){
         if(onGattBLEWriteDataListener != null){
             onGattBLEWriteDataListener.onWriteDataFail(errorCode);
             return;

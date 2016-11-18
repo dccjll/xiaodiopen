@@ -9,5 +9,5 @@ import android.bluetooth.BluetoothGatt;
 
 public interface OnBLEConnectListener {
     void onConnectSuccess(BluetoothGatt bluetoothGatt, int status, int newState);
-    void onConnectFail(Integer errorCode);
+    void onConnectFail(String errorCode);
 }

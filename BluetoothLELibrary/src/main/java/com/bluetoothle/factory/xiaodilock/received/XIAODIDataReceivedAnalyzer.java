@@ -98,9 +98,9 @@ public class XIAODIDataReceivedAnalyzer {
      * 解析蓝牙锁设备返回的数据
      * @return  解析成功失败标志 true 成功 false 失败
      */
-    public Integer analysisBLEReturnData() {
+    public String analysisBLEReturnData() {
         if (bleDataReceived.length < BLELOCKDEVICERETURNDATAMINLENGTH) {
-            return XIAODIConstants.Error.CheckWholeDataLengthError;
+            return XIAODIConstants.Error.CheckData;
         }
         try {
             packageHead = BLEByteUtil.getSubbytes(bleDataReceived, 0, 1);
@@ -119,7 +119,7 @@ public class XIAODIDataReceivedAnalyzer {
             BLELogUtil.d(TAG, "crc=" + BLEByteUtil.bytesToHexString(crc));
         } catch (Exception e) {
             e.printStackTrace();
-            return XIAODIConstants.Error.CheckSubBytesError;
+            return XIAODIConstants.Error.SubBytes;
         }
         return XIAODIConstants.Error.CorretCode;
     }

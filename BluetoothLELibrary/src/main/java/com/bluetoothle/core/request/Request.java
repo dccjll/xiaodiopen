@@ -117,15 +117,15 @@ public class Request implements Serializable {
 					@Override
 					public void onRequestSuccss(Request request) {
 						if(service_uuid_notification == null){
-							onRequestListener.onRequestFail(BLEConstants.Error.CheckService_UUID_NotificationError);
+							onRequestListener.onRequestFail(BLEConstants.Error.Notification_Service_UUID);
 							return;
 						}
 						if(characteristics_uuid_notification == null){
-							onRequestListener.onRequestFail(BLEConstants.Error.CheckCharacteristics_UUID_NotificationError);
+							onRequestListener.onRequestFail(BLEConstants.Error.Notification_Characteristics_UUID);
 							return;
 						}
 						if(characteristics_descriptor_uuid_notification == null){
-							onRequestListener.onRequestFail(BLEConstants.Error.CheckCharacteristics_UUID_Descriptor);
+							onRequestListener.onRequestFail(BLEConstants.Error.Descriptor_Notification_UUID);
 							return;
 						}
 						request.setService_uuid_notification(service_uuid_notification);
@@ -135,7 +135,7 @@ public class Request implements Serializable {
 					}
 
 					@Override
-					public void onRequestFail(Integer errorCode) {
+					public void onRequestFail(String errorCode) {
 						onRequestListener.onRequestFail(errorCode);
 					}
 				});
@@ -154,15 +154,15 @@ public class Request implements Serializable {
 			return;
 		}
 		if(targetDeviceMacAddress == null || targetDeviceMacAddress.split(":").length != 6){
-			onRequestListener.onRequestFail(BLEConstants.Error.CheckMacAddressError);
+			onRequestListener.onRequestFail(BLEConstants.Error.MacAddress);
 			return;
 		}
 		if(service_uuid_write == null){
-			onRequestListener.onRequestFail(BLEConstants.Error.CheckService_UUID_WriteError);
+			onRequestListener.onRequestFail(BLEConstants.Error.Write_Service_UUID);
 			return;
 		}
 		if(characteristics_uuid_write == null){
-			onRequestListener.onRequestFail(BLEConstants.Error.CheckCharacteristics_UUID_WriteError);
+			onRequestListener.onRequestFail(BLEConstants.Error.Write_Characteristics_UUID);
 			return;
 		}
 		if(data == null){

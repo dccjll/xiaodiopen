@@ -30,7 +30,7 @@ public class BLEOpenNotification {
      */
     public interface OnGattBLEOpenNotificationListener {
         void onOpenNotificationSuccess(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status);
-        void onOpenNotificationFail(Integer errorCode);
+        void onOpenNotificationFail(String errorCode);
     }
 
     /**
@@ -56,15 +56,15 @@ public class BLEOpenNotification {
             return;
         }
         if(bluetoothGatt == null){
-            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.CheckBluetoothGattError);
+            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.BluetoothGatt);
             return;
         }
         if(bluetoothGattServices == null || bluetoothGattServices.size() == 0){
-            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.GattServicesError);
+            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.GatService);
             return;
         }
         if(uuids == null || uuids.length != 3){
-            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.CheckUUIDArraysError);
+            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.UUIDArrays);
             return;
         }
         BLEConnect.bleGattCallback.setUuidCharacteristicChange(uuids[1]);
@@ -77,7 +77,7 @@ public class BLEOpenNotification {
                     }
 
                     @Override
-                    public void onOpenNotificationFail(Integer errorCode) {
+                    public void onOpenNotificationFail(String errorCode) {
                         onBLEOpenNotification.onOpenNotificationFail(errorCode);
                     }
                 }
@@ -90,26 +90,26 @@ public class BLEOpenNotification {
             }
         }
         if(bluetoothGattService == null){
-            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.CheckBluetoothGattServiceError);
+            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.BluetoothGattService);
             return;
         }
         BluetoothGattCharacteristic bluetoothGattCharacteristic = bluetoothGattService.getCharacteristic(uuids[1]);
         if(bluetoothGattCharacteristic == null){
-            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.CheckBluetoothGattCharacteristicError);
+            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.BluetoothGattCharacteristic);
             return;
         }
         BluetoothGattDescriptor bluetoothGattDescriptor = bluetoothGattCharacteristic.getDescriptor(uuids[2]);
         if(bluetoothGattDescriptor == null){
-            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.CheckBluetoothGattDescriptorError);
+            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.BluetoothGattDescriptor);
             return;
         }
         bluetoothGattDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         if(!bluetoothGatt.setCharacteristicNotification(bluetoothGattCharacteristic, true)){
-            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.SetCharacteristicNotificationError);
+            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.SetCharacteristicNotification);
             return;
         }
         if(!bluetoothGatt.writeDescriptor(bluetoothGattDescriptor)){
-            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.WriteDescriptorError);
+            onBLEOpenNotification.onOpenNotificationFail(BLEConstants.Error.WriteDescriptor);
             return;
         }
     }

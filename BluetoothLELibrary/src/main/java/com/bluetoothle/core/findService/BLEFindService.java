@@ -25,7 +25,7 @@ public class BLEFindService {
      */
     public interface OnGattBLEFindServiceListener{
         void onFindServiceSuccess(BluetoothGatt bluetoothGatt, int status, List<BluetoothGattService> bluetoothGattServices);
-        void onFindServiceFail(Integer errorCode);
+        void onFindServiceFail(String errorCode);
     }
 
     /**
@@ -47,7 +47,7 @@ public class BLEFindService {
             return;
         }
         if(bluetoothGatt == null){
-            onBLEFindServiceListener.onFindServiceFail(BLEConstants.Error.CheckBluetoothGattError);
+            onBLEFindServiceListener.onFindServiceFail(BLEConstants.Error.BluetoothGatt);
             return;
         }
         BLEConnect.bleGattCallback.registerOnGattBLEFindServiceListener(
@@ -58,8 +58,8 @@ public class BLEFindService {
                     }
 
                     @Override
-                    public void onFindServiceFail(Integer errorCode) {
-                        onBLEFindServiceListener.onFindServiceFail(BLEConstants.Error.FindServiceError);
+                    public void onFindServiceFail(String errorCode) {
+                        onBLEFindServiceListener.onFindServiceFail(BLEConstants.Error.FindService);
                     }
                 }
         );

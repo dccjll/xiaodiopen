@@ -30,7 +30,7 @@ public class BLEConnect {
      */
     public interface OnGattBLEConnectListener {
         void onConnectSuccss(BluetoothGatt bluetoothGatt, int status, int newState);
-        void onConnectFail(Integer errorCode);
+        void onConnectFail(String errorCode);
     }
 
     /**
@@ -72,11 +72,11 @@ public class BLEConnect {
             return;
         }
         if(context == null){
-            onBLEConnectListener.onConnectFail(BLEConstants.Error.CheckBLEConextError);
+            onBLEConnectListener.onConnectFail(BLEConstants.Error.BLEConext);
             return;
         }
         if(bluetoothDevice == null && (bluetoothAdapter == null || targetMacAddress == null || targetMacAddress.split(":").length != 6)){
-            onBLEConnectListener.onConnectFail(BLEConstants.Error.CheckConnectDeviceError);
+            onBLEConnectListener.onConnectFail(BLEConstants.Error.Device_Address);
             return;
         }
         bleGattCallback.registerOnGattConnectListener(
@@ -87,7 +87,7 @@ public class BLEConnect {
                     }
 
                     @Override
-                    public void onConnectFail(Integer errorCode) {
+                    public void onConnectFail(String errorCode) {
                         onBLEConnectListener.onConnectFail(errorCode);
                     }
                 }
@@ -112,7 +112,7 @@ public class BLEConnect {
      */
     private void connectDevice(BluetoothDevice bluetoothDevice){
         if(bluetoothDevice == null){
-            onBLEConnectListener.onConnectFail(BLEConstants.Error.CheckConnectDeviceError);
+            onBLEConnectListener.onConnectFail(BLEConstants.Error.Device_Address);
             return;
         }
         bluetoothDevice.connectGatt(context, false, bleGattCallback);

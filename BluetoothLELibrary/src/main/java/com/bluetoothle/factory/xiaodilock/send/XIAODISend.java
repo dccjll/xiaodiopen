@@ -1,8 +1,5 @@
 package com.bluetoothle.factory.xiaodilock.send;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
-
 import com.bluetoothle.core.BLEConstants;
 import com.bluetoothle.core.BLEManage;
 import com.bluetoothle.core.init.BLEInit;
@@ -43,13 +40,13 @@ public class XIAODISend {
         }
         XIAODIBLEProtocol xiaodibleProtocol = new XIAODIBLEProtocol(cmdType, xiaodiData);
         if(!xiaodibleProtocol.buildData()){
-            onBLEWriteDataListener.onWriteDataFail(XIAODIConstants.Error.CheckBuildDataError);
+            onBLEWriteDataListener.onWriteDataFail(XIAODIConstants.Error.BuildData);
             return;
         }
         byte[] data = xiaodibleProtocol.getBleDataSend();
         BLELogUtil.e(TAG, "准备发送数据,mac=" + mac + ",data=" + BLEByteUtil.bytesToHexString(data));
         if(BLEInit.bluetoothAdapter == null){
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothAdapterError);
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.BluetoothAdapter);
             return;
         }
         BLEManage bleManage = new BLEManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildTwoUUIDs(), null, disconnectOnFinish);
@@ -64,33 +61,27 @@ public class XIAODISend {
      * @param cmdType   命令字类型
      * @param xiaodiData    要发送的数据集合
      * @param disconnectOnFinish    任务完成后是否断开蓝牙连接
-     * @param onBLEWriteDataListener    数据发送监听器
-     * @param XIAODIDataReceived    数据接收监听器
+     * @param xiaodiDataReceived    数据接收监听器
      */
-    public static void send(String mac, String cmdType, XIAODIData xiaodiData, Boolean disconnectOnFinish, final OnBLEWriteDataListener onBLEWriteDataListener, final XIAODIDataReceived XIAODIDataReceived){
-        if(onBLEWriteDataListener == null){
-            BLELogUtil.e(TAG, "没有配置发送数据回调接口");
-            return;
-        }
-        if(XIAODIDataReceived == null){
+    public static void send(String mac, String cmdType, XIAODIData xiaodiData, Boolean disconnectOnFinish, final XIAODIDataReceived xiaodiDataReceived){
+        if(xiaodiDataReceived == null){
             BLELogUtil.e(TAG, "没有配置接收数据回调接口");
             return;
         }
         XIAODIBLEProtocol xiaodibleProtocol = new XIAODIBLEProtocol(cmdType, xiaodiData);
         if(!xiaodibleProtocol.buildData()){
-            onBLEWriteDataListener.onWriteDataFail(XIAODIConstants.Error.CheckBuildDataError);
+            xiaodiDataReceived.onError(XIAODIConstants.Error.BuildData);
             return;
         }
         byte[] data = xiaodibleProtocol.getBleDataSend();
         BLELogUtil.e(TAG, "准备发送数据,mac=" + mac + ",data=" + BLEByteUtil.bytesToHexString(data));
         if(BLEInit.bluetoothAdapter == null){
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothAdapterError);
+            xiaodiDataReceived.onError(BLEConstants.Error.BluetoothAdapter);
             return;
         }
         BLEManage bleManage = new BLEManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildFiveUUIDs(), null, disconnectOnFinish);
         bleManage.setData(data);
-        bleManage.setOnBLEWriteDataListener(onBLEWriteDataListener);
-        bleManage.setOnBLEResponseListener(XIAODIDataReceived);
+        bleManage.setOnBLEResponseListener(xiaodiDataReceived);
         bleManage.write();
     }
 
@@ -108,31 +99,11 @@ public class XIAODISend {
         byte[] data = XIAODIBLEProtocol.buildSmartKeyInitData();
         BLELogUtil.e(TAG, "准备发送数据,mac=" + mac + ",data=" + BLEByteUtil.bytesToHexString(data));
         if(BLEInit.bluetoothAdapter == null){
-            onSmartKeyInitListener.onInitFaiure(BLEConstants.Error.CheckBluetoothAdapterError);
+            onSmartKeyInitListener.onInitFaiure(BLEConstants.Error.BluetoothAdapter);
             return;
         }
         BLEManage bleManage = new BLEManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildSmartKeyUUIDs(), null, false);
         bleManage.setData(data);
-        bleManage.setOnBLEWriteDataListener(
-                new OnBLEWriteDataListener() {
-                    @Override
-                    public void onWriteDataFinish() {
-                        BLELogUtil.d(TAG, tag + "，数据写入完成");
-                        onSmartKeyInitListener.onInitSuccess();
-                    }
-
-                    @Override
-                    public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                        BLELogUtil.d(TAG, tag + "，单次数据写入完成");
-                    }
-
-                    @Override
-                    public void onWriteDataFail(Integer errorCode) {
-                        BLELogUtil.d(TAG, tag + "，数据写入失败，errorCode=" + errorCode);
-                        onSmartKeyInitListener.onInitFaiure(errorCode);
-                    }
-                }
-        );
         bleManage.setOnBLEResponseListener(
                 new XIAODIDataReceived()
         );

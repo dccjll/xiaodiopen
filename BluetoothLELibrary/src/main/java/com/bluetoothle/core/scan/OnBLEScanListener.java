@@ -13,5 +13,5 @@ import java.util.Map;
 public interface OnBLEScanListener {
     void onFoundDevice(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord);
     void onScanFinish(List<Map<String, Object>> bluetoothDeviceList);
-    void onScanFail(Integer errorCode);
+    void onScanFail(String errorCode);
 }

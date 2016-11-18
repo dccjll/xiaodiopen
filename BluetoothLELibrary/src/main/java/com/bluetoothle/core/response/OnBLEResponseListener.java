@@ -10,4 +10,5 @@ import android.bluetooth.BluetoothGattCharacteristic;
 
 public interface OnBLEResponseListener {
     void receiveData(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic);
+    void onError(String errorCode);
 }

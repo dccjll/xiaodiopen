@@ -12,5 +12,5 @@ import java.util.List;
 
 public interface OnBLEFindServiceListener {
     void onFindServiceSuccess(BluetoothGatt bluetoothGatt, int status, List<BluetoothGattService> bluetoothGattServices);
-    void onFindServiceFail(Integer errorCode);
+    void onFindServiceFail(String errorCode);
 }

@@ -119,7 +119,7 @@ public class BLEScan {
             return;
         }
         if(bluetoothAdapter == null){
-            onBLEScanListener.onScanFail(BLEConstants.Error.CheckBluetoothAdapterError);
+            onBLEScanListener.onScanFail(BLEConstants.Error.BluetoothAdapter);
             return;
         }
         scanHandler = new Handler();
@@ -128,7 +128,7 @@ public class BLEScan {
             public void run() {
                 scanControl(false);
                 if(BLEStringUtil.isNotEmpty(targetDeviceAddress) || (targetDeviceAddressList.size() > 0)){
-                    onBLEScanListener.onScanFail(BLEConstants.Error.NotFoundDeviceError);
+                    onBLEScanListener.onScanFail(BLEConstants.Error.NotFoundDevice);
                     return;
                 }
                 onBLEScanListener.onScanFinish(foundDeviceList);
@@ -140,7 +140,7 @@ public class BLEScan {
             scanControl(true);
         } catch (Exception e) {
             e.printStackTrace();
-            onBLEScanListener.onScanFail(BLEConstants.Error.OccurScanningError);
+            onBLEScanListener.onScanFail(BLEConstants.Error.Scann);
         }
     }
 
@@ -151,7 +151,7 @@ public class BLEScan {
     private void scanControl(Boolean scanFlag){
         if(scanFlag){
             if(isScaning){
-                onBLEScanListener.onScanFail(BLEConstants.Error.BLEScanningError);
+                onBLEScanListener.onScanFail(BLEConstants.Error.BLEScanning);
                 return;
             }
             isScaning = true;

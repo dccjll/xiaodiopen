@@ -11,6 +11,7 @@ import com.bluetoothle.core.findService.OnBLEFindServiceListener;
 import com.bluetoothle.core.openNotification.OnBLEOpenNotificationListener;
 import com.bluetoothle.core.scan.OnBLEScanListener;
 import com.bluetoothle.core.writeData.OnBLEWriteDataListener;
+import com.bluetoothle.factory.xiaodilock.received.XIAODIDataReceived;
 import com.bluetoothle.util.BLELogUtil;
 
 import java.util.List;
@@ -59,7 +60,8 @@ public class BLECoreResponse {
      */
     public void onScanFinish(OnBLEScanListener onBLEScanListener, List<Map<String, Object>> bluetoothDeviceList){
         onBLEScanListener.onScanFinish(bluetoothDeviceList);
-        setTaskFinishCheck();
+        disconnectOnFinish = false;
+        setTaskFinishFlag();
     }
 
     /**
@@ -71,7 +73,8 @@ public class BLECoreResponse {
      */
     public void onConnectSuccess(OnBLEConnectListener onBLEConnectListener, BluetoothGatt bluetoothGatt, int status, int newState){
         onBLEConnectListener.onConnectSuccess(bluetoothGatt, status, newState);
-        setTaskFinishCheck();
+        disconnectOnFinish = false;
+        setTaskFinishFlag();
     }
 
     /**
@@ -83,7 +86,8 @@ public class BLECoreResponse {
      */
     public void onFindServiceSuccess(OnBLEFindServiceListener onBLEFindServiceListener, BluetoothGatt bluetoothGatt, int status, List<BluetoothGattService> bluetoothGattServices){
         onBLEFindServiceListener.onFindServiceSuccess(bluetoothGatt, status, bluetoothGattServices);
-        setTaskFinishCheck();
+        disconnectOnFinish = false;
+        setTaskFinishFlag();
     }
 
     /**
@@ -95,7 +99,8 @@ public class BLECoreResponse {
      */
     public void onOpenNotificationSuccess(OnBLEOpenNotificationListener onBLEOpenNotificationListener, BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status){
         onBLEOpenNotificationListener.onOpenNotificationSuccess(gatt, descriptor, status);
-        setTaskFinishCheck();
+        disconnectOnFinish = false;
+        setTaskFinishFlag();
     }
 
     /**
@@ -104,7 +109,7 @@ public class BLECoreResponse {
      */
     public void onWriteDataFinish(OnBLEWriteDataListener onBLEWriteDataListener){
         onBLEWriteDataListener.onWriteDataFinish();
-        setTaskFinishCheck();
+        setTaskFinishFlag();
     }
 
     /**
@@ -115,6 +120,7 @@ public class BLECoreResponse {
      * @param status    写数据的状态
      */
     public void onWriteDataSuccess(OnBLEWriteDataListener onBLEWriteDataListener, BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status){
+        disconnectOnFinish = false;
         onBLEWriteDataListener.onWriteDataSuccess(gatt, characteristic, status);
     }
 
@@ -123,9 +129,11 @@ public class BLECoreResponse {
      * @param objectListener    任务监听器
      * @param errorCode 蓝牙协议栈错误代码
      */
-    public void onBLEDisconnectErrorCode(Object objectListener, Integer errorCode){
+    public void onBLEDisconnectErrorCode(Object objectListener, String errorCode){
         if(running){
-            if(objectListener instanceof OnBLEScanListener){
+            if(objectListener instanceof XIAODIDataReceived){
+                ((XIAODIDataReceived)objectListener).onError(errorCode);
+            }else if(objectListener instanceof OnBLEScanListener){
                 ((OnBLEScanListener)objectListener).onScanFail(errorCode);
             }else if(objectListener instanceof OnBLEConnectListener){
                 ((OnBLEConnectListener)objectListener).onConnectFail(errorCode);
@@ -139,9 +147,9 @@ public class BLECoreResponse {
             return;
         }
         String msg = null;
-        if(errorCode == BLEConstants.Error.DisconnectError){
+        if(errorCode == BLEConstants.Error.Disconnect){
             msg = "蓝牙已断开";
-        }else if(errorCode == BLEConstants.Error.ReceivedBLEStackCodeError){
+        }else if(errorCode == BLEConstants.Error.ReceivedBLEStackExceptionCode){
             msg = "收到蓝牙协议栈错误代码";
         }
         BLELogUtil.e(TAG, "onBLEDisconnectErrorCode," + msg);
@@ -152,8 +160,8 @@ public class BLECoreResponse {
      * @param objectListener    任务监听器
      * @param errorCode 任务失败代码
      */
-    public void onResponseError(Object objectListener, Integer errorCode){
-        if(errorCode == BLEConstants.Error.DisconnectError || errorCode == BLEConstants.Error.ReceivedBLEStackCodeError){
+    public void onResponseError(Object objectListener, String errorCode){
+        if(errorCode == BLEConstants.Error.Disconnect || errorCode == BLEConstants.Error.ReceivedBLEStackExceptionCode){
             onBLEDisconnectErrorCode(objectListener, errorCode);
             return;
         }
@@ -173,7 +181,7 @@ public class BLECoreResponse {
     /**
      * 配置任务完成检验,任务完成后,如果需要断开连接,则发起断开请求
      */
-    private void setTaskFinishCheck(){
+    private void setTaskFinishFlag(){
         running = false;
         if(disconnectOnFinish){
             try {

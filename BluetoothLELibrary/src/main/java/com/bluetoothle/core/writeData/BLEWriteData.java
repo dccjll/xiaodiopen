@@ -32,7 +32,7 @@ public class BLEWriteData {
     public interface OnGattBLEWriteDataListener{
         void onWriteDataFinish();
         void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status);
-        void onWriteDataFail(Integer errorCode);
+        void onWriteDataFail(String errorCode);
     }
 
     /**
@@ -59,11 +59,11 @@ public class BLEWriteData {
             return;
         }
         if(bluetoothGatt == null){
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothGattError);
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.BluetoothGatt);
             return;
         }
         if(uuids == null || uuids.length != 2){
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckUUIDArraysError);
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.UUIDArrays);
             return;
         }
         if(data == null || data.length == 0){
@@ -101,19 +101,19 @@ public class BLEWriteData {
                     }
 
                     @Override
-                    public void onWriteDataFail(Integer errorCode) {
+                    public void onWriteDataFail(String errorCode) {
                         onBLEWriteDataListener.onWriteDataFail(errorCode);
                     }
                 }
         );
         bluetoothGattService = bluetoothGatt.getService(uuids[0]);
         if(bluetoothGattService == null){
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothGattError);
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.BluetoothGatt);
             return;
         }
         bluetoothGattCharacteristic = bluetoothGattService.getCharacteristic(uuids[1]);
         if(bluetoothGattCharacteristic == null){
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothGattCharacteristicError);
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.BluetoothGattCharacteristic);
             return;
         }
 //        try {

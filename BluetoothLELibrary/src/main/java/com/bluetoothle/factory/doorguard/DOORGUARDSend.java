@@ -28,7 +28,7 @@ public class DoorGuardSend {
         byte[] data = DoorGuardProtocol.buildData();
         BLELogUtil.e(TAG, "准备发送数据,mac=" + mac + ",data=" + BLEByteUtil.bytesToHexString(data));
         if(BLEInit.bluetoothAdapter == null){
-            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBluetoothAdapterError);
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.BluetoothAdapter);
             return;
         }
         BLEManage bleManage = new BLEManage(BLEInit.bluetoothAdapter, mac, null, DoorGuardProtocol.buildTwoUUIDs(), null, true);

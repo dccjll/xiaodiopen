@@ -7,5 +7,5 @@ package com.bluetoothle.core.request;
 
 public interface OnRequestListener {
     void onRequestSuccss(Request request);
-    void onRequestFail(Integer errorCode);
+    void onRequestFail(String errorCode);
 }

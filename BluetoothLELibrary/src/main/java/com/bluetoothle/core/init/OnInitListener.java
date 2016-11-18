@@ -9,5 +9,5 @@ import android.bluetooth.BluetoothAdapter;
 
 public interface OnInitListener {
     void onInitSuccess(BluetoothAdapter bluetoothAdapter);
-    void onInitFail(Integer errorCode);
+    void onInitFail(String errorCode);
 }
