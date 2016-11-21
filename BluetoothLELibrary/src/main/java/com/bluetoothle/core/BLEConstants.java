@@ -10,6 +10,7 @@ public class BLEConstants {
      * 蓝牙操作异常类,编号从0x1001开始
      */
     public final static class Error {
+        public final static String BLEInit = "BLEInit";                                                                        //BLE环境初始化异常
         public final static String NotSupportBLE = "NotSupportBLE";                            //当前系统版本不支持蓝牙BLE
         public final static String BluetoothManager = "BluetoothManager";                    //蓝牙管理服务异常
         public final static String BluetoothAdapter = "BluetoothAdapter";                    //蓝牙适配器异常

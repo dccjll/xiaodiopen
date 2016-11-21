@@ -12,6 +12,7 @@ import com.bluetoothle.core.connect.BLEConnect;
 import com.bluetoothle.core.connect.OnBLEConnectListener;
 import com.bluetoothle.core.findService.BLEFindService;
 import com.bluetoothle.core.findService.OnBLEFindServiceListener;
+import com.bluetoothle.core.init.BLEInit;
 import com.bluetoothle.core.openNotification.BLEOpenNotification;
 import com.bluetoothle.core.openNotification.OnBLEOpenNotificationListener;
 import com.bluetoothle.core.response.OnBLEResponse;
@@ -118,6 +119,10 @@ public class BLEManage {
             BLELogUtil.e(TAG, "scan,没有配置回调接口");
             return;
         }
+        if(!BLEInit.status){
+            onResponseError(BLEConstants.Error.BLEInit);
+            return;
+        }
         if(BLEStringUtil.isEmpty(targetDeviceAddress) && targetDeviceAddressList == null){
             onResponseError(BLEConstants.Error.Device_Address);
             return;
@@ -184,6 +189,10 @@ public class BLEManage {
     public void connect(){
         if(onBLEConnectListener == null && onBLEFindServiceListener == null && onBLEOpenNotificationListener == null && onBLEWriteDataListener == null && onBLEResponse == null){
             BLELogUtil.e(TAG, "connect,没有配置回调接口");
+            return;
+        }
+        if(!BLEInit.status){
+            bleCoreResponse.onResponseError(onBLEConnectListener, BLEConstants.Error.BLEInit);
             return;
         }
         BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(targetDeviceAddress);
@@ -257,6 +266,10 @@ public class BLEManage {
             BLELogUtil.e(TAG, "findService,没有配置回调接口");
             return;
         }
+        if(!BLEInit.status){
+            bleCoreResponse.onResponseError(onBLEFindServiceListener, BLEConstants.Error.BLEInit);
+            return;
+        }
         if(serviceUUIDs == null || (serviceUUIDs.length != 2 && serviceUUIDs.length != 5) ){
             bleCoreResponse.onResponseError(onBLEFindServiceListener, BLEConstants.Error.UUIDArrays);
             return;
@@ -328,6 +341,10 @@ public class BLEManage {
     public void openNotification(){
         if(onBLEOpenNotificationListener == null && onBLEWriteDataListener == null && onBLEResponse == null){
             BLELogUtil.e(TAG, "openNotification,没有配置回调接口");
+            return;
+        }
+        if(!BLEInit.status){
+            bleCoreResponse.onResponseError(onBLEOpenNotificationListener, BLEConstants.Error.BLEInit);
             return;
         }
         if(serviceUUIDs == null || (serviceUUIDs.length != 2 && serviceUUIDs.length != 5) ){
@@ -404,6 +421,10 @@ public class BLEManage {
     public void write(){
         if(onBLEWriteDataListener == null && onBLEResponse == null){
             BLELogUtil.e(TAG, "write,没有配置回调接口");
+            return;
+        }
+        if(!BLEInit.status){
+            bleCoreResponse.onResponseError(onBLEWriteDataListener, BLEConstants.Error.BLEInit);
             return;
         }
         if(data == null || data.length == 0){
