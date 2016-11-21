@@ -87,6 +87,7 @@ public class BLEManage {
     private OnBLEScanListener onBLEScanListener_ = new OnBLEScanListener() {//临时的蓝牙扫描监听器
         @Override
         public void onFoundDevice(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord) {
+            BLELogUtil.d(TAG, "onFoundDevice,bluetoothDevice=" + bluetoothDevice + ",rssi=" + rssi + ",scanRecord=" + BLEByteUtil.bytesToHexString(scanRecord));
             if(onBLEConnectListener != null || onBLEFindServiceListener != null || onBLEOpenNotificationListener != null || onBLEWriteDataListener != null || onBLEResponse != null){
                 bleConnect = new BLEConnect(bluetoothDevice, onBLEConnectListener_);
                 bleConnect.connect();
@@ -99,17 +100,18 @@ public class BLEManage {
 
         @Override
         public void onScanFinish(List<Map<String, Object>> bluetoothDeviceList) {
-            if(bluetoothDeviceList.size() == 0){
-                onResponseError(BLEConstants.Error.NotFoundDevice);
+            BLELogUtil.d(TAG, "onScanFinish,bluetoothDeviceList.size()=" + bluetoothDeviceList.size());
+            if (onBLEScanListener != null && bluetoothDeviceList.size() > 0) {
+                bleCoreResponse.onScanFinish(onBLEScanListener, bluetoothDeviceList);
                 return;
             }
-            if (onBLEScanListener != null) {
-                bleCoreResponse.onScanFinish(onBLEScanListener, bluetoothDeviceList);
-            }
+            onResponseError(BLEConstants.Error.NotFoundDevice);
+
         }
 
         @Override
         public void onScanFail(String errorCode) {
+            BLELogUtil.d(TAG, "onScanFail,errorCode=" + errorCode);
             BLELogUtil.e(TAG, "第" + currentScanCount + "次扫描失败,errorCode=" + errorCode);
             scan();
         }
