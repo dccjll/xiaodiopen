@@ -136,7 +136,7 @@ public class MainActivity extends Activity {
         mainData9.put("deviceMac", "D9:EC:03:08:5F:46");
         mainData9.put("deviceType", "11");
         mainData9.put("mobile", "18668165280");
-        mainData9.put("channelpwd", "A30DA10F");
+        mainData9.put("channelpwd", "B9A0F7FC");
         mainList.add(mainData9);
 
         mainListView.setAdapter(new SimpleAdapter(this, mainList, android.R.layout.simple_list_item_2, new String[]{"deviceName", "deviceMac"}, new int[]{android.R.id.text1, android.R.id.text2}));

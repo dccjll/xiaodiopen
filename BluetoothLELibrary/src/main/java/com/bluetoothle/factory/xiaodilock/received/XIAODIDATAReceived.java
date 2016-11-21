@@ -3,7 +3,7 @@ package com.bluetoothle.factory.xiaodilock.received;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 
-import com.bluetoothle.core.response.OnBLEResponseListener;
+import com.bluetoothle.core.response.OnBLEResponse;
 import com.bluetoothle.factory.xiaodilock.OnXIAODIBLEListener;
 import com.bluetoothle.factory.xiaodilock.util.XIAODIBLECRCUtil;
 import com.bluetoothle.factory.xiaodilock.util.XIAODIConstants;
@@ -13,7 +13,7 @@ import com.bluetoothle.util.BLELogUtil;
 /**
  * 小嘀数据接收器
  */
-public class XIAODIDataReceived implements OnBLEResponseListener {
+public class XIAODIDataReceived extends OnBLEResponse {
 
 	private final static String TAG = XIAODIDataReceived.class.getSimpleName();
 	private boolean dataReceiveFinished = false;//对一个完整包来说,数据是否接收完成
@@ -89,6 +89,7 @@ public class XIAODIDataReceived implements OnBLEResponseListener {
 			return;
 		}
 		BLELogUtil.d(TAG, "数据接收完成");
+		getBleCoreResponse().setTaskFinishFlag();
 		dataReceiveFinished = false;
 		dataReceivedCount = 0;
 		dataReceivedTotalLength = 0;

@@ -89,8 +89,10 @@ public class BLEService extends Service {
                                             for(Map.Entry<BluetoothGatt,Long> entry : bluetoothGattLongMap.entrySet()){
                                                 Long timeInterval = System.currentTimeMillis() - entry.getValue();
                                                 if(timeInterval >= BLEConfig.MaxWaitDisconnectTimeInterval){
-                                                    BLELogUtil.e(TAG, "连接" + entry.getKey() + "超过规定的时间仍然没有通讯，主动断开连接,mac=" + entry.getKey().getDevice().getAddress());
+                                                    BLELogUtil.e(TAG, "连接" + entry.getKey() + "超过规定的时间仍然没有通讯，主动断开并关闭连接,mac=" + entry.getKey().getDevice().getAddress());
                                                     entry.getKey().disconnect();
+													entry.getKey().close();
+													bluetoothGattListIte.remove();
                                                 }
                                             }
                                         }

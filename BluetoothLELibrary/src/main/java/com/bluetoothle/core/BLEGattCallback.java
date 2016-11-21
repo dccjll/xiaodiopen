@@ -9,7 +9,7 @@ import android.bluetooth.BluetoothProfile;
 import com.bluetoothle.core.connect.BLEConnect;
 import com.bluetoothle.core.findService.BLEFindService;
 import com.bluetoothle.core.openNotification.BLEOpenNotification;
-import com.bluetoothle.core.response.OnBLEResponseListener;
+import com.bluetoothle.core.response.OnBLEResponse;
 import com.bluetoothle.core.writeData.BLEWriteData;
 import com.bluetoothle.util.BLEByteUtil;
 import com.bluetoothle.util.BLELogUtil;
@@ -28,7 +28,8 @@ public class BLEGattCallback extends BluetoothGattCallback {
     private BLEFindService.OnGattBLEFindServiceListener onGattBLEFindServiceListener;
     private BLEOpenNotification.OnGattBLEOpenNotificationListener onGattBLEOpenNotificationListener;
     private BLEWriteData.OnGattBLEWriteDataListener onGattBLEWriteDataListener;
-    private OnBLEResponseListener onBLEResponseListener;
+    private OnBLEResponse onBLEResponse;
+    private BLECoreResponse bleCoreResponse;
     private UUID uuidCharacteristicWrite;
     private UUID uuidCharacteristicChange;
     private UUID uuidDescriptorWrite;
@@ -61,8 +62,12 @@ public class BLEGattCallback extends BluetoothGattCallback {
         this.onGattBLEWriteDataListener = onGattBLEWriteDataListener;
     }
 
-    public void registerOnBLEResponseListener(OnBLEResponseListener onBLEResponseListener) {
-        this.onBLEResponseListener = onBLEResponseListener;
+    public void registerOnBLEResponseListener(OnBLEResponse onBLEResponse) {
+        this.onBLEResponse = onBLEResponse;
+    }
+
+    public void registerBleCoreResponse(BLECoreResponse bleCoreResponse) {
+        this.bleCoreResponse = bleCoreResponse;
     }
 
     public void setUuidCharacteristicWrite(UUID uuidCharacteristicWrite) {
@@ -92,21 +97,26 @@ public class BLEGattCallback extends BluetoothGattCallback {
                 BLELogUtil.e(TAG, "正在断开,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
             }else if(newState == BluetoothProfile.STATE_DISCONNECTED){
                 BLELogUtil.e(TAG, "已断开,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
+                if(bleCoreResponse.getRunning()){
+                    onResponseError(BLEConstants.Error.Disconnect);
+                    return;
+                }
                 BLEUtil.removeConnect(gatt.getDevice().getAddress());
                 gatt.close();
-                onResponseError(BLEConstants.Error.Disconnect);
             }
         }else{
+            if(bleCoreResponse.getRunning()){
+                onResponseError(BLEConstants.Error.ReceivedBLEStackExceptionCode);
+                return;
+            }
             BLELogUtil.e(TAG, "收到蓝牙底层协议栈异常消息,gatt=" + gatt + ",status=" + status + ",newState=" + newState + ",休眠2000ms执行断开与关闭连接操作");
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-//            gatt.disconnect();
             BLEUtil.disconnectBluetoothGatt(gatt.getDevice().getAddress());
             gatt.close();
-            onResponseError(BLEConstants.Error.ReceivedBLEStackExceptionCode);
         }
     }
 
@@ -141,8 +151,8 @@ public class BLEGattCallback extends BluetoothGattCallback {
         BLELogUtil.e(TAG, "onCharacteristicChanged,gatt=" + gatt + ",characteristic=" + characteristic + ",receivedData=" + BLEByteUtil.bytesToHexString(characteristic.getValue()));
         BLEUtil.updateBluetoothGattLastCommunicationTime(gatt, System.currentTimeMillis());
         if(characteristic.getUuid().toString().equalsIgnoreCase(uuidCharacteristicChange.toString())){//接收到数据
-            if(onBLEResponseListener != null){
-                onBLEResponseListener.receiveData(gatt, characteristic);
+            if(onBLEResponse != null){
+                onBLEResponse.receiveData(gatt, characteristic);
             }
         }
     }

@@ -5,11 +5,12 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.os.Handler;
 
 import com.bluetoothle.core.connect.OnBLEConnectListener;
 import com.bluetoothle.core.findService.OnBLEFindServiceListener;
 import com.bluetoothle.core.openNotification.OnBLEOpenNotificationListener;
-import com.bluetoothle.core.response.OnBLEResponseListener;
+import com.bluetoothle.core.response.OnBLEResponse;
 import com.bluetoothle.core.scan.OnBLEScanListener;
 import com.bluetoothle.core.writeData.OnBLEWriteDataListener;
 import com.bluetoothle.factory.xiaodilock.received.XIAODIDataReceived;
@@ -33,6 +34,10 @@ public class BLECoreResponse {
 
     public void setRunning(Boolean running) {
         this.running = running;
+    }
+
+    public Boolean getRunning() {
+        return running;
     }
 
     public void setDisconnectOnFinish(Boolean disconnectOnFinish) {
@@ -61,7 +66,6 @@ public class BLECoreResponse {
      */
     public void onScanFinish(OnBLEScanListener onBLEScanListener, List<Map<String, Object>> bluetoothDeviceList){
         onBLEScanListener.onScanFinish(bluetoothDeviceList);
-        disconnectOnFinish = false;
         setTaskFinishFlag();
     }
 
@@ -74,7 +78,6 @@ public class BLECoreResponse {
      */
     public void onConnectSuccess(OnBLEConnectListener onBLEConnectListener, BluetoothGatt bluetoothGatt, int status, int newState){
         onBLEConnectListener.onConnectSuccess(bluetoothGatt, status, newState);
-        disconnectOnFinish = false;
         setTaskFinishFlag();
     }
 
@@ -87,7 +90,6 @@ public class BLECoreResponse {
      */
     public void onFindServiceSuccess(OnBLEFindServiceListener onBLEFindServiceListener, BluetoothGatt bluetoothGatt, int status, List<BluetoothGattService> bluetoothGattServices){
         onBLEFindServiceListener.onFindServiceSuccess(bluetoothGatt, status, bluetoothGattServices);
-        disconnectOnFinish = false;
         setTaskFinishFlag();
     }
 
@@ -100,7 +102,6 @@ public class BLECoreResponse {
      */
     public void onOpenNotificationSuccess(OnBLEOpenNotificationListener onBLEOpenNotificationListener, BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status){
         onBLEOpenNotificationListener.onOpenNotificationSuccess(gatt, descriptor, status);
-        disconnectOnFinish = false;
         setTaskFinishFlag();
     }
 
@@ -121,7 +122,6 @@ public class BLECoreResponse {
      * @param status    写数据的状态
      */
     public void onWriteDataSuccess(OnBLEWriteDataListener onBLEWriteDataListener, BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status){
-        disconnectOnFinish = false;
         onBLEWriteDataListener.onWriteDataSuccess(gatt, characteristic, status);
     }
 
@@ -130,7 +130,7 @@ public class BLECoreResponse {
      * @param objectListener    任务监听器
      * @param errorCode 蓝牙协议栈错误代码
      */
-    public void onBLEDisconnectErrorCode(Object objectListener, String errorCode){
+    private void onBLEDisconnectErrorCode(Object objectListener, String errorCode){
         if(running){
             if(objectListener instanceof XIAODIDataReceived){
                 ((XIAODIDataReceived)objectListener).onError(errorCode);
@@ -162,12 +162,12 @@ public class BLECoreResponse {
      * @param errorCode 任务失败代码
      */
     public void onResponseError(Object objectListener, String errorCode){
-        if(errorCode == BLEConstants.Error.Disconnect || errorCode == BLEConstants.Error.ReceivedBLEStackExceptionCode){
+        if(errorCode.equalsIgnoreCase(BLEConstants.Error.Disconnect) || errorCode.equalsIgnoreCase(BLEConstants.Error.ReceivedBLEStackExceptionCode)){
             onBLEDisconnectErrorCode(objectListener, errorCode);
             return;
         }
-        if(objectListener instanceof OnBLEResponseListener){
-            ((OnBLEResponseListener)objectListener).onError(errorCode);
+        if(objectListener instanceof OnBLEResponse){
+            ((OnBLEResponse)objectListener).onError(errorCode);
         }else if(objectListener instanceof OnBLEScanListener){
             ((OnBLEScanListener)objectListener).onScanFail(errorCode);
         }else if(objectListener instanceof OnBLEConnectListener){
@@ -181,18 +181,25 @@ public class BLECoreResponse {
         }
     }
 
-    /**
-     * 配置任务完成检验,任务完成后,如果需要断开连接,则发起断开请求
-     */
-    private void setTaskFinishFlag(){
+        /**
+         * 配置任务完成检验,任务完成后,如果需要断开连接,则发起断开请求
+         */
+    public void setTaskFinishFlag(){
         running = false;
         if(disconnectOnFinish){
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            BLEUtil.disconnectBluetoothGatt(mac);
+            new Thread(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Thread.sleep(2000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            BLEUtil.disconnectBluetoothGatt(mac);
+                        }
+                    }
+            ).start();
         }
     }
 }

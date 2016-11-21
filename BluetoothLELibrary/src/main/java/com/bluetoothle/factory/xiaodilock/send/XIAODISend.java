@@ -81,7 +81,7 @@ public class XIAODISend {
         }
         BLEManage bleManage = new BLEManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildFiveUUIDs(), null, disconnectOnFinish);
         bleManage.setData(data);
-        bleManage.setOnBLEResponseListener(xiaodiDataReceived);
+        bleManage.setOnBLEResponse(xiaodiDataReceived);
         bleManage.write();
     }
 
@@ -104,7 +104,7 @@ public class XIAODISend {
         }
         BLEManage bleManage = new BLEManage(BLEInit.bluetoothAdapter, mac, null, XIAODIBLEUUID.buildSmartKeyUUIDs(), null, false);
         bleManage.setData(data);
-        bleManage.setOnBLEResponseListener(
+        bleManage.setOnBLEResponse(
                 new XIAODIDataReceived()
         );
         bleManage.write();

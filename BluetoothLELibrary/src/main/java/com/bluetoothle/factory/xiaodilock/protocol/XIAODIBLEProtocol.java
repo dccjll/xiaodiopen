@@ -614,9 +614,7 @@ public class XIAODIBLEProtocol {
                     tempDataArray[i][j] = (byte) (tempDataArray[i][j] ^ secretkeybytes[j]);
                 }
             }
-            BLELogUtil.d(TAG, "加密后，tempDataArray[0]=" + BLEByteUtil.bytesToHexString(tempDataArray[0]));
-            BLELogUtil.d(TAG, "加密后，tempDataArray[1]=" + BLEByteUtil.bytesToHexString(tempDataArray[1]));
-            BLELogUtil.d(TAG, "加密后，tempDataArray[2]=" + BLEByteUtil.bytesToHexString(tempDataArray[2]));
+            BLELogUtil.d(TAG, "加密后，dataArea=" + BLEByteUtil.bytesToHexString(tempDataArray[0]) + " " + BLEByteUtil.bytesToHexString(tempDataArray[1]) + " " + BLEByteUtil.bytesToHexString(tempDataArray[2]));
             dataArea = new byte[XIAODIBLELengthCheck.OPENBLELOCKENHANCEDATAAREALENGTH];
             System.arraycopy(tempDataArray[0], 0, dataArea, 0, tempDataArray[0].length);
             System.arraycopy(tempDataArray[1], 0, dataArea, tempDataArray[0].length, tempDataArray[1].length);
@@ -750,6 +748,7 @@ public class XIAODIBLEProtocol {
             e.printStackTrace();
             return false;
         }
+        BLELogUtil.e(TAG, "cmd=" + BLEByteUtil.bytesToHexString(cmd) + ",data=" + BLEByteUtil.bytesToHexString(bleDataSend));
         return true;
     }
 

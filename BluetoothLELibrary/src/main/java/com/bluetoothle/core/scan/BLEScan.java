@@ -35,6 +35,7 @@ public class BLEScan {
     private Boolean isScaning = false;
     private Handler scanHandler;
     private Runnable scanRunnable;
+    private boolean foundDevice = false;//是否已找到设备
 
     private BluetoothAdapter.LeScanCallback leScanCallback;
 
@@ -76,8 +77,12 @@ public class BLEScan {
         leScanCallback = new BluetoothAdapter.LeScanCallback() {
             @Override
             public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+                if(foundDevice){
+                    BLELogUtil.d(TAG, "已找到设备，略过停止扫描间隙扫描到的设备");
+                    return;
+                }
                 BLELogUtil.d(TAG, "发现周围的蓝牙设备,device=" + device.getAddress() + ",rssi=" + rssi + ",scanRecord=" + BLEByteUtil.bytesToHexString(scanRecord));
-                synchronized (BLEScan.this) {
+                synchronized (TAG) {
                     boolean contains = false;
                     for(Map<String, Object> entry : foundDeviceList){
                         if(((BluetoothDevice)entry.get("device")).getAddress().equalsIgnoreCase(device.getAddress())){
@@ -94,11 +99,13 @@ public class BLEScan {
                     }
                     if(!BLEStringUtil.isEmpty(targetDeviceAddress)){
                         if(device.getAddress().equalsIgnoreCase(targetDeviceAddress)){
+                            foundDevice = true;
                             scanControl(false);
                             onBLEScanListener.onFoundDevice(device, rssi, scanRecord);
                         }
                     }else if(targetDeviceAddressList.size() > 0){
                         if(targetDeviceAddressList.contains(device.getAddress())){
+                            foundDevice = true;
                             scanControl(false);
                             onBLEScanListener.onFoundDevice(device, rssi, scanRecord);
                         }
@@ -127,10 +134,6 @@ public class BLEScan {
             @Override
             public void run() {
                 scanControl(false);
-                if(BLEStringUtil.isNotEmpty(targetDeviceAddress) || (targetDeviceAddressList.size() > 0)){
-                    onBLEScanListener.onScanFail(BLEConstants.Error.NotFoundDevice);
-                    return;
-                }
                 onBLEScanListener.onScanFinish(foundDeviceList);
             }
         };
@@ -155,6 +158,7 @@ public class BLEScan {
                 return;
             }
             isScaning = true;
+            foundDevice = false;
             if(serviceUUIDs == null){
                 bluetoothAdapter.startLeScan(leScanCallback);
             }else{
