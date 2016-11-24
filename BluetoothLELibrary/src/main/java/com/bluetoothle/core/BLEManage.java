@@ -235,7 +235,6 @@ public class BLEManage {
                 bleOpenNotification.openNotification();
             }else if(onBLEFindServiceListener != null){
                 bleCoreResponse.onFindServiceSuccess(onBLEFindServiceListener, bluetoothGatt, status, bluetoothGattServices);
-                return;
             }else{
                 if(bleWriteData == null){
                     bleWriteData = new BLEWriteData(bluetoothGatt, writeuuids, data, onBLEWriteDataListener_);
@@ -333,7 +332,7 @@ public class BLEManage {
                 onResponseError(errorCode);
                 return;
             }
-            if(currentOpenNotificationCount == BLEConfig.MaxOpenNotificationCount){
+            if(currentOpenNotificationCount.intValue() == BLEConfig.MaxOpenNotificationCount.intValue()){
                 onResponseError(errorCode);
                 return;
             }
