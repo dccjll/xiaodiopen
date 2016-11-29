@@ -3,11 +3,14 @@ package com.bluetoothle.core.connect;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
 
 import com.bluetoothle.core.BLEConstants;
+import com.bluetoothle.core.BLECoreResponse;
 import com.bluetoothle.core.BLEGattCallback;
 import com.bluetoothle.core.BLEService;
+import com.bluetoothle.core.response.OnBLEResponse;
 import com.bluetoothle.util.BLELogUtil;
 
 /**
@@ -20,7 +23,7 @@ public class BLEConnect {
     private final static String TAG = BLEConnect.class.getSimpleName();
     private Context context;//蓝牙连接的上下文对象
     private BluetoothDevice bluetoothDevice;//需要连接的蓝牙设备
-    public static BLEGattCallback bleGattCallback;//连接状态回调管理器
+    private BLEGattCallback bleGattCallback;//连接状态回调管理器
     private BluetoothAdapter bluetoothAdapter;//当前设备蓝牙适配器
     private String targetMacAddress;//远程蓝牙设备的mac地址
     private OnBLEConnectListener onBLEConnectListener;//蓝牙连接监听器
@@ -29,7 +32,7 @@ public class BLEConnect {
      * 连接蓝牙服务器回调接口
      */
     public interface OnGattBLEConnectListener {
-        void onConnectSuccss(BluetoothGatt bluetoothGatt, int status, int newState);
+        void onConnectSuccss(BluetoothGatt bluetoothGatt, int status, int newState, BLEGattCallback bleGattCallback);
         void onConnectFail(String errorCode);
     }
 
@@ -38,12 +41,14 @@ public class BLEConnect {
      * @param bluetoothDevice   需要连接的蓝牙设备
      * @param onBLEConnectListener 蓝牙连接监听器
      */
-    public BLEConnect(BluetoothDevice bluetoothDevice, OnBLEConnectListener onBLEConnectListener) {
+    public BLEConnect(BluetoothDevice bluetoothDevice, BLECoreResponse bleCoreResponse, OnBLEResponse onBLEResponse, OnBLEConnectListener onBLEConnectListener) {
         this.bluetoothDevice = bluetoothDevice;
         this.onBLEConnectListener = onBLEConnectListener;
         context = BLEService.bleService;
         if (bleGattCallback == null) {
             bleGattCallback = new BLEGattCallback();
+            bleGattCallback.registerBleCoreResponse(bleCoreResponse);
+            bleGattCallback.registerOnBLEResponseListener(onBLEResponse);
         }
     }
 
@@ -53,13 +58,14 @@ public class BLEConnect {
      * @param targetMacAddress   需要连接的蓝牙设备MAC地址
      * @param onBLEConnectListener 蓝牙连接监听器
      */
-    public BLEConnect(BluetoothAdapter bluetoothAdapter, String targetMacAddress, OnBLEConnectListener onBLEConnectListener) {
+    public BLEConnect(BluetoothAdapter bluetoothAdapter, String targetMacAddress, BLECoreResponse bleCoreResponse, OnBLEConnectListener onBLEConnectListener) {
         this.bluetoothAdapter = bluetoothAdapter;
         this.targetMacAddress = targetMacAddress;
         this.onBLEConnectListener = onBLEConnectListener;
         context = BLEService.bleService;
         if (bleGattCallback == null) {
             bleGattCallback = new BLEGattCallback();
+            bleGattCallback.registerBleCoreResponse(bleCoreResponse);
         }
     }
 
@@ -82,8 +88,8 @@ public class BLEConnect {
         bleGattCallback.registerOnGattConnectListener(
                 new OnGattBLEConnectListener() {
                     @Override
-                    public void onConnectSuccss(BluetoothGatt bluetoothGatt, int status, int newState) {
-                        onBLEConnectListener.onConnectSuccess(bluetoothGatt, status, newState);
+                    public void onConnectSuccss(BluetoothGatt bluetoothGatt, int status, int newState, BLEGattCallback bleGattCallback) {
+                        onBLEConnectListener.onConnectSuccess(bluetoothGatt, status, newState, bleGattCallback);
                     }
 
                     @Override

@@ -2,6 +2,7 @@ package com.bluetoothle.core;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
@@ -76,8 +77,8 @@ public class BLECoreResponse {
      * @param status    连接状态
      * @param newState  连接属性状态
      */
-    public void onConnectSuccess(OnBLEConnectListener onBLEConnectListener, BluetoothGatt bluetoothGatt, int status, int newState){
-        onBLEConnectListener.onConnectSuccess(bluetoothGatt, status, newState);
+    public void onConnectSuccess(OnBLEConnectListener onBLEConnectListener, BluetoothGatt bluetoothGatt, int status, int newState, BLEGattCallback bleGattCallback){
+        onBLEConnectListener.onConnectSuccess(bluetoothGatt, status, newState, bleGattCallback);
         setTaskFinishFlag();
     }
 
@@ -88,8 +89,8 @@ public class BLECoreResponse {
      * @param status    连接状态
      * @param bluetoothGattServices 找到的服务列表
      */
-    public void onFindServiceSuccess(OnBLEFindServiceListener onBLEFindServiceListener, BluetoothGatt bluetoothGatt, int status, List<BluetoothGattService> bluetoothGattServices){
-        onBLEFindServiceListener.onFindServiceSuccess(bluetoothGatt, status, bluetoothGattServices);
+    public void onFindServiceSuccess(OnBLEFindServiceListener onBLEFindServiceListener, BluetoothGatt bluetoothGatt, int status, List<BluetoothGattService> bluetoothGattServices, BLEGattCallback bleGattCallback){
+        onBLEFindServiceListener.onFindServiceSuccess(bluetoothGatt, status, bluetoothGattServices, bleGattCallback);
         setTaskFinishFlag();
     }
 
@@ -100,8 +101,8 @@ public class BLECoreResponse {
      * @param descriptor    通知的描述符
      * @param status    打开通知状态
      */
-    public void onOpenNotificationSuccess(OnBLEOpenNotificationListener onBLEOpenNotificationListener, BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status){
-        onBLEOpenNotificationListener.onOpenNotificationSuccess(gatt, descriptor, status);
+    public void onOpenNotificationSuccess(OnBLEOpenNotificationListener onBLEOpenNotificationListener, BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status, BLEGattCallback bleGattCallback){
+        onBLEOpenNotificationListener.onOpenNotificationSuccess(gatt, descriptor, status, bleGattCallback);
         setTaskFinishFlag();
     }
 
@@ -121,8 +122,8 @@ public class BLECoreResponse {
      * @param characteristic    写数据的特征对象
      * @param status    写数据的状态
      */
-    public void onWriteDataSuccess(OnBLEWriteDataListener onBLEWriteDataListener, BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status){
-        onBLEWriteDataListener.onWriteDataSuccess(gatt, characteristic, status);
+    public void onWriteDataSuccess(OnBLEWriteDataListener onBLEWriteDataListener, BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status, BLEGattCallback bleGattCallback){
+        onBLEWriteDataListener.onWriteDataSuccess(gatt, characteristic, status, bleGattCallback);
     }
 
     /**
@@ -196,7 +197,7 @@ public class BLECoreResponse {
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-                            BLEUtil.disconnectBluetoothGatt(mac);
+                            BLEUtil.disconnectBluetoothGatt(BLEManage.connectedBluetoothGattList, mac);
                         }
                     }
             ).start();

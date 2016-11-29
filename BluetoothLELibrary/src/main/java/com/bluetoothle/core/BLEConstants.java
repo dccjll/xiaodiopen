@@ -31,6 +31,7 @@ public class BLEConstants {
         public final static String Disconnect = "Disconnect";                               //正常断开的异常消息
         public final static String Connect = "Connect";                                  //连接异常
         public final static String BluetoothGatt = "BluetoothGatt";                       //蓝牙连接服务器异常
+        public final static String BluetoothGattCallBack = "BluetoothGattCallBack";                       //蓝牙连接服务器异常
         public final static String BluetoothGattService = "BluetoothGattService";                //服务异常
         public final static String BluetoothGattCharacteristic = "BluetoothGattCharacteristic";         //特征异常
         public final static String BluetoothGattDescriptor = "BluetoothGattDescriptor";             //特征描述异常

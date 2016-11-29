@@ -1,7 +1,10 @@
 package com.bluetoothle.core.findService;
 
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattService;
+
+import com.bluetoothle.core.BLEGattCallback;
 
 import java.util.List;
 
@@ -11,6 +14,6 @@ import java.util.List;
  */
 
 public interface OnBLEFindServiceListener {
-    void onFindServiceSuccess(BluetoothGatt bluetoothGatt, int status, List<BluetoothGattService> bluetoothGattServices);
+    void onFindServiceSuccess(BluetoothGatt bluetoothGatt, int status, List<BluetoothGattService> bluetoothGattServices, BLEGattCallback bleGattCallback);
     void onFindServiceFail(String errorCode);
 }

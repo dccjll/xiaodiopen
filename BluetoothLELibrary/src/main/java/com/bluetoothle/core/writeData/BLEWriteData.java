@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 
 import com.bluetoothle.core.BLEConstants;
+import com.bluetoothle.core.BLEGattCallback;
 import com.bluetoothle.core.connect.BLEConnect;
 import com.bluetoothle.util.BLEByteUtil;
 import com.bluetoothle.util.BLELogUtil;
@@ -28,6 +29,7 @@ public class BLEWriteData {
     private BluetoothGattService bluetoothGattService;
     private BluetoothGattCharacteristic bluetoothGattCharacteristic;
     private Integer index = 0;//当前发送的第几个数据包
+    private BLEGattCallback bleGattCallback;
 
     public interface OnGattBLEWriteDataListener{
         void onWriteDataFinish();
@@ -42,10 +44,11 @@ public class BLEWriteData {
      * @param data  要写入的总数据字节
      * @param onBLEWriteDataListener    写数据监听器
      */
-    public BLEWriteData(BluetoothGatt bluetoothGatt, UUID[] uuids, byte[] data, OnBLEWriteDataListener onBLEWriteDataListener) {
+    public BLEWriteData(BluetoothGatt bluetoothGatt, UUID[] uuids, byte[] data, BLEGattCallback bleGattCallback, OnBLEWriteDataListener onBLEWriteDataListener) {
         this.bluetoothGatt = bluetoothGatt;
         this.uuids = uuids;
         this.data = data;
+        this.bleGattCallback = bleGattCallback;
         this.onBLEWriteDataListener = onBLEWriteDataListener;
     }
 
@@ -75,9 +78,13 @@ public class BLEWriteData {
             onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.CheckBLEDataError);
             return;
         }
+        if(bleGattCallback == null){
+            onBLEWriteDataListener.onWriteDataFail(BLEConstants.Error.BluetoothGattCallBack);
+            return;
+        }
         writtenDataLength = 0;
-        BLEConnect.bleGattCallback.setUuidCharacteristicWrite(uuids[1]);
-        BLEConnect.bleGattCallback.registerOnGattBLEWriteDataListener(
+        bleGattCallback.setUuidCharacteristicWrite(uuids[1]);
+        bleGattCallback.registerOnGattBLEWriteDataListener(
                 new OnGattBLEWriteDataListener() {
                     @Override
                     public void onWriteDataFinish() {
@@ -86,7 +93,7 @@ public class BLEWriteData {
 
                     @Override
                     public void onWriteDataSuccess(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                        onBLEWriteDataListener.onWriteDataSuccess(gatt, characteristic, status);
+                        onBLEWriteDataListener.onWriteDataSuccess(gatt, characteristic, status, bleGattCallback);
                         if((writtenDataLength += characteristic.getValue().length) == data.length){
                             onWriteDataFinish();
                             return;

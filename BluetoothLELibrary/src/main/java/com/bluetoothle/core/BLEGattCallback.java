@@ -91,7 +91,7 @@ public class BLEGattCallback extends BluetoothGattCallback {
             }else if(newState == BluetoothProfile.STATE_CONNECTED){
                 BLELogUtil.e(TAG, "已连接,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
                 if(onGattBLEConnectListener != null){
-                    onGattBLEConnectListener.onConnectSuccss(gatt, status, newState);
+                    onGattBLEConnectListener.onConnectSuccss(gatt, status, newState, this);
                 }
             }else if(newState == BluetoothProfile.STATE_DISCONNECTING){
                 BLELogUtil.e(TAG, "正在断开,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
@@ -101,7 +101,7 @@ public class BLEGattCallback extends BluetoothGattCallback {
                     onResponseError(BLEConstants.Error.Disconnect);
                     return;
                 }
-                BLEUtil.removeConnect(gatt.getDevice().getAddress());
+                BLEUtil.removeConnect(BLEManage.connectedBluetoothGattList, gatt.getDevice().getAddress());
                 gatt.close();
             }
         }else{
@@ -115,7 +115,7 @@ public class BLEGattCallback extends BluetoothGattCallback {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            BLEUtil.disconnectBluetoothGatt(gatt.getDevice().getAddress());
+            BLEUtil.disconnectBluetoothGatt(BLEManage.connectedBluetoothGattList, gatt.getDevice().getAddress());
             gatt.close();
         }
     }
@@ -138,7 +138,7 @@ public class BLEGattCallback extends BluetoothGattCallback {
     @Override
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         BLELogUtil.e(TAG, "onCharacteristicWrite,gatt=" + gatt + ",characteristic=" + characteristic + ",status=" + status + ",writedData=" + BLEByteUtil.bytesToHexString(characteristic.getValue()));
-        BLEUtil.updateBluetoothGattLastCommunicationTime(gatt, System.currentTimeMillis());
+        BLEUtil.updateBluetoothGattLastCommunicationTime(BLEManage.connectedBluetoothGattList, gatt, System.currentTimeMillis());
         if(status == BluetoothGatt.GATT_SUCCESS && characteristic.getUuid().toString().equalsIgnoreCase(uuidCharacteristicWrite.toString())){
             if(onGattBLEWriteDataListener != null){
                 onGattBLEWriteDataListener.onWriteDataSuccess(gatt, characteristic, status);
@@ -149,7 +149,7 @@ public class BLEGattCallback extends BluetoothGattCallback {
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
         BLELogUtil.e(TAG, "onCharacteristicChanged,gatt=" + gatt + ",characteristic=" + characteristic + ",receivedData=" + BLEByteUtil.bytesToHexString(characteristic.getValue()));
-        BLEUtil.updateBluetoothGattLastCommunicationTime(gatt, System.currentTimeMillis());
+        BLEUtil.updateBluetoothGattLastCommunicationTime(BLEManage.connectedBluetoothGattList, gatt, System.currentTimeMillis());
         if(characteristic.getUuid().toString().equalsIgnoreCase(uuidCharacteristicChange.toString())){//接收到数据
             if(onBLEResponse != null){
                 onBLEResponse.receiveData(gatt, characteristic);
