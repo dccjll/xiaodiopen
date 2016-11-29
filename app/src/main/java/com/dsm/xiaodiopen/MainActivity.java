@@ -75,39 +75,39 @@ public class MainActivity extends Activity {
         ListView mainListView = (ListView) findViewById(R.id.mainListView);
         final List<Map<String, String>> mainList = new ArrayList<>();
 
-        Map<String, String> mainData1 = new HashMap<>();
-        mainData1.put("deviceName", "德施曼-3楼前门");
-        mainData1.put("deviceMac", "C3:FA:58:31:80:65");
-        mainData1.put("deviceType", "13");
-        mainList.add(mainData1);
-
-        Map<String, String> mainData2 = new HashMap<>();
-        mainData2.put("deviceName", "德施曼-3楼后门");
-        mainData2.put("deviceMac", "CA:12:9E:22:2D:87");
-        mainData2.put("deviceType", "13");
-        mainList.add(mainData2);
-
-        Map<String, String> mainData3 = new HashMap<>();
-        mainData3.put("deviceName", "德施曼-1楼前门");
-        mainData3.put("deviceMac", "C5:22:AB:EB:46:46");
-        mainData3.put("deviceType", "13");
-        mainList.add(mainData3);
-
-        Map<String, String> mainData4 = new HashMap<>();
-        mainData4.put("deviceName", "T700_A6EB");
-        mainData4.put("deviceMac", "ED:83:5C:50:A6:EB");
-        mainData4.put("deviceType", "11");
-        mainData4.put("mobile", "18668165280");
-        mainData4.put("channelpwd", "1459AFA3");
-        mainList.add(mainData4);
-
-        Map<String, String> mainData5 = new HashMap<>();
-        mainData5.put("deviceName", "T700_978E");
-        mainData5.put("deviceMac", "FE:0A:A3:D2:97:8E");
-        mainData5.put("deviceType", "11");
-        mainData5.put("mobile", "18668165280");
-        mainData5.put("channelpwd", "71682D5C");
-        mainList.add(mainData5);
+//        Map<String, String> mainData1 = new HashMap<>();
+//        mainData1.put("deviceName", "德施曼-3楼前门");
+//        mainData1.put("deviceMac", "C3:FA:58:31:80:65");
+//        mainData1.put("deviceType", "13");
+//        mainList.add(mainData1);
+//
+//        Map<String, String> mainData2 = new HashMap<>();
+//        mainData2.put("deviceName", "德施曼-3楼后门");
+//        mainData2.put("deviceMac", "CA:12:9E:22:2D:87");
+//        mainData2.put("deviceType", "13");
+//        mainList.add(mainData2);
+//
+//        Map<String, String> mainData3 = new HashMap<>();
+//        mainData3.put("deviceName", "德施曼-1楼前门");
+//        mainData3.put("deviceMac", "C5:22:AB:EB:46:46");
+//        mainData3.put("deviceType", "13");
+//        mainList.add(mainData3);
+//
+//        Map<String, String> mainData4 = new HashMap<>();
+//        mainData4.put("deviceName", "T700_A6EB");
+//        mainData4.put("deviceMac", "ED:83:5C:50:A6:EB");
+//        mainData4.put("deviceType", "11");
+//        mainData4.put("mobile", "18668165280");
+//        mainData4.put("channelpwd", "1459AFA3");
+//        mainList.add(mainData4);
+//
+//        Map<String, String> mainData5 = new HashMap<>();
+//        mainData5.put("deviceName", "T700_978E");
+//        mainData5.put("deviceMac", "FE:0A:A3:D2:97:8E");
+//        mainData5.put("deviceType", "11");
+//        mainData5.put("mobile", "18668165280");
+//        mainData5.put("channelpwd", "71682D5C");
+//        mainList.add(mainData5);
 
         Map<String, String> mainData6 = new HashMap<>();
         mainData6.put("deviceName", "桌面门禁");
@@ -115,29 +115,29 @@ public class MainActivity extends Activity {
         mainData6.put("deviceType", "13");
         mainList.add(mainData6);
 
-        Map<String, String> mainData7 = new HashMap<>();
-        mainData7.put("deviceName", "叶飞测试锁");
-        mainData7.put("deviceMac", "DF:6D:0A:4A:BA:25");
-        mainData7.put("deviceType", "11");
-        mainData7.put("mobile", "18668165280");
-        mainData7.put("channelpwd", "DA45B5F5");
-        mainList.add(mainData7);
-
-        Map<String, String> mainData8 = new HashMap<>();
-        mainData8.put("deviceName", "测试锁");
-        mainData8.put("deviceMac", "FD:27:F0:5E:F2:5C");
-        mainData8.put("deviceType", "11");
-        mainData8.put("mobile", "18668165280");
-        mainData8.put("channelpwd", "A30DA10F");
-        mainList.add(mainData8);
-
-        Map<String, String> mainData9 = new HashMap<>();
-        mainData9.put("deviceName", "1201");
-        mainData9.put("deviceMac", "D9:EC:03:08:5F:46");
-        mainData9.put("deviceType", "11");
-        mainData9.put("mobile", "18668165280");
-        mainData9.put("channelpwd", "B9A0F7FC");
-        mainList.add(mainData9);
+//        Map<String, String> mainData7 = new HashMap<>();
+//        mainData7.put("deviceName", "叶飞测试锁");
+//        mainData7.put("deviceMac", "DF:6D:0A:4A:BA:25");
+//        mainData7.put("deviceType", "11");
+//        mainData7.put("mobile", "18668165280");
+//        mainData7.put("channelpwd", "DA45B5F5");
+//        mainList.add(mainData7);
+//
+//        Map<String, String> mainData8 = new HashMap<>();
+//        mainData8.put("deviceName", "测试锁");
+//        mainData8.put("deviceMac", "FD:27:F0:5E:F2:5C");
+//        mainData8.put("deviceType", "11");
+//        mainData8.put("mobile", "18668165280");
+//        mainData8.put("channelpwd", "A30DA10F");
+//        mainList.add(mainData8);
+//
+//        Map<String, String> mainData9 = new HashMap<>();
+//        mainData9.put("deviceName", "1201");
+//        mainData9.put("deviceMac", "D9:EC:03:08:5F:46");
+//        mainData9.put("deviceType", "11");
+//        mainData9.put("mobile", "18668165280");
+//        mainData9.put("channelpwd", "B9A0F7FC");
+//        mainList.add(mainData9);
 
         mainListView.setAdapter(new SimpleAdapter(this, mainList, android.R.layout.simple_list_item_2, new String[]{"deviceName", "deviceMac"}, new int[]{android.R.id.text1, android.R.id.text2}));
 

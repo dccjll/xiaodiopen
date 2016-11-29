@@ -59,7 +59,7 @@ public class BLEFindService {
 
                     @Override
                     public void onFindServiceFail(String errorCode) {
-                        onBLEFindServiceListener.onFindServiceFail(BLEConstants.Error.FindService);
+                        onBLEFindServiceListener.onFindServiceFail(errorCode);
                     }
                 }
         );
