@@ -30,6 +30,7 @@ public class BLEGattCallback extends BluetoothGattCallback {
     private BLEWriteData.OnGattBLEWriteDataListener onGattBLEWriteDataListener;
     private OnBLEResponse onBLEResponse;
     private BLECoreResponse bleCoreResponse;
+    private BLEManage bleManage;
     private UUID uuidCharacteristicWrite;
     private UUID uuidCharacteristicChange;
     private UUID uuidDescriptorWrite;
@@ -70,6 +71,10 @@ public class BLEGattCallback extends BluetoothGattCallback {
         this.bleCoreResponse = bleCoreResponse;
     }
 
+    public void registerBLEManage(BLEManage bleManage) {
+        this.bleManage = bleManage;
+    }
+
     public void setUuidCharacteristicWrite(UUID uuidCharacteristicWrite) {
         this.uuidCharacteristicWrite = uuidCharacteristicWrite;
     }
@@ -85,6 +90,10 @@ public class BLEGattCallback extends BluetoothGattCallback {
     @Override
     public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
         BLELogUtil.e(TAG, "onConnectionStateChange,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
+        if(bleManage.checkTimeout()){
+            BLELogUtil.d(TAG, "tiemout");
+            return;
+        }
         if(status == BluetoothGatt.GATT_SUCCESS){
             if(newState == BluetoothProfile.STATE_CONNECTING){
                 BLELogUtil.e(TAG, "正在连接,gatt=" + gatt + ",status=" + status + ",newState=" + newState);
@@ -123,6 +132,10 @@ public class BLEGattCallback extends BluetoothGattCallback {
     @Override
     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
         BLELogUtil.e(TAG, "onServicesDiscovered,gatt=" + gatt + ",status=" + status);
+        if(bleManage.checkTimeout()){
+            BLELogUtil.d(TAG, "tiemout");
+            return;
+        }
         if(status == BluetoothGatt.GATT_SUCCESS){
             if(onGattBLEFindServiceListener != null){
                 onGattBLEFindServiceListener.onFindServiceSuccess(gatt, status, gatt.getServices());
@@ -132,12 +145,20 @@ public class BLEGattCallback extends BluetoothGattCallback {
 
     @Override
     public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+        if(bleManage.checkTimeout()){
+            BLELogUtil.d(TAG, "tiemout");
+            return;
+        }
         super.onCharacteristicRead(gatt, characteristic, status);
     }
 
     @Override
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         BLELogUtil.e(TAG, "onCharacteristicWrite,gatt=" + gatt + ",characteristic=" + characteristic + ",status=" + status + ",writedData=" + BLEByteUtil.bytesToHexString(characteristic.getValue()));
+        if(bleManage.checkTimeout()){
+            BLELogUtil.d(TAG, "tiemout");
+            return;
+        }
         BLEUtil.updateBluetoothGattLastCommunicationTime(BLEManage.connectedBluetoothGattList, gatt, System.currentTimeMillis());
         if(status == BluetoothGatt.GATT_SUCCESS && characteristic.getUuid().toString().equalsIgnoreCase(uuidCharacteristicWrite.toString())){
             if(onGattBLEWriteDataListener != null){
@@ -149,6 +170,10 @@ public class BLEGattCallback extends BluetoothGattCallback {
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
         BLELogUtil.e(TAG, "onCharacteristicChanged,gatt=" + gatt + ",characteristic=" + characteristic + ",receivedData=" + BLEByteUtil.bytesToHexString(characteristic.getValue()));
+        if(bleManage.checkTimeout()){
+            BLELogUtil.d(TAG, "tiemout");
+            return;
+        }
         BLEUtil.updateBluetoothGattLastCommunicationTime(BLEManage.connectedBluetoothGattList, gatt, System.currentTimeMillis());
         if(characteristic.getUuid().toString().equalsIgnoreCase(uuidCharacteristicChange.toString())){//接收到数据
             if(onBLEResponse != null){
@@ -159,12 +184,20 @@ public class BLEGattCallback extends BluetoothGattCallback {
 
     @Override
     public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+        if(bleManage.checkTimeout()){
+            BLELogUtil.d(TAG, "tiemout");
+            return;
+        }
         super.onDescriptorRead(gatt, descriptor, status);
     }
 
     @Override
     public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
         BLELogUtil.e(TAG, "onDescriptorWrite,gatt=" + gatt + ",descriptor=" + descriptor + ",status=" + status);
+        if(bleManage.checkTimeout()){
+            BLELogUtil.d(TAG, "tiemout");
+            return;
+        }
         if(status == BluetoothGatt.GATT_SUCCESS && descriptor.getUuid().toString().equalsIgnoreCase(uuidDescriptorWrite.toString())){
             if(onGattBLEOpenNotificationListener != null){
                 onGattBLEOpenNotificationListener.onOpenNotificationSuccess(gatt, descriptor, status);
@@ -174,16 +207,28 @@ public class BLEGattCallback extends BluetoothGattCallback {
 
     @Override
     public void onReliableWriteCompleted(BluetoothGatt gatt, int status) {
+        if(bleManage.checkTimeout()){
+            BLELogUtil.d(TAG, "tiemout");
+            return;
+        }
         super.onReliableWriteCompleted(gatt, status);
     }
 
     @Override
     public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
+        if(bleManage.checkTimeout()){
+            BLELogUtil.d(TAG, "tiemout");
+            return;
+        }
         super.onReadRemoteRssi(gatt, rssi, status);
     }
 
     @Override
     public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
+        if(bleManage.checkTimeout()){
+            BLELogUtil.d(TAG, "tiemout");
+            return;
+        }
         super.onMtuChanged(gatt, mtu, status);
     }
 

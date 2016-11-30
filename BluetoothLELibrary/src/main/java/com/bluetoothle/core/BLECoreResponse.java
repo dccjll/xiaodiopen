@@ -162,7 +162,8 @@ public class BLECoreResponse {
      * @param objectListener    任务监听器
      * @param errorCode 任务失败代码
      */
-    public void onResponseError(Object objectListener, String errorCode){
+    public void onResponseError(Object objectListener, String errorCode, BLEManage bleManage){
+        bleManage.removeTimeoutCallback();
         if(errorCode.equalsIgnoreCase(BLEConstants.Error.Disconnect) || errorCode.equalsIgnoreCase(BLEConstants.Error.ReceivedBLEStackExceptionCode)){
             onBLEDisconnectErrorCode(objectListener, errorCode);
             return;

@@ -3,11 +3,11 @@ package com.bluetoothle.core;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
+import android.os.Handler;
 
 import com.bluetoothle.core.connect.BLEConnect;
 import com.bluetoothle.core.connect.OnBLEConnectListener;
@@ -41,6 +41,16 @@ public class BLEManage {
     private final static String TAG = BLEManage.class.getSimpleName();
     public static List<Map<String, Object>> connectedBluetoothGattList = new ArrayList<>();//当前已连接的设备服务器连接池  第一次参数表示某一个连接对象，第二个参数表示该连接上一次通讯(读过或接收过数据)的时间戳
     private BLECoreResponse bleCoreResponse = new BLECoreResponse();//蓝牙核心响应管理器
+    private Object listenterObject;//响应对象
+    private boolean timeout = false;//是否超时
+    private Handler timeoutHandler = new Handler();//超时管理对象
+    private Runnable timeoutRunnable = new Runnable() {//超时任务
+        @Override
+        public void run() {
+            timeout = true;
+            bleCoreResponse.onResponseError(listenterObject, BLEConstants.Error.Timeout, BLEManage.this);
+        }
+    };
 
     /**
      * 蓝牙任务管理器构造器
@@ -58,6 +68,7 @@ public class BLEManage {
         this.timeoutScanBLE = timeoutScanBLE;
         bleCoreResponse.setRunning(true);
         bleCoreResponse.setMac(targetDeviceAddress);
+        timeoutHandler.postDelayed(timeoutRunnable, BLEConfig.TimeoutWholeTast);
     }
 
     public BLEManage(BluetoothAdapter bluetoothAdapter, final String targetDeviceAddress, final List<String> targetDeviceAddressList, final UUID[] serviceUUIDs, Integer timeoutScanBLE, Boolean disconnectOnFinish) {
@@ -80,6 +91,7 @@ public class BLEManage {
     private BluetoothDevice bluetoothDevice;//扫描到的目标蓝牙设备
     public void setOnBLEScanListener(OnBLEScanListener onBLEScanListener) {
         this.onBLEScanListener = onBLEScanListener;
+        listenterObject = onBLEScanListener;
     }
     private OnBLEScanListener onBLEScanListener_ = new OnBLEScanListener() {//临时的蓝牙扫描监听器
         @Override
@@ -87,7 +99,7 @@ public class BLEManage {
             BLELogUtil.d(TAG, "onFoundDevice,bluetoothDevice=" + bluetoothDevice + ",rssi=" + rssi + ",scanRecord=" + BLEByteUtil.bytesToHexString(scanRecord));
             BLEManage.this.bluetoothDevice = bluetoothDevice;
             if(onBLEConnectListener != null || onBLEFindServiceListener != null || onBLEOpenNotificationListener != null || onBLEWriteDataListener != null || onBLEResponse != null){
-                bleConnect = new BLEConnect(bluetoothDevice, bleCoreResponse, onBLEResponse, onBLEConnectListener_);
+                bleConnect = new BLEConnect(bluetoothDevice, bleCoreResponse, onBLEResponse, BLEManage.this, onBLEConnectListener_);
                 bleConnect.connect();
                 return;
             }
@@ -103,7 +115,7 @@ public class BLEManage {
                 bleCoreResponse.onScanFinish(onBLEScanListener, bluetoothDeviceList);
                 return;
             }
-            onResponseError(BLEConstants.Error.NotFoundDevice);
+            bleCoreResponse.onResponseError(listenterObject, BLEConstants.Error.NotFoundDevice, BLEManage.this);
 
         }
 
@@ -120,26 +132,26 @@ public class BLEManage {
             return;
         }
         if(!BLEInit.status){
-            onResponseError(BLEConstants.Error.BLEInit);
+            bleCoreResponse.onResponseError(listenterObject, BLEConstants.Error.BLEInit, BLEManage.this);
             return;
         }
         if(BLEStringUtil.isEmpty(targetDeviceAddress) && targetDeviceAddressList == null){
-            onResponseError(BLEConstants.Error.Device_Address);
+            bleCoreResponse.onResponseError(listenterObject, BLEConstants.Error.Device_Address, BLEManage.this);
             return;
         }
         if(BLEStringUtil.isNotEmpty(targetDeviceAddress)){
             if(!BLEUtil.checkAddress(targetDeviceAddress)){
-                onResponseError(BLEConstants.Error.MacAddress);
+                bleCoreResponse.onResponseError(listenterObject, BLEConstants.Error.MacAddress, BLEManage.this);
                 return;
             }
         }else{
             if(!BLEUtil.checkTargetAddressList(targetDeviceAddressList)){
-                onResponseError(BLEConstants.Error.MacAddressList);
+                bleCoreResponse.onResponseError(listenterObject, BLEConstants.Error.MacAddressList, BLEManage.this);
                 return;
             }
         }
         if(currentScanCount ++ == BLEConfig.MaxScanCount.intValue()){
-            onResponseError(BLEConstants.Error.NotFoundDevice);
+            bleCoreResponse.onResponseError(listenterObject, BLEConstants.Error.NotFoundDevice, BLEManage.this);
             return;
         }
         bleScan = new BLEScan(bluetoothAdapter, targetDeviceAddress, targetDeviceAddressList, null, timeoutScanBLE, onBLEScanListener_);
@@ -154,6 +166,7 @@ public class BLEManage {
     private OnBLEConnectListener onBLEConnectListener;//蓝牙连接监听器
     public void setOnBLEConnectListener(OnBLEConnectListener onBLEConnectListener) {
         this.onBLEConnectListener = onBLEConnectListener;
+        listenterObject = onBLEConnectListener;
     }
     private OnBLEConnectListener onBLEConnectListener_ = new OnBLEConnectListener() {//临时的蓝牙连接监听器
         @Override
@@ -181,7 +194,7 @@ public class BLEManage {
         public void onConnectFail(String errorCode) {
             BLELogUtil.e(TAG, "第" + ++currentConnectCount + "次连接失败,errorCode=" + errorCode);
             if(currentConnectCount == BLEConfig.MaxConnectCount){
-                onResponseError(BLEConstants.Error.Connect);
+                bleCoreResponse.onResponseError(listenterObject, errorCode, BLEManage.this);
                 return;
             }
             bleConnect.connect();
@@ -193,12 +206,13 @@ public class BLEManage {
             return;
         }
         if(!BLEInit.status){
-            bleCoreResponse.onResponseError(onBLEConnectListener, BLEConstants.Error.BLEInit);
+            bleCoreResponse.onResponseError(listenterObject, BLEConstants.Error.BLEInit, BLEManage.this);
             return;
         }
         BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(connectedBluetoothGattList, targetDeviceAddress);
         if(bluetoothGatt != null){
-            bleCoreResponse.onConnectSuccess(onBLEConnectListener, bluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_CONNECTED, ((BLEGattCallback)BLEUtil.getBluetoothGattMap(connectedBluetoothGattList, bluetoothGatt).get("bluetoothGattCallback")));
+            BLEGattCallback bleGattCallback = (BLEGattCallback)BLEUtil.getBluetoothGattMap(connectedBluetoothGattList, bluetoothGatt).get("bluetoothGattCallback");
+            bleCoreResponse.onConnectSuccess(onBLEConnectListener, bluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_CONNECTED, bleGattCallback);
             return;
         }
         scan();
@@ -213,6 +227,7 @@ public class BLEManage {
     private OnBLEFindServiceListener onBLEFindServiceListener;//找服务监听器
     public void setOnBLEFindServiceListener(OnBLEFindServiceListener onBLEFindServiceListener) {
         this.onBLEFindServiceListener = onBLEFindServiceListener;
+        listenterObject = onBLEFindServiceListener;
     }
     private OnBLEFindServiceListener onBLEFindServiceListener_ = new OnBLEFindServiceListener() {//临时的蓝牙找服务器监听器
         @Override
@@ -249,16 +264,17 @@ public class BLEManage {
             if(errorCode.equalsIgnoreCase(BLEConstants.Error.Disconnect)){//找服务时断开连接，有限的次数重新连接
                 if(currentReconnectCountWhenDisconnectedOnFindService ++ < BLEConfig.MaxReconnectCountWhenDisconnectedOnFindService){
 //                    bluetoothGatt.connect();
-                    bleConnect = new BLEConnect(bluetoothDevice, bleCoreResponse, onBLEResponse, onBLEConnectListener_);
+                    bleConnect = new BLEConnect(bluetoothDevice, bleCoreResponse, onBLEResponse, BLEManage.this, onBLEConnectListener_);
                     bleConnect.connect();
                     BLELogUtil.e(TAG, "找服务时断开连接，第" + currentReconnectCountWhenDisconnectedOnFindService + "次重连");
                     return;
                 }
-                onResponseError(errorCode);
+                bleCoreResponse.onResponseError(listenterObject, errorCode, BLEManage.this);
+
                 return;
             }
             if(currentFindServiceCount.intValue() == BLEConfig.MaxFindServiceCount.intValue()){
-                onResponseError(errorCode);
+                bleCoreResponse.onResponseError(listenterObject, errorCode, BLEManage.this);
                 return;
             }
             bleFindService.findService();
@@ -270,11 +286,11 @@ public class BLEManage {
             return;
         }
         if(!BLEInit.status){
-            bleCoreResponse.onResponseError(onBLEFindServiceListener, BLEConstants.Error.BLEInit);
+            bleCoreResponse.onResponseError(listenterObject, BLEConstants.Error.BLEInit, BLEManage.this);
             return;
         }
         if(serviceUUIDs == null || (serviceUUIDs.length != 2 && serviceUUIDs.length != 5) ){
-            bleCoreResponse.onResponseError(onBLEFindServiceListener, BLEConstants.Error.UUIDArrays);
+            bleCoreResponse.onResponseError(listenterObject, BLEConstants.Error.UUIDArrays, BLEManage.this);
             return;
         }
         if (serviceUUIDs.length == 5) {
@@ -286,12 +302,13 @@ public class BLEManage {
         }
         BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(connectedBluetoothGattList, targetDeviceAddress);
         if(bluetoothGatt != null){
+            BLEGattCallback bleGattCallback = (BLEGattCallback)BLEUtil.getBluetoothGattMap(connectedBluetoothGattList, bluetoothGatt).get("bluetoothGattCallback");
             if(bluetoothGatt.getServices() == null || bluetoothGatt.getServices().size() == 0){
-                bleFindService = new BLEFindService(bluetoothGatt, ((BLEGattCallback)BLEUtil.getBluetoothGattMap(connectedBluetoothGattList, bluetoothGatt).get("bluetoothGattCallback")), onBLEFindServiceListener_);
+                bleFindService = new BLEFindService(bluetoothGatt, bleGattCallback, onBLEFindServiceListener_);
                 bleFindService.findService();
                 return;
             }
-            bleCoreResponse.onFindServiceSuccess(onBLEFindServiceListener, bluetoothGatt, BluetoothGatt.GATT_SUCCESS, bluetoothGatt.getServices(), ((BLEGattCallback)BLEUtil.getBluetoothGattMap(connectedBluetoothGattList, bluetoothGatt).get("bluetoothGattCallback")));
+            bleCoreResponse.onFindServiceSuccess(onBLEFindServiceListener, bluetoothGatt, BluetoothGatt.GATT_SUCCESS, bluetoothGatt.getServices(), bleGattCallback);
             return;
         }
         scan();
@@ -306,6 +323,7 @@ public class BLEManage {
     private OnBLEOpenNotificationListener onBLEOpenNotificationListener;//打开通知监听器
     public void setOnBLEOpenNotificationListener(OnBLEOpenNotificationListener onBLEOpenNotificationListener) {
         this.onBLEOpenNotificationListener = onBLEOpenNotificationListener;
+        listenterObject = onBLEOpenNotificationListener;
     }
     private OnBLEOpenNotificationListener onBLEOpenNotificationListener_ = new OnBLEOpenNotificationListener() {//临时的蓝牙打开通知监听器
         @Override
@@ -329,15 +347,15 @@ public class BLEManage {
                 if(currentReconnectCountWhenDisconnectedOnOpenNotification ++ < BLEConfig.MaxReconnectCountWhenDisconnectedOnOpenNotification){
                     BLELogUtil.e(TAG, "打开通知时断开连接，第" + currentReconnectCountWhenDisconnectedOnOpenNotification + "次重连");
 //                    bluetoothGatt.connect();
-                    bleConnect = new BLEConnect(bluetoothDevice, bleCoreResponse, onBLEResponse, onBLEConnectListener_);
+                    bleConnect = new BLEConnect(bluetoothDevice, bleCoreResponse, onBLEResponse, BLEManage.this, onBLEConnectListener_);
                     bleConnect.connect();
                     return;
                 }
-                onResponseError(errorCode);
+                bleCoreResponse.onResponseError(listenterObject, errorCode, BLEManage.this);
                 return;
             }
             if(currentOpenNotificationCount.intValue() == BLEConfig.MaxOpenNotificationCount.intValue()){
-                onResponseError(errorCode);
+                bleCoreResponse.onResponseError(listenterObject, errorCode, BLEManage.this);
                 return;
             }
             bleOpenNotification.openNotification();
@@ -349,11 +367,11 @@ public class BLEManage {
             return;
         }
         if(!BLEInit.status){
-            bleCoreResponse.onResponseError(onBLEOpenNotificationListener, BLEConstants.Error.BLEInit);
+            bleCoreResponse.onResponseError(listenterObject, BLEConstants.Error.BLEInit, BLEManage.this);
             return;
         }
         if(serviceUUIDs == null || (serviceUUIDs.length != 2 && serviceUUIDs.length != 5) ){
-            bleCoreResponse.onResponseError(onBLEOpenNotificationListener, BLEConstants.Error.UUIDArrays);
+            bleCoreResponse.onResponseError(listenterObject, BLEConstants.Error.UUIDArrays, BLEManage.this);
             return;
         }
         if (serviceUUIDs.length == 5) {
@@ -365,12 +383,13 @@ public class BLEManage {
         }
         BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(connectedBluetoothGattList, targetDeviceAddress);
         if(bluetoothGatt != null){
+            BLEGattCallback bleGattCallback = (BLEGattCallback)BLEUtil.getBluetoothGattMap(connectedBluetoothGattList, bluetoothGatt).get("bluetoothGattCallback");
             if(bluetoothGatt.getServices() == null || bluetoothGatt.getServices().size() == 0){
-                bleFindService = new BLEFindService(bluetoothGatt, ((BLEGattCallback)BLEUtil.getBluetoothGattMap(connectedBluetoothGattList, bluetoothGatt).get("bluetoothGattCallback")), onBLEFindServiceListener_);
+                bleFindService = new BLEFindService(bluetoothGatt, bleGattCallback, onBLEFindServiceListener_);
                 bleFindService.findService();
                 return;
             }
-            bleOpenNotification = new BLEOpenNotification(bluetoothGatt.getServices(), bluetoothGatt, notificationuuids, ((BLEGattCallback)BLEUtil.getBluetoothGattMap(connectedBluetoothGattList, bluetoothGatt).get("bluetoothGattCallback")), onBLEOpenNotificationListener_);
+            bleOpenNotification = new BLEOpenNotification(bluetoothGatt.getServices(), bluetoothGatt, notificationuuids, bleGattCallback, onBLEOpenNotificationListener_);
             bleOpenNotification.openNotification();
             return;
         }
@@ -385,6 +404,7 @@ public class BLEManage {
     private OnBLEResponse onBLEResponse;//接收数据监听器
     public void setOnBLEResponse(OnBLEResponse onBLEResponse) {
         this.onBLEResponse = onBLEResponse;
+        listenterObject = onBLEResponse;
         this.onBLEResponse.setBleCoreResponse(bleCoreResponse);
     }
     private byte[] data;//发送的总数据包字节数组
@@ -416,10 +436,10 @@ public class BLEManage {
         @Override
         public void onWriteDataFail(String errorCode) {
             if(onBLEWriteDataListener != null){
-                bleCoreResponse.onResponseError(onBLEWriteDataListener, errorCode);
+                bleCoreResponse.onResponseError(listenterObject, errorCode, BLEManage.this);
             }
             if(onBLEResponse != null){
-                bleCoreResponse.onResponseError(onBLEResponse, errorCode);
+                bleCoreResponse.onResponseError(listenterObject, errorCode, BLEManage.this);
             }
         }
     };
@@ -429,15 +449,15 @@ public class BLEManage {
             return;
         }
         if(!BLEInit.status){
-            bleCoreResponse.onResponseError(onBLEWriteDataListener, BLEConstants.Error.BLEInit);
+            bleCoreResponse.onResponseError(listenterObject, BLEConstants.Error.BLEInit, BLEManage.this);
             return;
         }
         if(data == null || data.length == 0){
-            bleCoreResponse.onResponseError(onBLEWriteDataListener, BLEConstants.Error.CheckBLEDataError);
+            bleCoreResponse.onResponseError(listenterObject, BLEConstants.Error.CheckBLEDataError, BLEManage.this);
             return;
         }
         if(serviceUUIDs == null || (serviceUUIDs.length != 2 && serviceUUIDs.length != 5) ){
-            bleCoreResponse.onResponseError(onBLEWriteDataListener, BLEConstants.Error.UUIDArrays);
+            bleCoreResponse.onResponseError(listenterObject, BLEConstants.Error.UUIDArrays, BLEManage.this);
             return;
         }
         writeuuids = new UUID[2];
@@ -451,23 +471,28 @@ public class BLEManage {
             receiveBLEData = true;
         }
         if(receiveBLEData && onBLEResponse == null){
-            bleCoreResponse.onResponseError(onBLEWriteDataListener, BLEConstants.Error.OnBLEResponse);
+            bleCoreResponse.onResponseError(listenterObject, BLEConstants.Error.OnBLEResponse, BLEManage.this);
             return;
         }
         BluetoothGatt bluetoothGatt = BLEUtil.getBluetoothGatt(connectedBluetoothGattList, targetDeviceAddress);
         if(bluetoothGatt != null){
+            BLEGattCallback bleGattCallback = (BLEGattCallback)BLEUtil.getBluetoothGattMap(connectedBluetoothGattList, bluetoothGatt).get("bluetoothGattCallback");
+            if(bleGattCallback != null){
+                bleGattCallback.registerBleCoreResponse(bleCoreResponse);
+                bleGattCallback.registerOnBLEResponseListener(onBLEResponse);
+            }
             if(bluetoothGatt.getServices() == null || bluetoothGatt.getServices().size() == 0){
-                bleFindService = new BLEFindService(bluetoothGatt, ((BLEGattCallback)BLEUtil.getBluetoothGattMap(connectedBluetoothGattList, bluetoothGatt).get("bluetoothGattCallback")), onBLEFindServiceListener_);
+                bleFindService = new BLEFindService(bluetoothGatt, bleGattCallback, onBLEFindServiceListener_);
                 bleFindService.findService();
                 return;
             }
             if (onBLEOpenNotificationListener != null) {
-                bleOpenNotification = new BLEOpenNotification(bluetoothGatt.getServices(), bluetoothGatt, notificationuuids, ((BLEGattCallback)BLEUtil.getBluetoothGattMap(connectedBluetoothGattList, bluetoothGatt).get("bluetoothGattCallback")), onBLEOpenNotificationListener_);
+                bleOpenNotification = new BLEOpenNotification(bluetoothGatt.getServices(), bluetoothGatt, notificationuuids, bleGattCallback, onBLEOpenNotificationListener_);
                 bleOpenNotification.openNotification();
                 return;
             }
             if(bleWriteData == null){
-                bleWriteData = new BLEWriteData(bluetoothGatt, writeuuids, data, ((BLEGattCallback)BLEUtil.getBluetoothGattMap(connectedBluetoothGattList, bluetoothGatt).get("bluetoothGattCallback")), onBLEWriteDataListener_);
+                bleWriteData = new BLEWriteData(bluetoothGatt, writeuuids, data, bleGattCallback, onBLEWriteDataListener_);
             }
             bleWriteData.writeData();
             return;
@@ -476,32 +501,16 @@ public class BLEManage {
     }
 
     /**
-     * 响应失败回复
-     * @param errorCode     错误码
+     * 移除超时任务
      */
-    private void onResponseError(String errorCode){
-        if(onBLEResponse != null){
-            bleCoreResponse.onResponseError(onBLEResponse, errorCode);
-            return;
-        }
-        if(onBLEWriteDataListener != null){
-            bleCoreResponse.onResponseError(onBLEWriteDataListener, errorCode);
-            return;
-        }
-        if(onBLEOpenNotificationListener != null){
-            bleCoreResponse.onResponseError(onBLEOpenNotificationListener, errorCode);
-            return;
-        }
-        if(onBLEFindServiceListener != null){
-            bleCoreResponse.onResponseError(onBLEFindServiceListener, errorCode);
-            return;
-        }
-        if(onBLEConnectListener != null){
-            bleCoreResponse.onResponseError(onBLEConnectListener, errorCode);
-            return;
-        }
-        if(onBLEScanListener != null){
-            bleCoreResponse.onResponseError(onBLEScanListener, errorCode);
-        }
+    public void removeTimeoutCallback(){
+        timeoutHandler.removeCallbacks(timeoutRunnable);
+    }
+
+    /**
+     * 判定是否超时
+     */
+    public boolean checkTimeout(){
+        return timeout;
     }
 }

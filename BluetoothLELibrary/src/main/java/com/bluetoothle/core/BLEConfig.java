@@ -15,4 +15,6 @@ public class BLEConfig {
     public final static Integer MaxReconnectCountWhenDisconnectedOnOpenNotification = 1;//打开通知时断开连接最大重连的次数
 
     public final static Integer MaxWaitDisconnectTimeInterval = 2*60*1000;//蓝牙连接上之后，多久不通讯将主动断开连接的间隔时间
+
+    public static final Integer TimeoutWholeTast = 12*1000;//整个任务的超时时间
 }

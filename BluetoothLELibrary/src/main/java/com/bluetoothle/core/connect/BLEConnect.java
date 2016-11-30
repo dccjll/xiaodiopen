@@ -9,6 +9,7 @@ import android.content.Context;
 import com.bluetoothle.core.BLEConstants;
 import com.bluetoothle.core.BLECoreResponse;
 import com.bluetoothle.core.BLEGattCallback;
+import com.bluetoothle.core.BLEManage;
 import com.bluetoothle.core.BLEService;
 import com.bluetoothle.core.response.OnBLEResponse;
 import com.bluetoothle.util.BLELogUtil;
@@ -41,7 +42,7 @@ public class BLEConnect {
      * @param bluetoothDevice   需要连接的蓝牙设备
      * @param onBLEConnectListener 蓝牙连接监听器
      */
-    public BLEConnect(BluetoothDevice bluetoothDevice, BLECoreResponse bleCoreResponse, OnBLEResponse onBLEResponse, OnBLEConnectListener onBLEConnectListener) {
+    public BLEConnect(BluetoothDevice bluetoothDevice, BLECoreResponse bleCoreResponse, OnBLEResponse onBLEResponse, BLEManage bleManage, OnBLEConnectListener onBLEConnectListener) {
         this.bluetoothDevice = bluetoothDevice;
         this.onBLEConnectListener = onBLEConnectListener;
         context = BLEService.bleService;
@@ -49,6 +50,7 @@ public class BLEConnect {
             bleGattCallback = new BLEGattCallback();
             bleGattCallback.registerBleCoreResponse(bleCoreResponse);
             bleGattCallback.registerOnBLEResponseListener(onBLEResponse);
+            bleGattCallback.registerBLEManage(bleManage);
         }
     }
 
@@ -58,7 +60,7 @@ public class BLEConnect {
      * @param targetMacAddress   需要连接的蓝牙设备MAC地址
      * @param onBLEConnectListener 蓝牙连接监听器
      */
-    public BLEConnect(BluetoothAdapter bluetoothAdapter, String targetMacAddress, BLECoreResponse bleCoreResponse, OnBLEConnectListener onBLEConnectListener) {
+    public BLEConnect(BluetoothAdapter bluetoothAdapter, String targetMacAddress, BLECoreResponse bleCoreResponse, OnBLEResponse onBLEResponse, BLEManage bleManage, OnBLEConnectListener onBLEConnectListener) {
         this.bluetoothAdapter = bluetoothAdapter;
         this.targetMacAddress = targetMacAddress;
         this.onBLEConnectListener = onBLEConnectListener;
@@ -66,6 +68,8 @@ public class BLEConnect {
         if (bleGattCallback == null) {
             bleGattCallback = new BLEGattCallback();
             bleGattCallback.registerBleCoreResponse(bleCoreResponse);
+            bleGattCallback.registerOnBLEResponseListener(onBLEResponse);
+            bleGattCallback.registerBLEManage(bleManage);
         }
     }
 

@@ -35,7 +35,6 @@ public class BLEConstants {
         public final static String BluetoothGattService = "BluetoothGattService";                //服务异常
         public final static String BluetoothGattCharacteristic = "BluetoothGattCharacteristic";         //特征异常
         public final static String BluetoothGattDescriptor = "BluetoothGattDescriptor";             //特征描述异常
-        public final static String FindService = "FindService";                              //找服务异常
         public final static String GatService = "GatService";                             //获取服务异常
         public final static String SetCharacteristicNotification = "SetCharacteristicNotification";            //设置特征通知异常
         public final static String WriteDescriptor = "WriteDescriptor";                          //写特征描述异常
@@ -43,5 +42,6 @@ public class BLEConstants {
         public final static String WriteDataError = "WriteDataError";                                //写数据异常
         public final static String OnBLEResponse = "OnBLEResponse";               //验证接收数据监听器异常
         public final static String Scann = "Scann";                            //发生扫描异常
+        public static final String Timeout = "Timeout";                         //任务超时
     }
 }
